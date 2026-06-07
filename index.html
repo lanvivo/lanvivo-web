@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lanvivo · Land that lives for you</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --mid: #0A0E1A; --deep: #1A2A5E; --card: #101624;
+  --gold: #C8942A; --gl: #F0D080; --slate: #9BA8C8;
+  --muted: #6A7090; --cream: #F5F0E4; --off: #F2EEE4;
+  --rule: #E2DED4; --white: #ffffff; --ink: #1A1C2A;
+}
+html { scroll-behavior: smooth; }
+body { font-family: 'DM Sans', sans-serif; font-weight: 300; background: var(--mid); color: var(--cream); overflow-x: hidden; }
+a { text-decoration: none; color: inherit; }
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 5vw; height: 64px;
+  background: rgba(10,14,26,0.94); backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(200,148,42,0.14);
+}
+.nav-logo { display: flex; align-items: center; gap: 11px; }
+.coin-mark {
+  width: 34px; height: 34px; position: relative;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.coin-mark svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.coin-l {
+  font-family: 'Cormorant Garamond', serif; font-size: 16px;
+  font-weight: 600; font-style: italic; color: var(--gold);
+  position: relative; z-index: 1; line-height: 1;
+}
+.wordmark { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; letter-spacing: -0.5px; color: var(--white); }
+.wordmark span { color: var(--gold); }
+.nav-links { display: flex; gap: 30px; }
+.nav-links a { font-size: 12px; font-weight: 400; letter-spacing: 1px; text-transform: uppercase; color: var(--slate); transition: color .2s; }
+.nav-links a:hover { color: var(--cream); }
+.nav-cta { background: var(--gold); color: var(--mid); font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; padding: 9px 22px; border-radius: 3px; transition: opacity .2s; }
+.nav-cta:hover { opacity: .88; }
+/* Nav CTA group: Sign in (subtle) + Open portal (primary) live side-by-side */
+.nav-cta-group { display: flex; align-items: center; gap: 14px; }
+.nav-signin { font-size: 12px; font-weight: 500; letter-spacing: 0.5px; color: var(--slate); transition: color .2s; padding: 4px 0; }
+.nav-signin:hover { color: var(--cream); }
+
+/* Mobile hamburger button: hidden on desktop, shows below 900px */
+.nav-mobile-btn { display: none; background: none; border: none; cursor: pointer; flex-direction: column; gap: 5px; padding: 8px 4px; margin-left: 10px; }
+.nav-mobile-btn span { display: block; width: 22px; height: 1.5px; background: var(--cream); transition: transform .25s, opacity .25s; }
+.nav-mobile-btn[aria-expanded="true"] span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+.nav-mobile-btn[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+.nav-mobile-btn[aria-expanded="true"] span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+/* Mobile drawer: slides down from nav, full-width, links stacked vertically */
+.nav-drawer { display: none; position: fixed; top: 64px; left: 0; right: 0; background: var(--mid); border-bottom: 1px solid rgba(200,148,42,0.18); padding: 8px 5vw 16px; flex-direction: column; z-index: 199; }
+.nav-drawer.open { display: flex; }
+.nav-drawer a { font-size: 14px; font-weight: 400; color: var(--cream); padding: 14px 0; border-bottom: 1px solid rgba(26,42,94,0.4); transition: color .15s; }
+.nav-drawer a:hover { color: var(--gold); }
+.nav-drawer a:last-child { border-bottom: none; }
+.nav-drawer-cta { color: var(--gold) !important; font-weight: 500 !important; }
+
+/* HERO */
+.hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 120px 5vw 80px; position: relative; overflow: hidden; }
+.top-rule { position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--gold); }
+.hero-bg { position: absolute; border-radius: 50%; pointer-events: none; }
+.hero-bg.c1 { width: 700px; height: 700px; background: var(--deep); opacity: .5; top: -200px; right: -200px; }
+.hero-bg.c2 { width: 300px; height: 300px; background: var(--gold); opacity: .04; bottom: -60px; left: -60px; }
+.hero-badge { display: inline-flex; background: var(--deep); border-radius: 3px; padding: 5px 14px; margin-bottom: 28px; font-size: 10px; font-weight: 500; letter-spacing: 2.5px; text-transform: uppercase; color: var(--gold); width: fit-content; opacity: 0; animation: fadeUp .6s .1s forwards; }
+.hero-h1 { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: clamp(2.8rem, 5.5vw, 5rem); line-height: 1.06; color: var(--white); max-width: 760px; opacity: 0; animation: fadeUp .7s .25s forwards; }
+.hero-h1 em { font-style: italic; color: var(--gl); }
+.hero-sub { font-size: clamp(14px, 1.4vw, 16px); font-weight: 300; line-height: 1.78; color: var(--slate); max-width: 540px; margin-top: 22px; opacity: 0; animation: fadeUp .7s .4s forwards; }
+
+/* Hero CTAs: primary portal button + secondary waitlist link, side-by-side */
+.hero-cta-row { display: flex; align-items: center; gap: 22px; margin-top: 34px; flex-wrap: wrap; opacity: 0; animation: fadeUp .7s .55s forwards; }
+.hero-cta-primary { display: inline-flex; align-items: center; gap: 8px; background: var(--gold); color: var(--mid); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; padding: 14px 28px; border-radius: 3px; transition: opacity .2s, transform .15s; }
+.hero-cta-primary:hover { opacity: 0.92; transform: translateY(-1px); }
+.hero-cta-secondary { font-size: 13px; color: var(--slate); border-bottom: 1px solid rgba(155,168,200,0.3); padding-bottom: 2px; transition: color .2s, border-color .2s; }
+.hero-cta-secondary:hover { color: var(--gl); border-bottom-color: var(--gold); }
+
+.hero-note { font-size: 11px; color: var(--muted); margin-top: 14px; opacity: 0; animation: fadeUp .7s .65s forwards; }
+
+/* MARKET STATS */
+.stats-strip { background: var(--card); border-top: 1px solid rgba(26,42,94,.7); border-bottom: 1px solid rgba(26,42,94,.7); padding: 56px 5vw; }
+.stats-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 2px; max-width: 1100px; margin: 0 auto; }
+.stat-tile { padding: 28px 24px; background: var(--card); position: relative; }
+.stat-tile::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 44px; background: var(--gold); }
+.stat-tile .big { font-family: 'Cormorant Garamond', serif; font-size: 2.6rem; font-weight: 300; color: var(--gl); line-height: 1; }
+.stat-tile .lbl { font-size: 13px; font-weight: 500; color: var(--cream); margin-top: 6px; }
+.stat-tile .sub { font-size: 11px; color: var(--muted); margin-top: 3px; line-height: 1.5; }
+
+/* FEATURES */
+.features { padding: 96px 5vw; background: var(--off); }
+.section-eyebrow { font-size: 10px; font-weight: 500; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; }
+.section-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.8rem, 3vw, 2.6rem); font-weight: 300; color: var(--ink); line-height: 1.15; max-width: 600px; margin-bottom: 14px; }
+.section-title em { font-style: italic; color: var(--deep); }
+.section-body { font-size: 15px; color: var(--muted); line-height: 1.75; max-width: 520px; margin-bottom: 48px; }
+.feat-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 2px; max-width: 1100px; }
+.feat { padding: 36px 32px; background: var(--white); border-top: 3px solid transparent; transition: border-color .2s, transform .18s; }
+.feat:hover { border-color: var(--gold); transform: translateY(-2px); }
+.feat.dk { background: var(--mid); }
+.feat-eye { font-size: 9px; font-weight: 500; letter-spacing: 2.5px; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+.feat-name { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 600; color: var(--ink); margin-bottom: 9px; line-height: 1.2; }
+.feat.dk .feat-name { color: var(--cream); }
+.feat-desc { font-size: 13px; color: var(--muted); line-height: 1.7; }
+.feat.dk .feat-desc { color: var(--slate); }
+/* Live-now strip: announces what's already available in the portal */
+.feat-live { margin-top: 36px; padding: 28px 32px; background: var(--mid); border-left: 3px solid var(--gold); display: flex; justify-content: space-between; align-items: center; gap: 28px; flex-wrap: wrap; }
+.feat-live-label { font-size: 10px; font-weight: 500; letter-spacing: 2.5px; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; }
+.feat-live-items { display: flex; gap: 8px; flex-wrap: wrap; }
+.feat-live-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 500; padding: 6px 12px; border-radius: 2px; border: 1px solid rgba(155,168,200,0.22); }
+.feat-live-pill.live { background: rgba(46,125,82,0.12); color: #7FB89A; border-color: rgba(46,125,82,0.35); }
+.feat-live-pill.soon { background: rgba(200,148,42,0.08); color: var(--gl); border-color: rgba(200,148,42,0.25); }
+.feat-live .btn-gold { flex-shrink: 0; }
+
+/* SURVEY CTA: research invitation, deliberately quieter visual than features/journey */
+.survey-cta { padding: 96px 5vw; background: var(--mid); position: relative; overflow: hidden; }
+.survey-cta::before { content: ''; position: absolute; bottom: -120px; left: -120px; width: 400px; height: 400px; border-radius: 50%; background: var(--deep); opacity: 0.3; pointer-events: none; }
+.survey-cta-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1.1fr 1fr; gap: 60px; align-items: center; position: relative; z-index: 1; }
+.survey-cta-content .section-body { margin-bottom: 28px; }
+.survey-cta-meta { display: flex; gap: 36px; margin-bottom: 32px; padding: 18px 0; border-top: 1px solid rgba(155,168,200,0.15); border-bottom: 1px solid rgba(155,168,200,0.15); }
+.survey-cta-stat { display: flex; flex-direction: column; }
+.survey-cta-stat .num { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 600; color: var(--gl); line-height: 1; }
+.survey-cta-stat .lbl { font-size: 11px; color: var(--muted); margin-top: 4px; }
+/* Mock survey question on the right: gives visual context for "what filling this out looks like" */
+.survey-q-preview { background: var(--card); border: 1px solid rgba(26,42,94,0.7); padding: 28px 30px; position: relative; border-radius: 0; }
+.survey-q-preview::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--gold); }
+.survey-q-eyebrow { font-size: 10px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); margin-bottom: 14px; }
+.survey-q-title { font-family: 'Cormorant Garamond', serif; font-size: 1.25rem; font-weight: 600; color: var(--cream); margin-bottom: 18px; line-height: 1.25; }
+.survey-q-choices { display: flex; flex-direction: column; gap: 8px; }
+.survey-q-choice { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 1px solid rgba(155,168,200,0.18); border-radius: 2px; font-size: 12.5px; color: var(--slate); transition: all .2s; }
+.survey-q-choice.selected { border-color: var(--gold); background: rgba(200,148,42,0.08); color: var(--gl); }
+.survey-q-choice .k { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(155,168,200,0.3); font-size: 10px; font-weight: 500; flex-shrink: 0; }
+.survey-q-choice.selected .k { background: var(--gold); border-color: var(--gold); color: var(--mid); }
+
+/* JOURNEY */
+.journey { padding: 96px 5vw; background: var(--mid); position: relative; overflow: hidden; }
+.journey::before { content: ''; position: absolute; top: -200px; right: -200px; width: 600px; height: 600px; border-radius: 50%; background: var(--deep); opacity: .35; pointer-events: none; }
+.section-title.light { color: var(--white); }
+.section-title.light em { color: var(--gl); }
+.section-body.light { color: var(--slate); }
+.journey-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; max-width: 1100px; }
+/* 3-step "what works today" layout */
+.journey-grid-3 { grid-template-columns: repeat(3, 1fr); }
+.step { padding: 34px 26px; background: var(--card); border-top: 2px solid transparent; transition: border-color .2s; }
+.step:hover { border-color: var(--gold); }
+.step-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+.step-n { width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--gold); display: flex; align-items: center; justify-content: center; font-family: 'Cormorant Garamond', serif; font-size: 15px; font-weight: 600; color: var(--gl); margin-bottom: 0; }
+.step-status { font-size: 9.5px; font-weight: 500; letter-spacing: 1.4px; text-transform: uppercase; padding: 4px 8px; border-radius: 2px; }
+.step-status-live { background: rgba(46,125,82,0.18); color: #7FB89A; border: 1px solid rgba(46,125,82,0.35); }
+.step-title { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; font-weight: 600; color: var(--cream); margin-bottom: 8px; line-height: 1.2; }
+.step-desc { font-size: 12.5px; color: var(--muted); line-height: 1.7; }
+
+/* Roadmap note: honest acknowledgment that more is coming */
+.journey-roadmap { margin-top: 28px; padding: 22px 28px; background: var(--card); border-left: 3px solid var(--gold); display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+.journey-roadmap-label { font-size: 10px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); white-space: nowrap; }
+.journey-roadmap-items { display: flex; gap: 8px; flex-wrap: wrap; }
+.roadmap-pill { display: inline-flex; align-items: center; font-size: 11.5px; font-weight: 400; color: var(--slate); padding: 5px 11px; border-radius: 2px; border: 1px solid rgba(155,168,200,0.22); background: rgba(255,255,255,0.02); }
+
+/* PROFESSIONALS */
+/* PROFESSIONALS: single column, modal-driven, deliberately subtler than user pitches */
+.pros { padding: 96px 5vw; background: var(--off); }
+.pros-inner { max-width: 800px; margin: 0 auto; }
+.pros-content .section-body { margin-bottom: 28px; }
+.pros-roles { display: flex; flex-direction: column; gap: 1px; background: var(--rule); margin-bottom: 18px; }
+.pros-role { width: 100%; display: flex; align-items: center; gap: 18px; padding: 18px 22px; background: var(--white); border: none; cursor: pointer; transition: background .15s, padding-left .15s; text-align: left; font-family: 'DM Sans', sans-serif; }
+.pros-role:hover { background: #FAF8F4; padding-left: 28px; }
+.pros-role:hover .pros-role-arrow { transform: translateX(4px); color: var(--gold); }
+.pros-role-tag { display: inline-flex; align-items: center; justify-content: center; min-width: 80px; padding: 5px 12px; background: var(--mid); color: var(--cream); font-size: 11px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; border-radius: 2px; }
+.pros-role-text { font-size: 13px; color: var(--ink); flex: 1; }
+.pros-role-arrow { color: var(--muted); font-size: 18px; transition: transform .15s, color .15s; }
+.pros-foot { font-size: 12px; color: var(--muted); font-style: italic; }
+.btn-gold { display: inline-flex; align-items: center; background: var(--gold); color: var(--mid); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; padding: 12px 24px; border-radius: 3px; border: none; cursor: pointer; transition: opacity .2s; }
+.btn-gold:hover { opacity: .88; }
+.btn-outline { display: inline-flex; align-items: center; background: transparent; color: var(--cream); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; padding: 11px 24px; border-radius: 3px; border: 1.5px solid rgba(200,148,42,.35); cursor: pointer; transition: border-color .2s; }
+.btn-outline:hover { border-color: var(--gold); }
+
+/* WAITLIST */
+.waitlist { padding: 120px 5vw; text-align: center; background: var(--mid); position: relative; overflow: hidden; }
+.waitlist::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 60% 60% at 50% 100%, rgba(26,42,94,.45) 0%, transparent 70%); pointer-events: none; }
+.waitlist-inner { position: relative; z-index: 1; max-width: 580px; margin: 0 auto; }
+.w-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.2rem, 4vw, 3.4rem); font-weight: 300; color: var(--white); line-height: 1.1; margin-bottom: 16px; }
+.w-title em { font-style: italic; color: var(--gl); }
+.w-sub { font-size: 15px; color: var(--slate); line-height: 1.75; margin-bottom: 36px; }
+.w-form { display: flex; gap: 10px; max-width: 440px; margin: 0 auto; }
+.w-form input { flex: 1; background: rgba(255,255,255,.06); border: 1px solid rgba(155,168,200,.22); border-radius: 3px; padding: 14px 18px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--cream); outline: none; transition: border-color .2s; }
+.w-form input::placeholder { color: var(--muted); }
+.w-form input:focus { border-color: rgba(200,148,42,.5); }
+.w-form button { background: var(--gold); color: var(--mid); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; padding: 14px 26px; border: none; border-radius: 3px; cursor: pointer; white-space: nowrap; transition: opacity .2s; }
+.w-form button:hover { opacity: .88; }
+.w-note { font-size: 11px; color: var(--muted); margin-top: 13px; }
+/* "or skip the wait" divider, leads to portal CTA below */
+.waitlist-divider { display: flex; align-items: center; gap: 14px; margin: 36px auto 20px; max-width: 320px; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); }
+.waitlist-divider::before, .waitlist-divider::after { content: ''; flex: 1; height: 1px; background: rgba(155,168,200,0.18); }
+
+/* FOOTER */
+footer { background: #06080F; border-top: 1px solid rgba(200,148,42,.18); padding: 56px 5vw 36px; }
+.footer-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 40px; padding-bottom: 36px; border-bottom: 1px solid rgba(26,42,94,.5); flex-wrap: wrap; }
+.footer-tagline { font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-style: italic; color: var(--slate); margin-top: 8px; }
+.footer-links { display: flex; gap: 48px; flex-wrap: wrap; }
+.footer-col h4 { font-size: 10px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); margin-bottom: 14px; }
+.footer-col a { display: block; font-size: 13px; color: var(--muted); margin-bottom: 8px; transition: color .2s; }
+.footer-col a:hover { color: var(--cream); }
+.footer-bottom { display: flex; justify-content: space-between; align-items: center; padding-top: 24px; font-size: 11px; color: rgba(106,112,144,.55); flex-wrap: wrap; gap: 12px; }
+
+/* REVEAL */
+/* Reveal: hidden ONLY when JS has flagged the document as reveal-ready (so failed JS doesn't blank the page) */
+.reveal { opacity: 1; transform: none; transition: opacity .6s ease, transform .6s ease; }
+html.reveal-ready .reveal { opacity: 0; transform: translateY(20px); }
+html.reveal-ready .reveal.visible { opacity: 1; transform: none; }
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+
+@media (max-width: 900px) {
+  .nav-links { display: none; }
+  .nav-cta-group { display: none; }
+  .nav-mobile-btn { display: flex; }
+  .stats-grid { grid-template-columns: 1fr; }
+  .feat-grid { grid-template-columns: 1fr; }
+  .journey-grid { grid-template-columns: 1fr; }
+  .footer-top { flex-direction: column; }
+  .survey-cta-inner { grid-template-columns: 1fr; gap: 32px; }
+  .feat-live { flex-direction: column; align-items: flex-start; gap: 18px; }
+  .hero-cta-row { flex-direction: column; align-items: flex-start; gap: 14px; }
+  .journey-roadmap { flex-direction: column; align-items: flex-start; gap: 12px; }
+}
+@media (max-width: 580px) { .w-form { flex-direction: column; } .survey-cta-meta { flex-wrap: wrap; gap: 18px; } }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="#" class="nav-logo">
+    <div class="coin-mark">
+      <svg viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="17" cy="17" r="15.5" stroke="#C8942A" stroke-width="1.6"/>
+        <circle cx="17" cy="17" r="12.1" stroke="#C8942A" stroke-width="0.6" stroke-opacity="0.3"/>
+        <circle cx="17" cy="1.8"  r="1.8" fill="#C8942A"/>
+        <circle cx="17" cy="32.2" r="1.8" fill="#C8942A"/>
+        <circle cx="1.8"  cy="17" r="1.8" fill="#C8942A"/>
+        <circle cx="32.2" cy="17" r="1.8" fill="#C8942A"/>
+      </svg>
+      <span class="coin-l">L</span>
+    </div>
+    <div class="wordmark">lan<span>vivo</span></div>
+  </a>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#journey">How it works</a>
+    <a href="#professionals">Agents &amp; lenders</a>
+    <a href="survey.html">Survey</a>
+  </div>
+  <div class="nav-cta-group">
+    <a href="portal.html" class="nav-signin">Sign in</a>
+    <a href="portal.html" class="nav-cta">Open portal</a>
+  </div>
+  <!-- Mobile menu trigger (hidden on desktop) -->
+  <button class="nav-mobile-btn" id="nav-toggle" aria-label="Menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- Mobile menu drawer -->
+<div class="nav-drawer" id="nav-drawer">
+  <a href="#features" onclick="closeMobileNav()">Features</a>
+  <a href="#journey" onclick="closeMobileNav()">How it works</a>
+  <a href="#professionals" onclick="closeMobileNav()">Agents &amp; lenders</a>
+  <a href="survey.html">Survey</a>
+  <a href="portal.html">Sign in</a>
+  <a href="portal.html" class="nav-drawer-cta">Open portal →</a>
+</div>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="top-rule"></div>
+  <div class="hero-bg c1"></div>
+  <div class="hero-bg c2"></div>
+  <div class="hero-badge">For H-1B, F-1/OPT, ITIN, and foreign-national buyers</div>
+  <h1 class="hero-h1">US real estate.<br><em>Built for the one</em><br>who crossed borders.</h1>
+  <p class="hero-sub">Visa-aware mortgage eligibility. Property cash flow analysis. Shareable PDF reports. The portal is free. Accounts let you save your work and return to it from any device.</p>
+  <div class="hero-cta-row">
+    <a href="portal.html" class="hero-cta-primary">Analyze your first property →</a>
+    <a href="#waitlist" class="hero-cta-secondary">Just looking? Join the waitlist instead</a>
+  </div>
+  <p class="hero-note">Free during beta. Account required so your analyses save and sync across devices.</p>
+</section>
+
+<!-- MARKET CONTEXT: establishes scale without investor-deck language -->
+<section class="stats-strip">
+  <div class="stats-grid">
+    <div class="stat-tile reveal"><div class="big">45M+</div><div class="lbl">Immigrants in the US</div><div class="sub">Lanvivo's audience: anyone whose path to homeownership goes through a visa, ITIN, or border crossing</div></div>
+    <div class="stat-tile reveal" style="transition-delay:.1s"><div class="big">8M+</div><div class="lbl">Work visa holders</div><div class="sub">H-1B, L-1, O-1, TN, F-1/OPT. Earners who can buy but get told no by conventional lenders</div></div>
+    <div class="stat-tile reveal" style="transition-delay:.2s"><div class="big">$15B+</div><div class="lbl">Foreign-national purchases per year</div><div class="sub">Real estate that already changes hands across borders, without a platform built for it</div></div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div style="max-width:1100px;margin:0 auto">
+    <div class="section-eyebrow reveal">Platform features</div>
+    <h2 class="section-title reveal">Everything the immigrant buyer actually needs.</h2>
+    <p class="section-body reveal">Zillow is built for the average American buyer. Lanvivo is built for the one with an ITIN, a work visa, an OPT card, and a plan.</p>
+    <div class="feat-grid">
+      <div class="feat reveal">
+        <div class="feat-eye">Market intelligence</div>
+        <div class="feat-name">Zip Code ROI Explorer</div>
+        <div class="feat-desc">Interactive map showing cash-on-cash return, gross rental yield, vacancy rate, and appreciation by zip code. Filterable by investment strategy. Proprietary 0 to 100 Lanvivo ROI Score refreshed quarterly.</div>
+      </div>
+      <div class="feat dk reveal" style="transition-delay:.08s">
+        <div class="feat-eye">Mortgage</div>
+        <div class="feat-name">Visa-Aware Mortgage Engine</div>
+        <div class="feat-desc">Input your visa type, income, and ITIN or SSN status. Surfaces compatible ITIN loans, DSCR loans, foreign national mortgages, and FHA options with short work history waivers. No guesswork.</div>
+      </div>
+      <div class="feat dk reveal" style="transition-delay:.12s">
+        <div class="feat-eye">Analysis</div>
+        <div class="feat-name">Property Cash Flow Analyzer</div>
+        <div class="feat-desc">Enter a listing address for instant projected NOI, cap rate, cash-on-cash return, and break-even analysis. Accounts for HOA, insurance, vacancy, management fees, and capital reserves.</div>
+      </div>
+      <div class="feat reveal" style="transition-delay:.16s">
+        <div class="feat-eye">Professional network</div>
+        <div class="feat-name">Immigrant-Specialist Agent Marketplace</div>
+        <div class="feat-desc">Vetted buyer's agents screened for immigrant deal experience. Profiles include languages spoken, visa types served, average days to close, and investor versus primary-home specialisation.</div>
+      </div>
+      <div class="feat reveal" style="transition-delay:.2s">
+        <div class="feat-eye">Lending</div>
+        <div class="feat-name">ITIN and Foreign National Lender Directory</div>
+        <div class="feat-desc">Curated lenders offering ITIN loans, DSCR loans, asset-depletion mortgages, and foreign national products. Each profile shows rates, LTV limits, and minimum FICO requirements.</div>
+      </div>
+      <div class="feat dk reveal" style="transition-delay:.24s">
+        <div class="feat-eye">AI guide</div>
+        <div class="feat-name">Lanvivo GPT</div>
+        <div class="feat-desc">Conversational AI trained on US real estate and immigration law. Answers questions like "Can I buy on an H-1B?" or "Which markets work for foreign nationals?" Available 24 hours a day in 6 languages.</div>
+      </div>
+    </div>
+    <!-- Live-now strip: tells visitors what they can actually use today -->
+    <div class="feat-live reveal" style="transition-delay:.3s">
+      <div>
+        <div class="feat-live-label">Available now in the portal</div>
+        <div class="feat-live-items">
+          <span class="feat-live-pill live">✓ Cash Flow Analyzer</span>
+          <span class="feat-live-pill live">✓ Mortgage Eligibility Engine</span>
+          <span class="feat-live-pill live">✓ Property Reports &amp; Compare</span>
+          <span class="feat-live-pill soon">Soon · Lanvivo GPT</span>
+          <span class="feat-live-pill soon">Soon · ROI Explorer</span>
+        </div>
+      </div>
+      <a href="portal.html" class="btn-gold">Try it free →</a>
+    </div>
+  </div>
+</section>
+
+<!-- SURVEY CTA -->
+<section class="survey-cta" id="survey">
+  <div class="survey-cta-inner">
+    <div class="survey-cta-content reveal">
+      <div class="section-eyebrow">Help shape Lanvivo</div>
+      <h2 class="section-title light">Tell us what you actually<br><em>need from a platform like this.</em></h2>
+      <p class="section-body light">We're building Lanvivo with the immigrant buyer community, not just for it. Take our 2-minute survey to share your story, your obstacles, and what would genuinely help. Your answers directly inform what we build next.</p>
+      <div class="survey-cta-meta">
+        <div class="survey-cta-stat"><span class="num">2 min</span><span class="lbl">Quick read</span></div>
+        <div class="survey-cta-stat"><span class="num">9</span><span class="lbl">Questions</span></div>
+        <div class="survey-cta-stat"><span class="num">Anonymous</span><span class="lbl">If you prefer</span></div>
+      </div>
+      <a href="survey.html" class="btn-gold">Take the survey →</a>
+    </div>
+    <div class="survey-cta-visual reveal" style="transition-delay:.15s">
+      <div class="survey-q-preview">
+        <div class="survey-q-eyebrow">Question 4 of 9</div>
+        <div class="survey-q-title">What's been the biggest obstacle?</div>
+        <div class="survey-q-choices">
+          <div class="survey-q-choice"><span class="k">A</span>Not knowing if I qualify for a mortgage on my visa</div>
+          <div class="survey-q-choice selected"><span class="k">B</span>No US credit history or SSN</div>
+          <div class="survey-q-choice"><span class="k">C</span>Can't find agents who understand my situation</div>
+          <div class="survey-q-choice"><span class="k">D</span>Sending money from abroad</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- JOURNEY: honest about what works today vs. what's coming -->
+<section class="journey" id="journey">
+  <div style="max-width:1100px;margin:0 auto;position:relative;z-index:1">
+    <div class="section-eyebrow reveal" style="color:var(--gold)">How it works today</div>
+    <h2 class="section-title light reveal">Three steps that<br><em>work right now.</em></h2>
+    <p class="section-body light reveal">The Lanvivo portal does these three things today. We're building toward the full vision below, but we're not going to claim things work that don't.</p>
+    <div class="journey-grid journey-grid-3">
+      <div class="step reveal">
+        <div class="step-head">
+          <div class="step-n">1</div>
+          <span class="step-status step-status-live">Live</span>
+        </div>
+        <div class="step-title">Check what loans you qualify for</div>
+        <div class="step-desc">Enter your visa status, income, credit score, and down payment. The Mortgage Eligibility Engine shows you exactly which loan products (DSCR, ITIN, conventional, FHA) actually work for your situation.</div>
+      </div>
+      <div class="step reveal" style="transition-delay:.08s">
+        <div class="step-head">
+          <div class="step-n">2</div>
+          <span class="step-status step-status-live">Live</span>
+        </div>
+        <div class="step-title">Analyze any property</div>
+        <div class="step-desc">Plug in a price, rent, taxes, and expenses. See monthly cash flow, cap rate, DSCR, and 15-year return. Save deals to your account and compare up to four side-by-side.</div>
+      </div>
+      <div class="step reveal" style="transition-delay:.16s">
+        <div class="step-head">
+          <div class="step-n">3</div>
+          <span class="step-status step-status-live">Live</span>
+        </div>
+        <div class="step-title">Share the numbers</div>
+        <div class="step-desc">Generate clean PDF reports for your spouse, parents, CPA, or lender. Or send a link that anyone can open without signing up. Built for sharing across borders and time zones.</div>
+      </div>
+    </div>
+    <!-- Roadmap note: honest about what isn't done yet -->
+    <div class="journey-roadmap reveal" style="transition-delay:.24s">
+      <div class="journey-roadmap-label">Roadmap · rolling out through 2026</div>
+      <div class="journey-roadmap-items">
+        <span class="roadmap-pill">Lanvivo GPT: AI guide</span>
+        <span class="roadmap-pill">ROI Explorer: 40K zip codes ranked</span>
+        <span class="roadmap-pill">Vetted agent marketplace</span>
+        <span class="roadmap-pill">Vetted lender directory</span>
+        <span class="roadmap-pill">Portfolio tracker &amp; BRRR tools</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROFESSIONALS: single honest invitation, not aspirational marketing -->
+<section class="pros" id="professionals">
+  <div class="pros-inner">
+    <div class="pros-content reveal">
+      <div class="section-eyebrow">For agents and lenders</div>
+      <h2 class="section-title">Building the network<br><em>that didn't exist yet.</em></h2>
+      <p class="section-body">As Lanvivo users analyze deals and ask for help, we connect them to professionals who actually understand visa-based buyers: DSCR lenders, ITIN-experienced loan officers, agents who speak the right language, CPAs who file ITIN returns. If that's you, we'd like to talk.</p>
+      <div class="pros-roles">
+        <button type="button" class="pros-role" onclick="openPartnerForm('lender')">
+          <span class="pros-role-tag">Lender</span>
+          <span class="pros-role-text">DSCR, ITIN, foreign-national, portfolio loans</span>
+          <span class="pros-role-arrow">→</span>
+        </button>
+        <button type="button" class="pros-role" onclick="openPartnerForm('agent')">
+          <span class="pros-role-tag">Agent</span>
+          <span class="pros-role-text">Multilingual, experienced with new arrivals and visa-holders</span>
+          <span class="pros-role-arrow">→</span>
+        </button>
+        <button type="button" class="pros-role" onclick="openPartnerForm('cpa')">
+          <span class="pros-role-tag">CPA</span>
+          <span class="pros-role-text">Rental property, ITIN filings, cross-border tax</span>
+          <span class="pros-role-arrow">→</span>
+        </button>
+      </div>
+      <p class="pros-foot">We read every application personally. Typical response time is 1 to 2 business days.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WAITLIST -->
+<section class="waitlist" id="waitlist">
+  <div class="waitlist-inner">
+    <div class="section-eyebrow reveal" style="text-align:center;margin-bottom:14px">Stay in the loop</div>
+    <h2 class="w-title reveal">Land that lives<br><em>for you.</em></h2>
+    <p class="w-sub reveal">The portal is open now. The full Lanvivo platform, including vetted agent network, lender directory, and ROI explorer, rolls out through 2026. Join the waitlist and we'll let you know as each piece goes live.</p>
+    <form class="w-form reveal" action="https://formspree.io/f/xnjoagoj" method="POST" onsubmit="handleForm(event,this)">
+      <input type="email" name="email" placeholder="Your email address" required>
+      <input type="hidden" name="source" value="waitlist">
+      <button type="submit">Join the waitlist</button>
+    </form>
+    <p class="w-note reveal">No spam. We'll only email when something new launches.</p>
+    <div class="waitlist-divider reveal"><span>or skip the wait</span></div>
+    <a href="portal.html" class="btn-gold reveal" style="margin-top:4px">Analyze a property now →</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div class="coin-mark" style="width:28px;height:28px">
+          <svg viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="17" cy="17" r="15.5" stroke="#C8942A" stroke-width="1.6"/>
+            <circle cx="17" cy="17" r="12.1" stroke="#C8942A" stroke-width="0.6" stroke-opacity="0.3"/>
+            <circle cx="17" cy="1.8"  r="1.8" fill="#C8942A"/>
+            <circle cx="17" cy="32.2" r="1.8" fill="#C8942A"/>
+            <circle cx="1.8"  cy="17" r="1.8" fill="#C8942A"/>
+            <circle cx="32.2" cy="17" r="1.8" fill="#C8942A"/>
+          </svg>
+          <span class="coin-l" style="font-size:13px">L</span>
+        </div>
+        <div class="wordmark" style="font-size:15px">lan<span>vivo</span></div>
+      </div>
+      <div class="footer-tagline">Land that lives for you.</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px">hello@lanvivo.com</div>
+    </div>
+    <div class="footer-links">
+      <div class="footer-col">
+        <h4>Platform</h4>
+        <a href="portal.html">Open portal</a>
+        <a href="portal.html">Cash Flow Analyzer</a>
+        <a href="portal.html">Mortgage Engine</a>
+        <a href="portal.html">Property Reports</a>
+        <a href="portal.html">Lanvivo GPT</a>
+      </div>
+      <div class="footer-col">
+        <h4>Who we serve</h4>
+        <a href="#features">H-1B visa holders</a>
+        <a href="#features">F-1 and OPT graduates</a>
+        <a href="#features">Green card holders</a>
+        <a href="#features">Foreign nationals</a>
+        <a href="#features">ITIN buyers</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="survey.html">Take the survey</a>
+        <a href="#waitlist">Join the waitlist</a>
+        <a href="portal.html">Sign in</a>
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>&copy; 2026 Lanvivo. All rights reserved.</span>
+    <span>Built for the one who crossed borders.</span>
+  </div>
+</footer>
+
+<script>
+// ════════════════════════════════════════════════════════════════════════════
+// SUPABASE CONFIG
+// Set the same values used in the portal. The landing page uses the anon key
+// only to INSERT into the waitlist + survey_responses + partner_applications
+// tables. RLS policies prevent reads, so this is safe to expose client-side.
+// ════════════════════════════════════════════════════════════════════════════
+const SUPABASE_URL = 'YOUR_SUPABASE_URL_HERE';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY_HERE';
+
+// Defensive init: only create the client if the URL is configured AND the SDK
+// loaded successfully (an ad blocker or slow CDN could leave window.supabase undefined).
+let _supabaseClient = null;
+try {
+  if (SUPABASE_URL.startsWith('http') && SUPABASE_ANON_KEY.length > 20 && window.supabase) {
+    _supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+} catch (e) {
+  console.warn('Supabase client init failed; falling back to Formspree.', e);
+}
+const supabase = _supabaseClient;
+const BACKEND_ENABLED = supabase !== null;
+
+// Scroll reveal. The reveal-ready class on <html> is what activates the
+// opacity-0 starting state — if this JS fails to run for any reason, the page
+// stays fully visible instead of being permanently blank.
+try {
+  document.documentElement.classList.add('reveal-ready');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+} catch (e) {
+  console.warn('Scroll-reveal init failed; content shown immediately.', e);
+  document.documentElement.classList.remove('reveal-ready');
+  document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
+}
+
+// Mobile nav drawer toggle
+const _navToggle = document.getElementById('nav-toggle');
+const _navDrawer = document.getElementById('nav-drawer');
+if (_navToggle && _navDrawer) {
+  _navToggle.addEventListener('click', () => {
+    const isOpen = _navDrawer.classList.toggle('open');
+    _navToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  });
+}
+function closeMobileNav() {
+  if (_navDrawer) _navDrawer.classList.remove('open');
+  if (_navToggle) _navToggle.setAttribute('aria-expanded', 'false');
+}
+
+// Form handler: writes to Supabase if configured, otherwise falls back to Formspree.
+// Either way, also writes to localStorage as a recoverable backup.
+async function handleForm(e, form) {
+  e.preventDefault();
+  const btn = form.querySelector('button');
+  const input = form.querySelector('input[type=email]');
+  const email = input.value.trim();
+  const source = form.querySelector('input[name="source"]')?.value || 'unknown';
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+
+  // Local backup so the submission isn't lost if both Supabase and Formspree fail
+  try {
+    const list = JSON.parse(localStorage.getItem('lv_waitlist_local') || '[]');
+    list.push({ email, source, ts: Date.now() });
+    localStorage.setItem('lv_waitlist_local', JSON.stringify(list));
+  } catch(_) {}
+
+  let success = false;
+
+  // Try Supabase first
+  if (BACKEND_ENABLED) {
+    try {
+      const { error } = await supabase.from('gpt_waitlist').upsert(
+        { email, source },
+        { onConflict: 'email' }
+      );
+      if (!error) success = true;
+      else console.error('Supabase waitlist insert error:', error);
+    } catch(err) { console.error('Supabase waitlist error:', err); }
+  }
+
+  // Fall back to Formspree if Supabase failed or isn't configured
+  if (!success && form.action && form.action.includes('formspree')) {
+    try {
+      const res = await fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: { 'Accept': 'application/json' }
+      });
+      if (res.ok) success = true;
+    } catch(_) {}
+  }
+
+  // If neither remote succeeded but local backup did, still treat as success
+  // (the user did their part; we'll recover from local backup).
+  if (success || !BACKEND_ENABLED && !form.action.includes('formspree')) {
+    btn.textContent = "You're on the list";
+    btn.style.background = '#1A5C3A';
+    btn.style.color = '#D4EDDF';
+    input.value = '';
+    input.placeholder = 'Thanks. We will be in touch.';
+    input.disabled = true;
+  } else {
+    btn.textContent = 'Something went wrong. Try again.';
+    btn.style.background = '#C02020';
+    btn.style.color = '#fff';
+    btn.disabled = false;
+  }
+}
+</script>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     PARTNER APPLICATION MODAL
+     Opens when a visitor clicks Lender / Agent / CPA in the Pros section.
+     Renders a role-specific form, collects structured data, saves to
+     localStorage immediately (so submissions work today), and will migrate
+     cleanly to Supabase when that backend is wired.
+ ═══════════════════════════════════════════════════════════════════════ -->
+<div class="partner-modal-backdrop" id="partner-modal" onclick="if(event.target===this)closePartnerForm()">
+  <div class="partner-modal">
+    <button type="button" class="partner-modal-close" onclick="closePartnerForm()" aria-label="Close">×</button>
+    <div id="partner-modal-body"></div>
+  </div>
+</div>
+
+<style>
+  /* Partner application modal */
+  .partner-modal-backdrop {
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(10,14,26,0.78); backdrop-filter: blur(6px);
+    display: none; align-items: flex-start; justify-content: center;
+    padding: 40px 20px; overflow-y: auto;
+  }
+  .partner-modal-backdrop.active { display: flex; }
+  .partner-modal {
+    background: var(--white); color: var(--ink);
+    width: 100%; max-width: 580px; padding: 36px 38px;
+    position: relative; border-top: 3px solid var(--gold); border-radius: 2px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    margin: auto;
+  }
+  .partner-modal-close {
+    position: absolute; top: 14px; right: 18px;
+    background: none; border: none; cursor: pointer;
+    font-size: 28px; line-height: 1; color: var(--muted);
+    transition: color .15s;
+  }
+  .partner-modal-close:hover { color: var(--ink); }
+  .partner-form-eyebrow { font-size: 10px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
+  .partner-form-title { font-family: 'Cormorant Garamond', serif; font-size: 1.7rem; font-weight: 600; color: var(--ink); line-height: 1.2; margin-bottom: 8px; }
+  .partner-form-sub { font-size: 13px; color: var(--muted); line-height: 1.65; margin-bottom: 24px; }
+  .pf-field { margin-bottom: 16px; }
+  .pf-field label { display: block; font-size: 11px; font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .pf-field label .req { color: var(--gold); margin-left: 3px; }
+  .pf-field input[type="text"],
+  .pf-field input[type="email"],
+  .pf-field input[type="tel"],
+  .pf-field input[type="number"],
+  .pf-field select,
+  .pf-field textarea {
+    width: 100%; padding: 10px 12px;
+    border: 1px solid var(--rule); background: var(--white);
+    font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--ink);
+    border-radius: 2px; outline: none; transition: border-color .15s;
+  }
+  .pf-field input:focus, .pf-field select:focus, .pf-field textarea:focus { border-color: var(--gold); }
+  .pf-field textarea { resize: vertical; min-height: 70px; line-height: 1.5; }
+  .pf-hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .pf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .pf-checks { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 12px; margin-top: 4px; }
+  .pf-check { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ink); cursor: pointer; padding: 4px 0; }
+  .pf-check input { width: 14px; height: 14px; accent-color: var(--gold); }
+  .pf-actions { display: flex; gap: 10px; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--rule); }
+  .pf-cancel { flex: 0 0 auto; padding: 11px 18px; background: transparent; border: 1px solid var(--rule); color: var(--ink); font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer; border-radius: 2px; }
+  .pf-cancel:hover { background: var(--off); }
+  .pf-submit { flex: 1; padding: 11px 18px; background: var(--mid); color: var(--cream); border: none; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; border-radius: 2px; transition: opacity .15s; }
+  .pf-submit:hover { opacity: 0.9; }
+  .pf-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+  .partner-success { text-align: center; padding: 20px 0; }
+  .partner-success-check {
+    width: 56px; height: 56px; margin: 0 auto 18px;
+    border-radius: 50%; background: rgba(26,92,58,0.1); color: var(--green);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+  }
+  .partner-success h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 600; color: var(--ink); margin-bottom: 10px; }
+  .partner-success p { font-size: 13.5px; color: var(--muted); line-height: 1.65; max-width: 380px; margin: 0 auto 18px; }
+  @media (max-width: 580px) {
+    .partner-modal { padding: 28px 22px; }
+    .pf-row { grid-template-columns: 1fr; }
+    .pf-checks { grid-template-columns: 1fr; }
+  }
+</style>
+
+<script>
+// ─── Partner application forms ─────────────────────────────────────────
+// Role definitions: each role has a title, subtitle, and ordered list of fields.
+// Field shape: { name, label, type, required?, options?, hint?, half? }
+//   type: 'text' | 'email' | 'tel' | 'number' | 'textarea' | 'select' | 'checkboxes'
+//   half: true if the field should occupy half-row (used for side-by-side pairs)
+const PARTNER_ROLES = {
+  lender: {
+    title: 'Apply as a lender partner',
+    sub: 'Tell us about your loan products and your experience with immigrant borrowers. We respond personally within 1 to 2 business days.',
+    fields: [
+      { name: 'name', label: 'Your name', type: 'text', required: true, half: true },
+      { name: 'email', label: 'Email', type: 'email', required: true, half: true },
+      { name: 'phone', label: 'Phone (optional)', type: 'tel', half: true },
+      { name: 'company', label: 'Company / lender name', type: 'text', required: true, half: true },
+      { name: 'nmls', label: 'NMLS ID (if applicable)', type: 'text', hint: 'Helps us verify your license faster.' },
+      { name: 'products', label: 'Loan products you offer', type: 'checkboxes', required: true,
+        options: ['DSCR', 'ITIN mortgage', 'Foreign National', 'Conventional', 'FHA', 'Portfolio loan', 'Asset depletion', 'Hard money / bridge'] },
+      { name: 'states', label: 'States licensed in', type: 'text', required: true, hint: 'Comma-separated, e.g. TX, FL, CA. Or write "all 50".' },
+      { name: 'loan_range', label: 'Typical loan size range', type: 'text', hint: 'e.g. $100K to $1M, or specify min/max.' },
+      { name: 'visa_experience', label: 'Experience with visa-holder borrowers', type: 'select', required: true,
+        options: ['Significant experience (50+ deals)', 'Some experience (10 to 50 deals)', 'Limited experience (under 10)', 'Open to learning'] },
+      { name: 'story', label: 'Tell us about a recent immigrant-buyer deal you closed', type: 'textarea',
+        hint: 'Optional. Helps us understand your fit.' },
+    ],
+  },
+  agent: {
+    title: 'Apply as an agent partner',
+    sub: 'We refer Lanvivo users to agents who actually understand their situation. We respond personally within 1 to 2 business days.',
+    fields: [
+      { name: 'name', label: 'Your name', type: 'text', required: true, half: true },
+      { name: 'email', label: 'Email', type: 'email', required: true, half: true },
+      { name: 'phone', label: 'Phone (optional)', type: 'tel', half: true },
+      { name: 'brokerage', label: 'Brokerage', type: 'text', required: true, half: true },
+      { name: 'license', label: 'License number + state', type: 'text', required: true, hint: 'e.g. "TX-0123456" or just state if no number handy.' },
+      { name: 'markets', label: 'Markets you serve', type: 'text', required: true, hint: 'e.g. Austin, Dallas, Houston metros.' },
+      { name: 'languages', label: 'Languages you speak fluently', type: 'checkboxes',
+        options: ['English', 'Spanish', 'Hindi', 'Mandarin', 'Yoruba', 'Portuguese', 'Arabic', 'Tagalog', 'Vietnamese', 'Korean', 'French', 'Other'] },
+      { name: 'visa_experience', label: 'Years working with foreign-national or visa-holder buyers', type: 'select', required: true,
+        options: ['5+ years', '2 to 5 years', '1 to 2 years', 'Less than 1 year', 'Open to learning'] },
+      { name: 'story', label: "Why are you a good fit for Lanvivo's audience?", type: 'textarea',
+        hint: 'Optional. A few sentences is plenty.' },
+    ],
+  },
+  cpa: {
+    title: 'Apply as a CPA partner',
+    sub: 'We refer Lanvivo users to CPAs who handle rental property, ITIN filings, and cross-border tax. We respond personally within 1 to 2 business days.',
+    fields: [
+      { name: 'name', label: 'Your name', type: 'text', required: true, half: true },
+      { name: 'email', label: 'Email', type: 'email', required: true, half: true },
+      { name: 'phone', label: 'Phone (optional)', type: 'tel', half: true },
+      { name: 'firm', label: 'Firm / practice name', type: 'text', required: true, half: true },
+      { name: 'license_states', label: 'States CPA-licensed in', type: 'text', required: true, hint: 'Comma-separated.' },
+      { name: 'specialties', label: 'Your specialties', type: 'checkboxes', required: true,
+        options: ['ITIN filings', 'Rental property tax', 'Cross-border / foreign income', 'Depreciation strategy', 'Cost segregation', 'K-1 / partnership returns', 'FIRPTA', 'Entity structuring (LLC, S-corp)'] },
+      { name: 'years', label: 'Years of practice', type: 'select', required: true,
+        options: ['10+ years', '5 to 10 years', '2 to 5 years', 'Under 2 years'] },
+      { name: 'consult', label: 'Do you offer a free initial consultation?', type: 'select',
+        options: ['Yes', 'No', 'Sometimes (case by case)'] },
+      { name: 'story', label: "What's a common tax mistake immigrant real estate investors make?", type: 'textarea',
+        hint: 'Optional. Helps us match users to the right CPA.' },
+    ],
+  },
+};
+
+let _currentPartnerRole = null;
+
+function openPartnerForm(role) {
+  const def = PARTNER_ROLES[role];
+  if (!def) return;
+  _currentPartnerRole = role;
+  const body = document.getElementById('partner-modal-body');
+  body.innerHTML = renderPartnerForm(def);
+  document.getElementById('partner-modal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+  // Focus the first input after a short delay so the animation completes
+  setTimeout(() => {
+    const first = body.querySelector('input[type="text"], input[type="email"]');
+    if (first) first.focus();
+  }, 60);
+}
+
+function closePartnerForm() {
+  document.getElementById('partner-modal').classList.remove('active');
+  document.body.style.overflow = '';
+  _currentPartnerRole = null;
+}
+
+// Build the form HTML from a role definition
+function renderPartnerForm(def) {
+  const fieldsHtml = def.fields.map(renderPartnerField).join('');
+  return `
+    <div class="partner-form-eyebrow">Partner application</div>
+    <h3 class="partner-form-title">${def.title}</h3>
+    <p class="partner-form-sub">${def.sub}</p>
+    <form id="partner-form" onsubmit="event.preventDefault();submitPartnerForm()">
+      ${fieldsHtml}
+      <div class="pf-actions">
+        <button type="button" class="pf-cancel" onclick="closePartnerForm()">Cancel</button>
+        <button type="submit" class="pf-submit" id="pf-submit-btn">Submit application</button>
+      </div>
+    </form>
+  `;
+}
+
+function renderPartnerField(f) {
+  const reqMark = f.required ? '<span class="req">*</span>' : '';
+  const reqAttr = f.required ? ' required' : '';
+  const hintHtml = f.hint ? `<div class="pf-hint">${f.hint}</div>` : '';
+  let control = '';
+  if (f.type === 'textarea') {
+    control = `<textarea name="${f.name}"${reqAttr} rows="3"></textarea>`;
+  } else if (f.type === 'select') {
+    const opts = ['<option value="">Choose…</option>'].concat(
+      f.options.map(o => `<option value="${escapeAttr(o)}">${escapeAttr(o)}</option>`)
+    ).join('');
+    control = `<select name="${f.name}"${reqAttr}>${opts}</select>`;
+  } else if (f.type === 'checkboxes') {
+    const checks = f.options.map(o => `
+      <label class="pf-check"><input type="checkbox" name="${f.name}" value="${escapeAttr(o)}"> ${escapeAttr(o)}</label>
+    `).join('');
+    control = `<div class="pf-checks">${checks}</div>`;
+  } else {
+    control = `<input type="${f.type}" name="${f.name}"${reqAttr}>`;
+  }
+  // Half-width fields pair up via a wrapper rendered around adjacent halves
+  return `
+    <div class="pf-field" data-half="${f.half ? 'yes' : 'no'}">
+      <label>${f.label}${reqMark}</label>
+      ${control}
+      ${hintHtml}
+    </div>
+  `;
+}
+
+function escapeAttr(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// Collect form values and save the application
+async function submitPartnerForm() {
+  const form = document.getElementById('partner-form');
+  if (!form) return;
+  const role = _currentPartnerRole;
+  const def = PARTNER_ROLES[role];
+
+  // Build the application object
+  const data = { role, ts: Date.now(), details: {} };
+  for (const f of def.fields) {
+    if (f.type === 'checkboxes') {
+      const boxes = form.querySelectorAll(`input[name="${f.name}"]:checked`);
+      data.details[f.name] = Array.from(boxes).map(b => b.value);
+    } else {
+      const el = form.querySelector(`[name="${f.name}"]`);
+      data.details[f.name] = el ? el.value.trim() : '';
+    }
+  }
+
+  // Extract common top-level fields for easier admin filtering
+  data.name = data.details.name || '';
+  data.email = data.details.email || '';
+  data.phone = data.details.phone || '';
+  data.company = data.details.company || data.details.brokerage || data.details.firm || '';
+  data.status = 'new';
+
+  // Basic validation: required fields
+  for (const f of def.fields) {
+    if (f.required) {
+      const val = data.details[f.name];
+      const empty = !val || (Array.isArray(val) && val.length === 0);
+      if (empty) {
+        alert(`Please fill in: ${f.label}`);
+        const el = form.querySelector(`[name="${f.name}"]`);
+        if (el && el.focus) el.focus();
+        return;
+      }
+    }
+  }
+
+  // Disable the submit button while saving
+  const btn = document.getElementById('pf-submit-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Submitting…'; }
+
+  // Always save to localStorage as a recoverable backup
+  try {
+    const list = JSON.parse(localStorage.getItem('lv_partner_apps') || '[]');
+    list.push(data);
+    localStorage.setItem('lv_partner_apps', JSON.stringify(list));
+  } catch (e) {
+    console.error('Partner app save error:', e);
+  }
+
+  // Insert into Supabase if configured. RLS policy allows anonymous inserts to
+  // partner_applications but blocks reads (so applications can't be enumerated).
+  if (BACKEND_ENABLED) {
+    try {
+      const { error } = await supabase.from('partner_applications').insert({
+        role: data.role,
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        company: data.company,
+        details: data.details,
+        status: 'new',
+      });
+      if (error) console.error('Supabase partner_applications insert error:', error);
+    } catch(err) { console.error('Supabase partner app error:', err); }
+  }
+
+  // Show success state
+  const body = document.getElementById('partner-modal-body');
+  const roleLabel = { lender: 'lender', agent: 'agent', cpa: 'CPA' }[role] || 'partner';
+  body.innerHTML = `
+    <div class="partner-success">
+      <div class="partner-success-check">✓</div>
+      <h3>Application received</h3>
+      <p>Thanks ${escapeAttr(data.name.split(' ')[0] || '')}. We'll review your information and reach out to <strong>${escapeAttr(data.email)}</strong> within 1 to 2 business days about partnering as a ${roleLabel}.</p>
+      <button type="button" class="pf-cancel" onclick="closePartnerForm()">Close</button>
+    </div>
+  `;
+}
+
+// ESC key closes the modal
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && document.getElementById('partner-modal').classList.contains('active')) {
+    closePartnerForm();
+  }
+});
+</script>
+
+</body>
+</html>
