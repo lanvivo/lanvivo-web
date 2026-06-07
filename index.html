@@ -464,7 +464,7 @@ html.reveal-ready .reveal.visible { opacity: 1; transform: none; }
     <div class="section-eyebrow reveal" style="text-align:center;margin-bottom:14px">Stay in the loop</div>
     <h2 class="w-title reveal">Land that lives<br><em>for you.</em></h2>
     <p class="w-sub reveal">The portal is open now. The full Lanvivo platform, including vetted agent network, lender directory, and ROI explorer, rolls out through 2026. Join the waitlist and we'll let you know as each piece goes live.</p>
-    <form class="w-form reveal" action="https://formspree.io/f/xnjoagoj" method="POST" onsubmit="handleForm(event,this)">
+    <form class="w-form reveal" onsubmit="handleForm(event,this)">
       <input type="email" name="email" placeholder="Your email address" required>
       <input type="hidden" name="source" value="waitlist">
       <button type="submit">Join the waitlist</button>
@@ -588,20 +588,20 @@ async function handleForm(e, form) {
   const btn = form.querySelector('button');
   const input = form.querySelector('input[type=email]');
   const email = input.value.trim();
-  const source = form.querySelector('input[name="source"]')?.value || 'unknown';
+  const source = form.querySelector('input[name="source"]')?.value || 'waitlist';
+  if (!email) return;
   btn.textContent = 'Sending...';
   btn.disabled = true;
 
-  // Local backup so the submission isn't lost if both Supabase and Formspree fail
+  // Always save locally as a backup
   try {
     const list = JSON.parse(localStorage.getItem('lv_waitlist_local') || '[]');
     list.push({ email, source, ts: Date.now() });
     localStorage.setItem('lv_waitlist_local', JSON.stringify(list));
   } catch(_) {}
 
+  // Submit to Supabase
   let success = false;
-
-  // Try Supabase first
   if (BACKEND_ENABLED) {
     try {
       const { error } = await supabase.from('gpt_waitlist').upsert(
@@ -609,25 +609,14 @@ async function handleForm(e, form) {
         { onConflict: 'email' }
       );
       if (!error) success = true;
-      else console.error('Supabase waitlist insert error:', error);
-    } catch(err) { console.error('Supabase waitlist error:', err); }
+      else console.error('Waitlist insert error:', error);
+    } catch(err) { console.error('Waitlist error:', err); }
+  } else {
+    // Supabase not yet configured — local backup is the record, treat as success
+    success = true;
   }
 
-  // Fall back to Formspree if Supabase failed or isn't configured
-  if (!success && form.action && form.action.includes('formspree')) {
-    try {
-      const res = await fetch(form.action, {
-        method: 'POST',
-        body: new FormData(form),
-        headers: { 'Accept': 'application/json' }
-      });
-      if (res.ok) success = true;
-    } catch(_) {}
-  }
-
-  // If neither remote succeeded but local backup did, still treat as success
-  // (the user did their part; we'll recover from local backup).
-  if (success || !BACKEND_ENABLED && !form.action.includes('formspree')) {
+  if (success) {
     btn.textContent = "You're on the list";
     btn.style.background = '#1A5C3A';
     btn.style.color = '#D4EDDF';
