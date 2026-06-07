@@ -40,7 +40,7 @@ body{font-family:'DM Sans',sans-serif;font-weight:300;background:var(--bg);color
 .wordmark span{color:var(--gold-l)}
 .auth-tagline{font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;color:rgba(200,210,230,0.85);margin-left:2px}
 .auth-tabs{display:flex;background:rgba(255,255,255,0.08);border-radius:4px;padding:3px;margin-bottom:28px}
-.auth-tab{flex:1;padding:9px;text-align:center;font-size:13px;font-weight:500;color:rgba(200,210,230,0.85);cursor:pointer;border-radius:3px;transition:all .2s}
+.auth-tab{flex:1;padding:9px;text-align:center;font-size:13px;font-weight:500;color:rgba(200,210,230,0.85);cursor:pointer;border-radius:3px;transition:all .2s;background:none;border:none;font-family:'DM Sans',sans-serif}
 .auth-tab.active{background:rgba(255,255,255,0.15);color:#ffffff}
 .auth-card{background:#ffffff;border:1px solid var(--rule);padding:32px}
 .auth-card h2{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;color:var(--ink);margin-bottom:4px}
@@ -932,8 +932,8 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
     </div>
 
     <div class="auth-tabs">
-      <div class="auth-tab active" onclick="switchAuthTab('login')">Sign in</div>
-      <div class="auth-tab" onclick="switchAuthTab('signup')">Create account</div>
+      <button type="button" class="auth-tab active" onclick="switchAuthTab('login')">Sign in</button>
+      <button type="button" class="auth-tab" onclick="switchAuthTab('signup')">Create account</button>
     </div>
 
     <!-- Login -->
@@ -944,11 +944,11 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
         <div id="login-error" class="auth-error"></div>
         <div class="field">
           <label>Email address</label>
-          <input type="email" id="login-email" placeholder="you@email.com">
+          <input type="email" id="login-email" placeholder="you@email.com" onkeydown="if(event.key==='Enter')handleLogin()">
         </div>
         <div class="field">
           <label>Password</label>
-          <input type="password" id="login-password" placeholder="••••••••">
+          <input type="password" id="login-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')handleLogin()">
         </div>
         <button class="btn-primary" onclick="handleLogin()">Sign in →</button>
         <div class="auth-divider"><span>or</span></div>
@@ -979,7 +979,7 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
         </div>
         <div class="field">
           <label>Password</label>
-          <input type="password" id="signup-password" placeholder="At least 8 characters">
+          <input type="password" id="signup-password" placeholder="At least 8 characters" onkeydown="if(event.key==='Enter')handleSignup()">
         </div>
         <div class="auth-plans" style="display:none">
           <div style="font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--slate);margin-bottom:10px">Choose your plan</div>
@@ -1489,16 +1489,30 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
 // at the database level enforce that users can only read/write their own data.
 // NEVER paste the service_role key here.
 const SUPABASE_URL = 'https://fumqbfxvtusnslkvacdz.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ1bXFiZnh2dHVzbnNsa3ZhY2R6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4NTczNjQsImV4cCI6MjA5NjQzMzM2NH0.w-yfWcBiFZJnosq7PQPxBIqGS2JZKxpHE-MqmCGwegE
-';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ1bXFiZnh2dHVzbnNsa3ZhY2R6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4NTczNjQsImV4cCI6MjA5NjQzMzM2NH0.w-yfWcBiFZJnosq7PQPxBIqGS2JZKxpHE-MqmCGwegE';
 
-// Initialize the Supabase client. If credentials aren't set, supabase is null and the portal
-// falls back to localStorage-only mode (useful for local testing without a Supabase project).
-const supabase = (SUPABASE_URL.startsWith('http') && SUPABASE_ANON_KEY.length > 20)
-  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+// Initialize Supabase client defensively. Three things must all be true:
+// 1. Real credentials are configured (not the placeholder values)
+// 2. The Supabase JS SDK loaded successfully from the CDN (window.supabase exists)
+// 3. The createClient call itself doesn't throw
+// If any of these fail, supabase is null and the portal runs in localStorage-only mode.
+let supabase = null;
+try {
+  if (
+    SUPABASE_URL.startsWith('http') &&
+    SUPABASE_ANON_KEY.length > 20 &&
+    typeof window !== 'undefined' &&
+    window.supabase &&
+    typeof window.supabase.createClient === 'function'
+  ) {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
-    })
-  : null;
+    });
+  }
+} catch (e) {
+  console.warn('Supabase client init failed. Portal will run in local mode.', e);
+  supabase = null;
+}
 
 const BACKEND_ENABLED = supabase !== null;
 
@@ -1846,9 +1860,24 @@ let chatHistory = [];
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
 function switchAuthTab(tab) {
-  document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active', (tab==='login'&&i===0)||(tab==='signup'&&i===1)));
-  document.getElementById('login-form').style.display  = tab==='login'  ? 'block' : 'none';
-  document.getElementById('signup-form').style.display = tab==='signup' ? 'block' : 'none';
+  const loginForm  = document.getElementById('login-form');
+  const signupForm = document.getElementById('signup-form');
+  const tabs       = document.querySelectorAll('.auth-tab');
+  if (!loginForm || !signupForm) return;
+
+  if (tab === 'signup') {
+    loginForm.style.display  = 'none';
+    signupForm.style.display = 'block';
+  } else {
+    loginForm.style.display  = 'block';
+    signupForm.style.display = 'none';
+  }
+  tabs.forEach((t, i) => {
+    t.classList.toggle('active', (tab === 'login' && i === 0) || (tab === 'signup' && i === 1));
+  });
+  // Scroll to top of auth box so the full form is visible after switching
+  const box = document.querySelector('.auth-box');
+  if (box) box.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function selectPlan(plan, el) {
