@@ -536,8 +536,8 @@ html.reveal-ready .reveal.visible { opacity: 1; transform: none; }
 // only to INSERT into the waitlist + survey_responses + partner_applications
 // tables. RLS policies prevent reads, so this is safe to expose client-side.
 // ════════════════════════════════════════════════════════════════════════════
-const SUPABASE_URL = 'YOUR_SUPABASE_URL_HERE';
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY_HERE';
+const SUPABASE_URL = 'https://fumqbfxvtusnslkvacdz.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ1bXFiZnh2dHVzbnNsa3ZhY2R6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4NTczNjQsImV4cCI6MjA5NjQzMzM2NH0.w-yfWcBiFZJnosq7PQPxBIqGS2JZKxpHE-MqmCGwegE';
 
 // Defensive init: only create the client if the URL is configured AND the SDK
 // loaded successfully (an ad blocker or slow CDN could leave window.supabase undefined).
