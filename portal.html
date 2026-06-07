@@ -317,6 +317,12 @@ body.dark .dash-recent-card .recent-metric-val{color:#F5F0E4}
 .form-field select option{background:#fff;color:var(--ink)}
 .btn-analyze{width:100%;background:var(--deep);color:#ffffff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:12px;border:none;border-radius:3px;cursor:pointer;transition:opacity .2s;margin-top:8px}
 .btn-analyze:hover{opacity:.88}
+/* Toast notifications */
+#toast-container{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:10px;align-items:center;pointer-events:none}
+.toast{background:#1A2A5E;color:#ffffff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:400;padding:12px 22px;border-radius:4px;box-shadow:0 4px 20px rgba(0,0,0,0.35);opacity:0;transform:translateY(12px);transition:all .25s ease;pointer-events:none;max-width:360px;text-align:center;border-left:3px solid var(--gold-l)}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.toast-success{border-left-color:#2E7D52;background:#0F2A1A}
+.toast.toast-error{border-left-color:#C02020;background:#2A0F0F}
 .tool-results{background:var(--surface);border:1px solid var(--rule);padding:24px;overflow-y:auto;box-shadow:0 1px 3px rgba(26,42,94,0.06)}
 .results-placeholder{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--muted)}
 .results-placeholder .icon{font-size:3rem;margin-bottom:12px;opacity:.35}
@@ -918,6 +924,8 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
 <!-- ══════════════════════════════════════════
      AUTH SCREEN
 ══════════════════════════════════════════ -->
+<div id="toast-container"></div>
+
 <div id="auth-screen" class="screen active">
   <div class="auth-box">
     <div class="auth-logo">
@@ -1516,6 +1524,24 @@ try {
 
 const BACKEND_ENABLED = supabase !== null;
 
+// ── Toast notifications ──────────────────────────────────────────────────────
+// Call showToast('Message') anywhere to give users visible feedback.
+// type: 'default' | 'success' | 'error'
+function showToast(message, type = 'default', duration = 3500) {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+  const toast = document.createElement('div');
+  toast.className = `toast${type === 'success' ? ' toast-success' : type === 'error' ? ' toast-error' : ''}`;
+  toast.textContent = message;
+  container.appendChild(toast);
+  // Trigger animation
+  requestAnimationFrame(() => requestAnimationFrame(() => toast.classList.add('show')));
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, duration);
+}
+
 // ── Supabase wrapper layer ─────────────────────────────────────────────────
 // All data access goes through these helpers. They handle:
 //   - falling back to localStorage when BACKEND_ENABLED is false
@@ -1901,9 +1927,12 @@ async function handleLogin() {
   if (btn) { btn.disabled = false; btn.textContent = 'Sign in →'; }
   if (error) {
     errEl.textContent = error.message || 'Sign-in failed. Check your credentials.';
-    errEl.style.display = 'block'; return;
+    errEl.style.display = 'block';
+    showToast('Sign-in failed. Check your credentials.', 'error');
+    return;
   }
   if (user) {
+    showToast('Welcome back!', 'success');
     await afterLogin();
   }
 }
@@ -1937,15 +1966,16 @@ async function handleSignup() {
   if (error) {
     errEl.textContent = error.message || 'Sign-up failed. Try again or use a different email.';
     errEl.style.display = 'block';
+    showToast(error.message || 'Sign-up failed. Try again.', 'error');
     return;
   }
   if (needsConfirmation) {
     sucEl.textContent = `Check your inbox at ${email} for a confirmation link before signing in.`;
     sucEl.style.display = 'block';
+    showToast(`Check your inbox at ${email} to confirm your account.`, 'default', 6000);
     return;
   }
-  sucEl.textContent = `Account created. Signing you in...`;
-  sucEl.style.display = 'block';
+  showToast('Account created! Signing you in...', 'success');
   await afterLogin();
 }
 
@@ -2439,6 +2469,7 @@ async function submitLead() {
 
   // Dismiss this CTA so the same one doesn't keep appearing after the user has acted on it
   dismissCTA(currentLeadCta.id);
+  showToast('Request received. We\'ll be in touch shortly.', 'success');
 
   // Show success state inside the modal
   const body = document.getElementById('lead-modal-body');
@@ -3023,12 +3054,13 @@ async function saveCurrentProperty(evt) {
     const saved = await db.saveProperty(entry);
     editingPropertyId = saved.id;
   } catch(e) {
-    alert('Could not save right now. Your work is preserved, try again in a moment.');
+    showToast('Could not save right now. Try again in a moment.', 'error');
     return;
   }
   await refreshProperties();
   updateSaveButtonsForMode();
   flashButton(evt && evt.target, '✓ Saved');
+  showToast('Property saved.', 'success');
 }
 
 // Replaces the saved property's inputs/metrics with the current form state.
@@ -4322,6 +4354,7 @@ async function submitGptWaitlist(evt) {
   msgEl.style.display = 'block';
   msgEl.style.color = '#2E7D52';
   msgEl.textContent = `✓ You're on the list. We'll email ${email} when Lanvivo GPT goes live.`;
+  showToast(`You're on the list!`, 'success');
   emailEl.value = '';
   return false;
 }
@@ -4332,18 +4365,25 @@ async function submitGptWaitlist(evt) {
   // and short-circuit the normal login/portal flow.
   if (checkForSharedReport()) return;
 
-  // Try to restore an existing session. db.getCurrentSession() handles both Supabase
-  // (auto-refreshes JWTs) and the localStorage fallback when Supabase isn't configured.
-  const session = await db.getCurrentSession();
-  if (session && currentUser) {
-    // Plan consolidation migration: legacy free/pro accounts get bumped to investor on login
-    if (currentUser.plan !== 'investor') {
-      currentUser.plan = 'investor';
-      if (!BACKEND_ENABLED) localStorage.setItem('lv_user', JSON.stringify(currentUser));
+  try {
+    // Try to restore an existing session. db.getCurrentSession() handles both Supabase
+    // (auto-refreshes JWTs) and the localStorage fallback when Supabase isn't configured.
+    const session = await db.getCurrentSession();
+    if (session && currentUser) {
+      // Plan consolidation migration: legacy free/pro accounts get bumped to investor on login
+      if (currentUser.plan !== 'investor') {
+        currentUser.plan = 'investor';
+        if (!BACKEND_ENABLED) localStorage.setItem('lv_user', JSON.stringify(currentUser));
+      }
+      await initPortal();
+      // If this is the first login after the Supabase migration, offer to import local data
+      maybeShowMigrationPrompt();
     }
-    initPortal();
-    // If this is the first login after the Supabase migration, offer to import local data
-    maybeShowMigrationPrompt();
+  } catch(e) {
+    // If Supabase is unreachable on load (CORS, network, tables not yet created),
+    // log the error but leave the auth screen visible so the user can still log in.
+    // The portal degrades to localStorage mode automatically.
+    console.error('Portal init error:', e);
   }
 })();
 
