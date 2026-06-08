@@ -473,6 +473,38 @@ body.dark .edit-banner .edit-msg{color:#F5F0E4}
 .prop-action-btn{background:transparent;border:1px solid var(--rule);padding:6px 10px;border-radius:3px;font-size:11px;color:var(--ink);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
 .prop-action-btn:hover{background:var(--bg);border-color:var(--gold)}
 .prop-action-btn.danger:hover{border-color:#C62828;color:#C62828}
+.prop-action-btn.bought{border-color:rgba(46,125,82,0.4);color:#2E7D52}
+.prop-action-btn.bought:hover{background:rgba(46,125,82,0.08);border-color:#2E7D52}
+.prop-action-btn.mgmt{border-color:var(--gold);color:var(--gold);font-weight:500}
+.prop-action-btn.mgmt:hover{background:rgba(184,130,30,0.08)}
+.owned-badge{display:inline-block;background:rgba(46,125,82,0.12);color:#2E7D52;border:1px solid rgba(46,125,82,0.25);border-radius:4px;font-size:10px;font-weight:600;letter-spacing:.04em;padding:2px 7px;text-transform:uppercase}
+.owned-row td{background:rgba(46,125,82,0.03)}
+.prop-section-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--rule)}
+.prop-section-count{font-weight:400;color:var(--muted);margin-left:4px}
+.owned-section-intro{font-size:13px;color:var(--muted);margin-bottom:12px;margin-top:-4px;line-height:1.5}
+
+/* ── Performance tracker ──────────────────────────────────────────────── */
+.prop-action-btn.perf{border-color:rgba(26,42,94,0.3);color:var(--navy,#1a2a5e)}
+.prop-action-btn.perf:hover{background:rgba(26,42,94,0.06);border-color:var(--navy,#1a2a5e)}
+.perf-toolbar{margin-bottom:20px}
+.perf-header{margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--rule)}
+.perf-summary-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+@media(max-width:700px){.perf-summary-row{grid-template-columns:1fr 1fr}}
+.perf-summary-card{background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+.perf-summary-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+.perf-summary-val{font-size:1.3rem;font-weight:600;font-family:'Cormorant Garamond',serif}
+.perf-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:20px 22px}
+.perf-card-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--slate)}
+.perf-table th,.perf-table td{font-size:12px}
+.perf-delta-good{color:#2E7D52;font-weight:600}
+.perf-delta-bad{color:#C62828;font-weight:600}
+.perf-row-editing{background:rgba(184,130,30,0.05) !important}
+.perf-form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:4px}
+@media(max-width:600px){.perf-form-grid{grid-template-columns:1fr 1fr}}
+.perf-form-field{display:flex;flex-direction:column;gap:5px}
+.perf-form-field label{font-size:12px;font-weight:500;color:var(--slate)}
+.perf-form-field input,.perf-form-field select{padding:8px 10px;border:1px solid var(--border);border-radius:7px;background:var(--input-bg,var(--bg));color:inherit;font-size:13px;width:100%;box-sizing:border-box}
+.perf-form-field input:focus,.perf-form-field select:focus{outline:2px solid var(--gold);outline-offset:1px}
 .prop-checkbox{width:16px;height:16px;cursor:pointer;accent-color:var(--gold)}
 
 /* Compare view, adaptive: grid on desktop, stacked cards on mobile */
@@ -688,7 +720,8 @@ body.dark .report-page{box-shadow:0 4px 20px rgba(0,0,0,0.4)}
 @media print {
   @page { size: letter; margin: 0.35in; }
   body, body.dark { background: #fff !important; color: #1A1C2A !important; }
-  .topbar.sidebar.no-print.report-toolbar { display: none !important; }
+  /* Hide all chrome — sidebar, topbar, toolbar buttons, partner CTAs */
+  .topbar, .sidebar, .no-print, .report-toolbar { display: none !important; }
   .main { margin-left: 0 !important; padding: 0 !important; }
   .main-content { padding: 0 !important; }
   .main-header { display: none !important; }
@@ -696,7 +729,10 @@ body.dark .report-page{box-shadow:0 4px 20px rgba(0,0,0,0.4)}
   .page:not(#page-report) { display: none !important; }
   .report-page { box-shadow: none !important; max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
   /* Keep major sections together when paginating */
-  .report-hero.report-big4.report-cols.report-interpretation.report-dscr { page-break-inside: avoid; }
+  .report-hero, .report-big4, .report-cols, .report-interpretation, .report-dscr { page-break-inside: avoid; }
+  /* Compare report: keep each card together, allow grid to flow naturally across pages */
+  .report-compare-card { page-break-inside: avoid; break-inside: avoid; }
+  .report-compare-grid { display: grid !important; }
   /* Force exact colors */
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 }
@@ -1064,11 +1100,11 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
           <span class="nav-lock" id="gpt-lock" style="background:rgba(184,130,30,0.15);color:var(--gold)">Soon</span>
         </div>
       </div>
-      <div class="nav-section" style="display:none">
+      <div class="nav-section">
         <div class="nav-section-label">Account</div>
-        <div class="nav-item" onclick="navigateTo('upgrade',this)">
-          <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M5 5l3-3 3 3M3 12h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <span class="nav-label">Upgrade plan</span>
+        <div class="nav-item" onclick="navigateTo('account',this)">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M2 13c0-2.21 2.686-4 6-4s6 1.79 6 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <span class="nav-label">My Account</span>
         </div>
       </div>
     </div>
@@ -1480,6 +1516,46 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
         </div>
       </div>
 
+      <!-- ACCOUNT -->
+      <div class="page" id="page-account">
+        <div style="max-width:480px">
+          <h3 style="margin-bottom:20px;font-weight:600">My Account</h3>
+
+          <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:20px">
+            <h4 style="font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--slate);margin-bottom:16px">Profile</h4>
+
+            <div style="margin-bottom:14px">
+              <label style="font-size:13px;font-weight:500;display:block;margin-bottom:6px">Full name</label>
+              <input type="text" id="acct-name" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--input-bg,var(--bg));color:inherit;font-size:14px;box-sizing:border-box">
+            </div>
+
+            <div style="margin-bottom:14px">
+              <label style="font-size:13px;font-weight:500;display:block;margin-bottom:6px">Phone (optional)</label>
+              <input type="tel" id="acct-phone" placeholder="+1 555 123 4567" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--input-bg,var(--bg));color:inherit;font-size:14px;box-sizing:border-box">
+            </div>
+
+            <div style="margin-bottom:20px">
+              <label style="font-size:13px;font-weight:500;display:block;margin-bottom:6px">Email</label>
+              <input type="email" id="acct-email" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--input-bg,var(--bg));color:inherit;font-size:14px;box-sizing:border-box">
+              <p style="font-size:11px;color:var(--slate);margin-top:5px">Changing your email will send a confirmation link to the new address.</p>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:12px">
+              <button class="btn-analyze" style="width:auto;padding:9px 20px" onclick="saveAccountChanges()">Save changes</button>
+              <span id="acct-status" style="font-size:13px;display:none"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PERFORMANCE TRACKER -->
+      <div class="page" id="page-performance">
+        <div class="perf-toolbar no-print">
+          <button class="btn-analyze" style="background:transparent;color:var(--ink);border:1px solid var(--rule);width:auto;padding:10px 18px;margin-top:0" onclick="navigateTo('properties',null)">← Back to properties</button>
+        </div>
+        <div id="perf-content"></div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -1637,14 +1713,19 @@ const db = {
     // Try to read the profile row; fall back to auth metadata if it's missing for any reason
     const { data: profile } = await supabase
       .from('profiles')
-      .select('name, primary_language')
+      .select('name, primary_language, phone')
       .eq('id', authUser.id)
       .maybeSingle();
+    // Detect new users: account created within the last 90 seconds
+    const createdMs = new Date(authUser.created_at).getTime();
+    const isNewUser = (Date.now() - createdMs) < 90_000;
     currentUser = {
       id: authUser.id,
       name: profile?.name || authUser.user_metadata?.name || authUser.email.split('@')[0],
       email: authUser.email,
+      phone: profile?.phone || '',
       plan: 'investor',  // single-plan model
+      isNewUser,
     };
   },
 
@@ -1697,6 +1778,7 @@ const db = {
     if (partial.name !== undefined) update.name = partial.name;
     if (partial.inputs !== undefined) update.inputs = partial.inputs;
     if (partial.metrics !== undefined) update.metrics = partial.metrics;
+    if (partial.status !== undefined) update.status = partial.status;
     const { data, error } = await supabase
       .from('saved_properties')
       .update(update)
@@ -1726,7 +1808,118 @@ const db = {
       metrics: row.metrics,
       savedAt: new Date(row.created_at).getTime(),
       updatedAt: new Date(row.updated_at).getTime(),
+      status: row.status || 'analyzing',
+      purchasedAt: row.purchased_at ? new Date(row.purchased_at).getTime() : null,
     };
+  },
+
+  async markAsPurchased(id) {
+    if (!BACKEND_ENABLED) {
+      const list = JSON.parse(localStorage.getItem('lv_properties') || '[]');
+      const idx = list.findIndex(p => p.id === id);
+      if (idx !== -1) {
+        list[idx].status = 'purchased';
+        list[idx].purchasedAt = Date.now();
+        localStorage.setItem('lv_properties', JSON.stringify(list));
+      }
+      return;
+    }
+    const { error } = await supabase
+      .from('saved_properties')
+      .update({ status: 'purchased', purchased_at: new Date().toISOString() })
+      .eq('id', id);
+    if (error) { console.error('markAsPurchased error:', error); throw error; }
+  },
+
+  async submitManagementLead(lead) {
+    // Local backup
+    try {
+      const list = JSON.parse(localStorage.getItem('lv_mgmt_leads') || '[]');
+      list.push({ ...lead, ts: Date.now() });
+      localStorage.setItem('lv_mgmt_leads', JSON.stringify(list));
+    } catch(e) {}
+
+    if (!BACKEND_ENABLED) return;
+    const { error } = await supabase.from('management_leads').insert({
+      user_id: currentUser?.id || null,
+      property_id: lead.propertyId || null,
+      property_name: lead.propertyName,
+      property_address: lead.propertyAddress,
+      purchase_price: lead.purchasePrice,
+      monthly_rent: lead.monthlyRent,
+      name: lead.name,
+      email: lead.email,
+      phone: lead.phone || null,
+      note: lead.note || null,
+    });
+    if (error) { console.error('submitManagementLead error:', error); throw error; }
+  },
+
+  // ── Performance logs ────────────────────────────────────────────────────
+  async getPerformanceLogs(propertyId) {
+    if (!BACKEND_ENABLED) {
+      try {
+        const all = JSON.parse(localStorage.getItem('lv_perf_logs') || '[]');
+        return all.filter(l => l.property_id === propertyId).sort((a,b) => a.year - b.year);
+      } catch(e) { return []; }
+    }
+    const { data, error } = await supabase
+      .from('property_performance_logs')
+      .select('*')
+      .eq('property_id', propertyId)
+      .order('year', { ascending: true });
+    if (error) { console.error('getPerformanceLogs error:', error); return []; }
+    return data || [];
+  },
+
+  async upsertPerformanceLog(log) {
+    // Local backup
+    try {
+      const all = JSON.parse(localStorage.getItem('lv_perf_logs') || '[]');
+      const idx = all.findIndex(l => l.property_id === log.property_id && l.year === log.year);
+      if (idx >= 0) all[idx] = { ...all[idx], ...log };
+      else all.push({ ...log, id: crypto.randomUUID?.() || Date.now().toString() });
+      localStorage.setItem('lv_perf_logs', JSON.stringify(all));
+    } catch(e) {}
+
+    if (!BACKEND_ENABLED) return;
+    const row = {
+      user_id: currentUser.id,
+      property_id: log.property_id,
+      year: log.year,
+      rent_collected:   log.rent_collected   ?? 0,
+      vacancy_months:   log.vacancy_months   ?? 0,
+      repairs_spent:    log.repairs_spent    ?? 0,
+      mgmt_fees_paid:   log.mgmt_fees_paid   ?? 0,
+      mortgage_paid:    log.mortgage_paid    ?? 0,
+      tax_paid:         log.tax_paid         ?? 0,
+      insurance_paid:   log.insurance_paid   ?? 0,
+      hoa_paid:         log.hoa_paid         ?? 0,
+      other_expenses:   log.other_expenses   ?? 0,
+      notes:            log.notes            || null,
+      updated_at:       new Date().toISOString(),
+    };
+    const { error } = await supabase
+      .from('property_performance_logs')
+      .upsert(row, { onConflict: 'property_id,year' });
+    if (error) { console.error('upsertPerformanceLog error:', error); throw error; }
+  },
+
+  async deletePerformanceLog(propertyId, year) {
+    if (!BACKEND_ENABLED) {
+      try {
+        const all = JSON.parse(localStorage.getItem('lv_perf_logs') || '[]')
+          .filter(l => !(l.property_id === propertyId && l.year === year));
+        localStorage.setItem('lv_perf_logs', JSON.stringify(all));
+      } catch(e) {}
+      return;
+    }
+    const { error } = await supabase
+      .from('property_performance_logs')
+      .delete()
+      .eq('property_id', propertyId)
+      .eq('year', year);
+    if (error) console.error('deletePerformanceLog error:', error);
   },
 
   // ── Leads ───────────────────────────────────────────────────────────────
@@ -1937,8 +2130,8 @@ async function handleLogin() {
     return;
   }
   if (user) {
-    showToast('Welcome back!', 'success');
     await afterLogin();
+    showToast(currentUser?.isNewUser ? 'Welcome!' : 'Welcome back!', 'success');
   }
 }
 
@@ -2102,7 +2295,9 @@ async function initPortal() {
   document.getElementById('sidebar-plan').textContent = 'Beta access';
   document.getElementById('plan-badge').textContent   = 'Beta';
   document.getElementById('sidebar-avatar').textContent = u.name.charAt(0).toUpperCase();
-  document.getElementById('welcome-msg').innerHTML = `Welcome back, <em>${u.name.split(' ')[0]}.</em>`;
+  document.getElementById('welcome-msg').innerHTML = u.isNewUser
+    ? `Welcome, <em>${u.name.split(' ')[0]}!</em>`
+    : `Welcome back, <em>${u.name.split(' ')[0]}.</em>`;
   // Plan consolidation: all gating disabled. Hide every lock badge and the upgrade banner.
   document.getElementById('mortgage-lock').style.display = 'none';
   document.getElementById('cashflow-lock').style.display = 'none';
@@ -2583,7 +2778,7 @@ function renderToolGrid() {
 }
 
 // ── Navigation ────────────────────────────────────────────────────────────────
-const PAGE_TITLES = {dashboard:'Dashboard',gpt:'Lanvivo GPT',mortgage:'Mortgage Eligibility Engine',cashflow:'Cash Flow Analyzer',properties:'My Properties',compare:'Compare Properties',report:'Property Report',upgrade:'Plans & Pricing'};
+const PAGE_TITLES = {dashboard:'Dashboard',gpt:'Lanvivo GPT',mortgage:'Mortgage Eligibility Engine',cashflow:'Cash Flow Analyzer',properties:'My Properties',compare:'Compare Properties',report:'Property Report',upgrade:'Plans & Pricing',account:'My Account',performance:'Performance Tracker'};
 
 function navigateTo(page, navEl) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -2604,11 +2799,393 @@ function navigateTo(page, navEl) {
   if (page==='compare') renderComparePage();
   if (page==='cashflow') updateSaveButtonsForMode();
   if (page==='dashboard') renderDashboard();
+  if (page==='account') populateAccountForm();
+  if (page==='performance') renderPerformancePage();
   // Update limit indicator for GPT (dead path now, GPT page is "Coming Soon")
   if (page==='gpt') updateChatLimit();
   // Re-translate page content on navigation if non-English language active
   if (typeof currentLang !== 'undefined' && currentLang !== 'en') {
     setTimeout(() => translatePageContent(currentLang), 150);
+  }
+}
+
+// ── Performance Tracker ───────────────────────────────────────────────────
+
+let _perfPropertyId = null;       // which property is open in the tracker
+let _perfEditingYear = null;      // year currently being edited in the form
+
+function openPerformancePage(propertyId) {
+  _perfPropertyId = propertyId;
+  _perfEditingYear = null;
+  navigateTo('performance', null);
+}
+
+async function renderPerformancePage() {
+  const container = document.getElementById('perf-content');
+  if (!container || !_perfPropertyId) return;
+
+  container.innerHTML = `<div class="properties-empty"><div class="icon">⏳</div><p>Loading…</p></div>`;
+
+  const list = loadSavedProperties();
+  const prop = list.find(p => p.id === _perfPropertyId);
+  if (!prop) { container.innerHTML = `<p>Property not found.</p>`; return; }
+
+  const logs = await db.getPerformanceLogs(_perfPropertyId);
+
+  // Build per-year projected figures from the model (up to 15 yrs from purchase)
+  const projection = buildReportProjection(prop.inputs);
+  // projection.cumCF[0]=0, [1]=year1 cumulative, etc.
+  // Per-year projected CF = cumCF[y] - cumCF[y-1]
+  const projCFByYear = {};
+  const purchaseYear = prop.purchasedAt ? new Date(prop.purchasedAt).getFullYear() : new Date().getFullYear();
+  for (let y = 1; y <= 15; y++) {
+    projCFByYear[purchaseYear + y - 1] = projection.cumCF[y] - projection.cumCF[y - 1];
+  }
+
+  // Per-year projected rent (before vacancy / mgmt)
+  const projRentByYear = {};
+  for (let y = 1; y <= 15; y++) {
+    projRentByYear[purchaseYear + y - 1] = prop.inputs.rent * Math.pow(1 + prop.inputs.rentGrowth / 100, y - 1) * 12;
+  }
+
+  const purchasedStr = prop.purchasedAt
+    ? new Date(prop.purchasedAt).toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'})
+    : 'Unknown';
+
+  const currentYear = new Date().getFullYear();
+  // Year range: from purchase year up to current year
+  const yearOptions = [];
+  for (let y = purchaseYear; y <= currentYear; y++) yearOptions.push(y);
+
+  // ── Projected annual mortgage payment ──
+  const s = prop.inputs;
+  const loanAmt = s.price * (1 - s.down / 100);
+  const mRate = (s.rate / 100) / 12;
+  const nPay = s.term * 12;
+  const monthlyMortgage = mRate > 0 && loanAmt > 0
+    ? loanAmt * (mRate * Math.pow(1 + mRate, nPay)) / (Math.pow(1 + mRate, nPay) - 1)
+    : 0;
+  const projMortgageAnnual = monthlyMortgage * 12;
+
+  // ── Build chart data ──
+  function buildPerfChartSVG(logs, projCFByYear) {
+    if (logs.length === 0) return '';
+    const W = 520, H = 160, padL = 52, padR = 12, padT = 12, padB = 28;
+    const iW = W - padL - padR, iH = H - padT - padB;
+    const years = logs.map(l => l.year).sort((a,b) => a-b);
+    const actuals  = years.map(y => {
+      const l = logs.find(ll => ll.year === y);
+      return l.rent_collected - l.repairs_spent - l.mgmt_fees_paid - l.mortgage_paid
+           - l.tax_paid - l.insurance_paid - l.hoa_paid - l.other_expenses;
+    });
+    const projected = years.map(y => projCFByYear[y] ?? 0);
+    const allVals = [...actuals, ...projected, 0];
+    const vMin = Math.min(...allVals), vMax = Math.max(...allVals);
+    const vRange = vMax - vMin || 1;
+    const vPad = vRange * 0.12;
+    const vLo = vMin - vPad, vHi = vMax + vPad;
+    const xAt = i => padL + (i / Math.max(years.length - 1, 1)) * iW;
+    const yAt = v => padT + iH - ((v - vLo) / (vHi - vLo)) * iH;
+    const fmtK = v => Math.abs(v) >= 1000 ? `$${(v/1000).toFixed(0)}k` : `$${Math.round(v)}`;
+
+    const yTicks = [vLo, vLo + vRange*0.5, vHi].map(v => {
+      const y = yAt(v).toFixed(1);
+      return `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#e0d8cc" stroke-width="0.5"/>
+              <text x="${padL-5}" y="${y}" font-size="9" fill="#888" text-anchor="end" dominant-baseline="middle">${fmtK(v)}</text>`;
+    }).join('');
+
+    const xLabels = years.map((yr, i) =>
+      `<text x="${xAt(i).toFixed(1)}" y="${H-8}" font-size="9" fill="#888" text-anchor="middle">${yr}</text>`
+    ).join('');
+
+    const projPath = years.map((_, i) =>
+      `${i===0?'M':'L'}${xAt(i).toFixed(1)},${yAt(projected[i]).toFixed(1)}`
+    ).join(' ');
+    const actPath = years.map((_, i) =>
+      `${i===0?'M':'L'}${xAt(i).toFixed(1)},${yAt(actuals[i]).toFixed(1)}`
+    ).join(' ');
+
+    const zeroPx = yAt(0).toFixed(1);
+
+    return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:${W}px">
+      ${yTicks}
+      <line x1="${padL}" y1="${zeroPx}" x2="${W-padR}" y2="${zeroPx}" stroke="#aaa" stroke-width="0.8" stroke-dasharray="3,2"/>
+      <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${H-padB}" stroke="#ccc" stroke-width="0.8"/>
+      ${xLabels}
+      <path d="${projPath}" fill="none" stroke="#B8821E" stroke-width="1.5" stroke-dasharray="5,3" opacity="0.7"/>
+      <path d="${actPath}" fill="none" stroke="#2E7D52" stroke-width="2"/>
+      ${years.map((_, i) => `<circle cx="${xAt(i).toFixed(1)}" cy="${yAt(actuals[i]).toFixed(1)}" r="3.5" fill="#2E7D52"/>`).join('')}
+    </svg>`;
+  }
+
+  // ── Build comparison table rows ──
+  function buildCompareRows(logs) {
+    if (logs.length === 0) return `<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">No years logged yet. Add your first year below.</td></tr>`;
+    return logs.map(l => {
+      const actCF = l.rent_collected - l.repairs_spent - l.mgmt_fees_paid - l.mortgage_paid
+                  - l.tax_paid - l.insurance_paid - l.hoa_paid - l.other_expenses;
+      const projCF = projCFByYear[l.year] ?? 0;
+      const delta = actCF - projCF;
+      const deltaClass = delta >= 0 ? 'perf-delta-good' : 'perf-delta-bad';
+      const deltaStr = (delta >= 0 ? '+' : '') + fmt(delta);
+      const isEditing = _perfEditingYear === l.year;
+      return `<tr class="${isEditing ? 'perf-row-editing' : ''}">
+        <td><strong>${l.year}</strong></td>
+        <td>${fmt(l.rent_collected)}</td>
+        <td class="${actCF >= 0 ? 'prop-metric-good' : 'prop-metric-bad'}">${fmt(actCF)}</td>
+        <td style="color:var(--muted)">${fmt(projCF)}</td>
+        <td class="${deltaClass}">${deltaStr}</td>
+        <td style="color:var(--muted);font-size:11px">${l.notes || '—'}</td>
+        <td>
+          <div class="prop-actions">
+            <button class="prop-action-btn perf" onclick="startEditYear(${l.year})">Edit</button>
+            <button class="prop-action-btn danger" onclick="deleteYear(${l.year})">Delete</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ── Build the log form ──
+  const prefillLog = _perfEditingYear ? logs.find(l => l.year === _perfEditingYear) : null;
+  const projectedRent = _perfEditingYear ? (projRentByYear[_perfEditingYear] || 0) : (projRentByYear[currentYear] || 0);
+  const defaultYear = _perfEditingYear ?? currentYear;
+
+  function field(id, label, placeholder, val) {
+    const v = val !== undefined && val !== null && val !== 0 ? val : '';
+    return `<div class="perf-form-field">
+      <label>${label}</label>
+      <input type="number" id="${id}" min="0" step="1" placeholder="${placeholder}" value="${v}">
+    </div>`;
+  }
+
+  const chartSVG = buildPerfChartSVG(logs, projCFByYear);
+  const compareRows = buildCompareRows(logs);
+
+  // Summary stats
+  const totalActualCF = logs.reduce((sum, l) =>
+    sum + l.rent_collected - l.repairs_spent - l.mgmt_fees_paid - l.mortgage_paid
+        - l.tax_paid - l.insurance_paid - l.hoa_paid - l.other_expenses, 0);
+  const totalProjCF = logs.reduce((sum, l) => sum + (projCFByYear[l.year] ?? 0), 0);
+  const overUnder = totalActualCF - totalProjCF;
+  const overUnderClass = overUnder >= 0 ? 'prop-metric-good' : 'prop-metric-bad';
+
+  container.innerHTML = `
+    <!-- Header -->
+    <div class="perf-header">
+      <div>
+        <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:600;margin-bottom:4px">${escapeHTML(prop.name)}</h3>
+        <p style="font-size:13px;color:var(--muted)">Purchased ${purchasedStr} · ${fmt(prop.inputs.price)} · ${fmt(prop.inputs.rent)}/mo projected rent</p>
+      </div>
+    </div>
+
+    <!-- Summary row -->
+    ${logs.length > 0 ? `
+    <div class="perf-summary-row">
+      <div class="perf-summary-card">
+        <div class="perf-summary-label">Years tracked</div>
+        <div class="perf-summary-val">${logs.length}</div>
+      </div>
+      <div class="perf-summary-card">
+        <div class="perf-summary-label">Actual cash flow (total)</div>
+        <div class="perf-summary-val ${totalActualCF >= 0 ? 'prop-metric-good' : 'prop-metric-bad'}">${fmt(totalActualCF)}</div>
+      </div>
+      <div class="perf-summary-card">
+        <div class="perf-summary-label">Projected cash flow (total)</div>
+        <div class="perf-summary-val" style="color:var(--muted)">${fmt(totalProjCF)}</div>
+      </div>
+      <div class="perf-summary-card">
+        <div class="perf-summary-label">Over / under projection</div>
+        <div class="perf-summary-val ${overUnderClass}">${overUnder >= 0 ? '+' : ''}${fmt(overUnder)}</div>
+      </div>
+    </div>` : ''}
+
+    <!-- Chart -->
+    ${logs.length >= 2 ? `
+    <div class="perf-card" style="margin-bottom:24px">
+      <div class="perf-card-title">Annual cash flow: actual vs projected</div>
+      <div style="margin-top:12px;margin-bottom:4px">${chartSVG}</div>
+      <div style="display:flex;gap:20px;font-size:11px;color:var(--muted);margin-top:6px">
+        <span><svg width="18" height="4" style="vertical-align:middle"><line x1="0" y1="2" x2="18" y2="2" stroke="#2E7D52" stroke-width="2"/></svg> Actual</span>
+        <span><svg width="18" height="4" style="vertical-align:middle"><line x1="0" y1="2" x2="18" y2="2" stroke="#B8821E" stroke-width="1.5" stroke-dasharray="4,2"/></svg> Projected</span>
+      </div>
+    </div>` : ''}
+
+    <!-- Year-by-year table -->
+    <div class="perf-card" style="margin-bottom:24px">
+      <div class="perf-card-title">Year-by-year performance</div>
+      <div style="overflow-x:auto;margin-top:12px">
+        <table class="prop-table perf-table">
+          <thead><tr>
+            <th>Year</th><th>Rent collected</th><th>Actual CF</th><th>Projected CF</th><th>Δ vs projection</th><th>Notes</th><th></th>
+          </tr></thead>
+          <tbody>${compareRows}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Log / edit form -->
+    <div class="perf-card" id="perf-log-form">
+      <div class="perf-card-title">${prefillLog ? `Edit ${_perfEditingYear}` : 'Log a year'}</div>
+      <p style="font-size:13px;color:var(--muted);margin-top:4px;margin-bottom:16px">Enter your actual numbers for the year. Leave a field blank to treat it as zero.</p>
+
+      <div style="display:flex;gap:12px;align-items:flex-end;margin-bottom:16px;flex-wrap:wrap">
+        <div class="perf-form-field" style="flex:0 0 120px">
+          <label>Year</label>
+          <select id="perf-year" style="padding:9px 10px;border:1px solid var(--border);border-radius:8px;background:var(--input-bg,var(--bg));color:inherit;font-size:14px;width:100%">
+            ${yearOptions.map(y => `<option value="${y}" ${y === defaultYear ? 'selected' : ''}>${y}</option>`).join('')}
+          </select>
+        </div>
+        ${field('perf-rent','Rent collected ($)','e.g. 18000', prefillLog?.rent_collected)}
+      </div>
+
+      <div class="perf-form-grid">
+        ${field('perf-repairs','Repairs & maintenance','e.g. 1200', prefillLog?.repairs_spent)}
+        ${field('perf-mgmt','Management fees','e.g. 1800', prefillLog?.mgmt_fees_paid)}
+        ${field('perf-mortgage','Mortgage payments','e.g. ' + Math.round(projMortgageAnnual), prefillLog?.mortgage_paid || Math.round(projMortgageAnnual))}
+        ${field('perf-tax','Property tax','e.g. ' + (prop.inputs.tax || 0), prefillLog?.tax_paid || prop.inputs.tax || '')}
+        ${field('perf-insurance','Insurance','e.g. ' + (prop.inputs.insurance || 0), prefillLog?.insurance_paid || prop.inputs.insurance || '')}
+        ${field('perf-hoa','HOA fees','e.g. ' + (prop.inputs.hoa * 12 || 0), prefillLog?.hoa_paid || (prop.inputs.hoa * 12) || '')}
+        ${field('perf-other','Other expenses','e.g. 300', prefillLog?.other_expenses)}
+      </div>
+
+      <div class="perf-form-field" style="margin-top:4px">
+        <label>Notes (optional)</label>
+        <input type="text" id="perf-notes" placeholder="e.g. Replaced HVAC, new tenant in March" value="${escapeHTML(prefillLog?.notes || '')}">
+      </div>
+
+      <div id="perf-form-error" style="display:none;color:#c0392b;font-size:13px;margin-top:10px"></div>
+      <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap">
+        <button class="btn-analyze" style="width:auto;padding:9px 22px" onclick="savePerfLog()">
+          ${prefillLog ? 'Save changes' : 'Save year →'}
+        </button>
+        ${prefillLog ? `<button class="btn-analyze" style="width:auto;padding:9px 18px;background:transparent;color:var(--ink);border:1px solid var(--rule)" onclick="cancelEditYear()">Cancel</button>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function startEditYear(year) {
+  _perfEditingYear = year;
+  renderPerformancePage();
+  setTimeout(() => {
+    const el = document.getElementById('perf-log-form');
+    if (el) el.scrollIntoView({ behavior:'smooth', block:'start' });
+  }, 50);
+}
+
+function cancelEditYear() {
+  _perfEditingYear = null;
+  renderPerformancePage();
+}
+
+async function savePerfLog() {
+  const errEl = document.getElementById('perf-form-error');
+  errEl.style.display = 'none';
+  const year = parseInt(document.getElementById('perf-year').value);
+  const rent = parseFloat(document.getElementById('perf-rent').value) || 0;
+  if (!year) { errEl.textContent = 'Please select a year.'; errEl.style.display = 'block'; return; }
+
+  const log = {
+    property_id:    _perfPropertyId,
+    year,
+    rent_collected:  rent,
+    repairs_spent:   parseFloat(document.getElementById('perf-repairs').value)  || 0,
+    mgmt_fees_paid:  parseFloat(document.getElementById('perf-mgmt').value)     || 0,
+    mortgage_paid:   parseFloat(document.getElementById('perf-mortgage').value) || 0,
+    tax_paid:        parseFloat(document.getElementById('perf-tax').value)      || 0,
+    insurance_paid:  parseFloat(document.getElementById('perf-insurance').value)|| 0,
+    hoa_paid:        parseFloat(document.getElementById('perf-hoa').value)      || 0,
+    other_expenses:  parseFloat(document.getElementById('perf-other').value)    || 0,
+    notes:           document.getElementById('perf-notes').value.trim() || null,
+  };
+
+  const btn = document.querySelector('[onclick="savePerfLog()"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+  try {
+    await db.upsertPerformanceLog(log);
+    _perfEditingYear = null;
+    await renderPerformancePage();
+    showToast('Year saved.', 'success');
+  } catch(e) {
+    errEl.textContent = 'Save failed. Please try again.';
+    errEl.style.display = 'block';
+    if (btn) { btn.disabled = false; btn.textContent = 'Save year →'; }
+  }
+}
+
+async function deleteYear(year) {
+  if (!confirm(`Delete performance data for ${year}? This cannot be undone.`)) return;
+  try {
+    await db.deletePerformanceLog(_perfPropertyId, year);
+    await renderPerformancePage();
+    showToast(`${year} removed.`, 'success');
+  } catch(e) {
+    showToast('Delete failed. Try again.', 'error');
+  }
+}
+
+// ── Account / Profile editing ─────────────────────────────────────────────
+
+function populateAccountForm() {
+  if (!currentUser) return;
+  document.getElementById('acct-name').value  = currentUser.name  || '';
+  document.getElementById('acct-phone').value = currentUser.phone || '';
+  document.getElementById('acct-email').value = currentUser.email || '';
+  const s = document.getElementById('acct-status');
+  s.style.display = 'none'; s.textContent = '';
+}
+
+async function saveAccountChanges() {
+  if (!currentUser) return;
+  const newName  = document.getElementById('acct-name').value.trim();
+  const newPhone = document.getElementById('acct-phone').value.trim();
+  const newEmail = document.getElementById('acct-email').value.trim().toLowerCase();
+  const statusEl = document.getElementById('acct-status');
+  const btn = document.querySelector('[onclick="saveAccountChanges()"]');
+
+  if (!newName) { showToast('Name cannot be empty.', 'error'); return; }
+
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+  statusEl.style.display = 'none';
+
+  try {
+    // Update profile row (name + phone)
+    if (BACKEND_ENABLED) {
+      const { error: profErr } = await supabase
+        .from('profiles')
+        .update({ name: newName, phone: newPhone || null, updated_at: new Date().toISOString() })
+        .eq('id', currentUser.id);
+      if (profErr) throw profErr;
+
+      // Email change goes through Supabase Auth (sends confirmation to new address)
+      if (newEmail && newEmail !== currentUser.email) {
+        const { error: emailErr } = await supabase.auth.updateUser({ email: newEmail });
+        if (emailErr) throw emailErr;
+        statusEl.textContent = 'Profile saved. Check your new email address for a confirmation link.';
+      } else {
+        statusEl.textContent = 'Changes saved.';
+      }
+    }
+
+    // Update in-memory user
+    currentUser.name  = newName;
+    currentUser.phone = newPhone;
+    // Update sidebar display
+    document.getElementById('sidebar-name').textContent = newName;
+    document.getElementById('sidebar-avatar').textContent = newName.charAt(0).toUpperCase();
+    document.getElementById('welcome-msg').innerHTML = `Welcome back, <em>${newName.split(' ')[0]}.</em>`;
+
+    statusEl.style.color = 'var(--green, #1a7a4a)';
+    statusEl.style.display = 'inline';
+    showToast('Profile updated.', 'success');
+  } catch(err) {
+    statusEl.textContent = err.message || 'Save failed. Please try again.';
+    statusEl.style.color = 'var(--red, #c0392b)';
+    statusEl.style.display = 'inline';
+    showToast('Save failed.', 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Save changes'; }
   }
 }
 
@@ -3164,6 +3741,91 @@ function clearAnalyzerForm() {
   updateSaveButtonsForMode();
 }
 
+async function confirmMarkPurchased(id) {
+  const prop = loadSavedProperties().find(p => p.id === id);
+  if (!prop) return;
+  if (!confirm(`Mark "${prop.name}" as purchased? It will move to your Owned Properties section.`)) return;
+  try {
+    await db.markAsPurchased(id);
+    await refreshProperties();
+    renderPropertiesList();
+    showToast('Property marked as purchased 🎉', 'success');
+  } catch(e) {
+    showToast('Could not update property status. Try again.', 'error');
+  }
+}
+
+// ── Management lead modal ────────────────────────────────────────────────────
+let _mgmtPropertyId = null;
+
+function openManagementModal(propertyId) {
+  const prop = loadSavedProperties().find(p => p.id === propertyId);
+  if (!prop) return;
+  _mgmtPropertyId = propertyId;
+
+  // Pre-fill property info into the modal
+  document.getElementById('mgmt-prop-name').textContent = prop.name;
+  document.getElementById('mgmt-prop-stats').textContent =
+    `${fmt(prop.inputs.price)} · ${fmt(prop.metrics.cashflow)}/mo projected cash flow`;
+
+  // Pre-fill user info if available
+  if (currentUser) {
+    document.getElementById('mgmt-name').value  = currentUser.name  || '';
+    document.getElementById('mgmt-email').value = currentUser.email || '';
+    document.getElementById('mgmt-phone').value = currentUser.phone || '';
+  }
+  document.getElementById('mgmt-address').value = '';
+  document.getElementById('mgmt-note').value    = '';
+  document.getElementById('mgmt-error').style.display = 'none';
+  document.getElementById('mgmt-success').style.display = 'none';
+
+  document.getElementById('mgmt-modal').classList.add('active');
+}
+
+function closeManagementModal() {
+  document.getElementById('mgmt-modal').classList.remove('active');
+  _mgmtPropertyId = null;
+}
+
+async function submitManagementRequest() {
+  const name    = document.getElementById('mgmt-name').value.trim();
+  const email   = document.getElementById('mgmt-email').value.trim();
+  const phone   = document.getElementById('mgmt-phone').value.trim();
+  const address = document.getElementById('mgmt-address').value.trim();
+  const note    = document.getElementById('mgmt-note').value.trim();
+  const errEl   = document.getElementById('mgmt-error');
+  const sucEl   = document.getElementById('mgmt-success');
+
+  if (!name || !email) {
+    errEl.textContent = 'Please enter your name and email.';
+    errEl.style.display = 'block'; return;
+  }
+  errEl.style.display = 'none';
+
+  const btn = document.getElementById('mgmt-submit-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Submitting...'; }
+
+  const prop = _mgmtPropertyId ? loadSavedProperties().find(p => p.id === _mgmtPropertyId) : null;
+  try {
+    await db.submitManagementLead({
+      propertyId:      _mgmtPropertyId,
+      propertyName:    prop?.name || '',
+      propertyAddress: address,
+      purchasePrice:   prop?.inputs?.price || 0,
+      monthlyRent:     prop?.inputs?.rent  || 0,
+      name, email, phone, note,
+    });
+    sucEl.style.display = 'block';
+    if (btn) { btn.disabled = false; btn.textContent = 'Submit request'; }
+    showToast('Request received! We\'ll be in touch within 1 business day.', 'success', 5000);
+    setTimeout(closeManagementModal, 2500);
+  } catch(e) {
+    errEl.textContent = 'Submission failed. Please try again or email hello@lanvivo.com.';
+    errEl.style.display = 'block';
+    if (btn) { btn.disabled = false; btn.textContent = 'Submit request'; }
+  }
+}
+
 async function deleteProperty(id) {
   if (!confirm('Delete this saved property? This cannot be undone.')) return;
   try { await db.deleteProperty(id); } catch(e) { console.error('deleteProperty failed:', e); }
@@ -3236,7 +3898,7 @@ function renderPropertiesList() {
   const list = loadSavedProperties();
   const container = document.getElementById('properties-list-container');
   if (!container) return;
-  compareSelection = []; // reset selection on each visit
+  compareSelection = [];
   updateCompareButton();
 
   if (list.length === 0) {
@@ -3250,13 +3912,15 @@ function renderPropertiesList() {
     return;
   }
 
-  const rows = list.map(p => {
+  const analyzing = list.filter(p => p.status !== 'purchased');
+  const owned     = list.filter(p => p.status === 'purchased');
+
+  function buildAnalyzingRow(p) {
     const m = p.metrics;
-    const cfClass = m.cashflow >= 0 ? 'prop-metric-good' : 'prop-metric-bad';
-    const cocClass = m.cocReturn >= 0.07 ? 'prop-metric-good' : m.cocReturn < 0 ? 'prop-metric-bad' : '';
+    const cfClass   = m.cashflow >= 0 ? 'prop-metric-good' : 'prop-metric-bad';
+    const cocClass  = m.cocReturn >= 0.07 ? 'prop-metric-good' : m.cocReturn < 0 ? 'prop-metric-bad' : '';
     const dscrClass = !(m.mortgage > 0) ? 'prop-metric-good' : m.dscr >= 1.20 ? 'prop-metric-good' : m.dscr < 1.0 ? 'prop-metric-bad' : '';
-    const date = new Date(p.savedAt);
-    const dateStr = date.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+    const dateStr   = new Date(p.savedAt).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
     return `
       <tr>
         <td><input type="checkbox" class="prop-checkbox" onchange="togglePropertySelection('${p.id}', this)"></td>
@@ -3272,27 +3936,72 @@ function renderPropertiesList() {
           <div class="prop-actions">
             <button class="prop-action-btn" onclick="loadPropertyIntoAnalyzer('${p.id}')">Open</button>
             <button class="prop-action-btn" onclick="openPropertyReport('${p.id}')">Report</button>
+            <button class="prop-action-btn bought" onclick="confirmMarkPurchased('${p.id}')">I bought this</button>
             <button class="prop-action-btn danger" onclick="deleteProperty('${p.id}')">Delete</button>
           </div>
         </td>
       </tr>`;
-  }).join('');
+  }
 
-  container.innerHTML = `
-    <table class="prop-table">
-      <thead>
-        <tr>
-          <th></th>
-          <th>Property</th>
-          <th>Monthly CF</th>
-          <th>CoC return</th>
-          <th>DSCR</th>
-          <th>15-yr return</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>${rows}</tbody>
-    </table>`;
+  function buildOwnedRow(p) {
+    const m = p.metrics;
+    const cfClass   = m.cashflow >= 0 ? 'prop-metric-good' : 'prop-metric-bad';
+    const dateStr   = p.purchasedAt
+      ? new Date(p.purchasedAt).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'})
+      : '—';
+    return `
+      <tr class="owned-row">
+        <td><span class="owned-badge">Owned</span></td>
+        <td>
+          <div class="prop-name">${escapeHTML(p.name)}</div>
+          <div class="prop-meta">Purchased ${dateStr} · ${fmt(p.inputs.price)}</div>
+        </td>
+        <td class="${cfClass}">${fmt(m.cashflow)}/mo <span style="font-size:10px;color:var(--slate)">(projected)</span></td>
+        <td>${pct(m.cocReturn)}</td>
+        <td>${fmt(m.totalReturn15)}</td>
+        <td>
+          <div class="prop-actions">
+            <button class="prop-action-btn" onclick="openPropertyReport('${p.id}')">Report</button>
+            <button class="prop-action-btn perf" onclick="openPerformancePage('${p.id}')">Track performance</button>
+            <button class="prop-action-btn mgmt" onclick="openManagementModal('${p.id}')">Get managed →</button>
+            <button class="prop-action-btn danger" onclick="deleteProperty('${p.id}')">Delete</button>
+          </div>
+        </td>
+      </tr>`;
+  }
+
+  let html = '';
+
+  // ── Analyzing section ──
+  if (analyzing.length > 0) {
+    const rows = analyzing.map(buildAnalyzingRow).join('');
+    html += `
+      <div class="prop-section-label">Analyzing <span class="prop-section-count">${analyzing.length}</span></div>
+      <table class="prop-table">
+        <thead><tr>
+          <th></th><th>Property</th><th>Monthly CF</th><th>CoC return</th><th>DSCR</th><th>15-yr return</th><th></th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  }
+
+  // ── Owned section ──
+  if (owned.length > 0) {
+    const rows = owned.map(buildOwnedRow).join('');
+    html += `
+      <div class="prop-section-label" style="margin-top:${analyzing.length ? '32px' : '0'}">
+        Owned properties <span class="prop-section-count">${owned.length}</span>
+      </div>
+      <div class="owned-section-intro">These are properties you've purchased. Click <strong>Get managed →</strong> to have Lanvivo manage them for you.</div>
+      <table class="prop-table">
+        <thead><tr>
+          <th></th><th>Property</th><th>Monthly CF</th><th>CoC return</th><th>15-yr return</th><th></th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  }
+
+  container.innerHTML = html;
 }
 
 // Tiny HTML-escape helper so user-entered property names can't break the table render.
@@ -3637,14 +4346,23 @@ function buildShareUrl(inputs) {
 }
 
 function openShareLinkModal() {
-  // Build the share URL for the currently-displayed report. Works for single reports only.
-  if (!reportPropertyId) {
-    alert('Share is only available on single-property reports.');
+  let url;
+  if (reportCompareIds && reportCompareIds.length >= COMPARE_MIN) {
+    // Comparison report: encode all properties into a #compare= hash
+    const list = loadSavedProperties();
+    const props = reportCompareIds.map(id => list.find(p => p.id === id)).filter(Boolean);
+    if (!props.length) return;
+    const snapshots = props.map(p => encodeShareSnapshot(p.inputs));
+    const payload = btoa(JSON.stringify(snapshots)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    const base = window.location.origin + window.location.pathname;
+    url = base + '#compare=' + payload;
+  } else if (reportPropertyId) {
+    const prop = loadSavedProperties().find(p => p.id === reportPropertyId);
+    if (!prop) return;
+    url = buildShareUrl(prop.inputs);
+  } else {
     return;
   }
-  const prop = loadSavedProperties().find(p => p.id === reportPropertyId);
-  if (!prop) return;
-  const url = buildShareUrl(prop.inputs);
   document.getElementById('share-link-input').value = url;
   document.getElementById('share-copy-btn').textContent = 'Copy link';
   document.getElementById('share-modal').classList.add('active');
@@ -3675,12 +4393,76 @@ async function copyShareLink() {
 // read-only shared-report view instead of the normal authenticated portal.
 function checkForSharedReport() {
   const hash = window.location.hash;
-  if (!hash.startsWith('#share=')) return false;
-  const encoded = hash.substring('#share='.length);
-  const inputs = decodeShareSnapshot(encoded);
-  if (!inputs) return false;
-  renderSharedReport(inputs);
-  return true;
+
+  // Single-property share
+  if (hash.startsWith('#share=')) {
+    const encoded = hash.substring('#share='.length);
+    const inputs = decodeShareSnapshot(encoded);
+    if (!inputs) return false;
+    renderSharedReport(inputs);
+    return true;
+  }
+
+  // Comparison share
+  if (hash.startsWith('#compare=')) {
+    try {
+      const encoded = hash.substring('#compare='.length);
+      let b64 = encoded.replace(/-/g, '+').replace(/_/g, '/');
+      while (b64.length % 4) b64 += '=';
+      const snapshots = JSON.parse(atob(b64));
+      const allInputs = snapshots.map(s => decodeShareSnapshot(s)).filter(Boolean);
+      if (allInputs.length >= COMPARE_MIN) {
+        renderSharedCompareReport(allInputs);
+        return true;
+      }
+    } catch(e) {}
+    return false;
+  }
+
+  return false;
+}
+
+// Renders a read-only shared comparison report (no sidebar/login wall).
+function renderSharedCompareReport(allInputs) {
+  document.body.innerHTML = `
+    <div class="shared-report-wrapper">
+      <div class="shared-report-banner">
+        <div class="shared-banner-left">
+          <div class="shared-banner-mark">L</div>
+          <div>
+            <div class="shared-banner-label">Shared Comparison Report</div>
+            <div class="shared-banner-sub">View-only · Generated by someone using Lanvivo</div>
+          </div>
+        </div>
+        <button class="btn-analyze" style="width:auto;padding:10px 22px;margin-top:0" onclick="window.print()">Print or save as PDF ↓</button>
+      </div>
+      <div id="shared-report-container"></div>
+      <div class="shared-report-cta no-print">
+        <div class="shared-cta-content">
+          <h3>Want to analyze your own properties?</h3>
+          <p>Lanvivo is a free toolkit for immigrants and foreign nationals investing in US real estate. Visa-aware mortgage eligibility, cash flow analysis, and shareable reports, all in one place.</p>
+        </div>
+        <div>
+          <a href="${window.location.origin + window.location.pathname}" class="btn-analyze" style="width:auto;padding:12px 26px;margin-top:0;text-decoration:none;display:inline-block">Try Lanvivo free →</a>
+        </div>
+      </div>
+    </div>`;
+
+  // Build synthetic saved-property list so renderCompareReportHTML can reuse existing logic
+  const synthetic = allInputs.map((inputs, i) => ({
+    id: `shared_${i}`,
+    name: inputs.name || `Property ${i + 1}`,
+    inputs,
+    metrics: computePropertyMetrics(inputs),
+    savedAt: Date.now(),
+  }));
+  const originalList = localStorage.getItem('lv_properties');
+  localStorage.setItem('lv_properties', JSON.stringify(synthetic));
+  reportPropertyId = null;
+  reportCompareIds = synthetic.map(p => p.id);
+  document.getElementById('shared-report-container').innerHTML = renderCompareReportHTML();
+  if (originalList) localStorage.setItem('lv_properties', originalList);
+  else localStorage.removeItem('lv_properties');
 }
 
 // Renders a read-only shared report. Replaces the entire <body> contents so there's no sidebar,
@@ -3904,7 +4686,7 @@ function renderSingleReportHTML() {
 
       <div class="report-footer">
         <p><strong>For informational purposes only.</strong> Actual returns depend on market conditions, tenant quality, and property-specific factors. Estimates use a 1% CapEx reserve, 27.5-year depreciation on 85% of purchase price, and 0.7% annual PMI when down payment is under 20%. Passive activity loss rules may limit deductible rental losses against W-2 income. Consult a CPA before relying on these numbers for major decisions.</p>
-        <p>Generated by Lanvivo · ${today}</p>
+        <p>Generated by Lanvivo · lanvivo.com · hello@lanvivo.com · ${today}</p>
       </div>
     </div>
   `;
@@ -3975,7 +4757,7 @@ function renderCompareReportHTML() {
 
       <div class="report-footer">
         <p><strong>For informational purposes only.</strong> Estimates use a 1% CapEx reserve, 27.5-year depreciation on 85% of purchase price, and 0.7% annual PMI when down payment is under 20%. Consult a CPA or financial advisor before making investment decisions.</p>
-        <p>Generated by Lanvivo · ${today}</p>
+        <p>Generated by Lanvivo · lanvivo.com · hello@lanvivo.com · ${today}</p>
       </div>
     </div>
   `;
@@ -4722,5 +5504,54 @@ function updateChatLimit() {
     <p style="font-size:11px;color:var(--muted);margin-top:14px;line-height:1.5">The link contains a snapshot of this property's numbers at the moment you generated it. Future edits in your portal don't affect what the recipient sees.</p>
   </div>
 </div>
+<!-- ── Management request modal ─────────────────────────────────────────── -->
+<div class="lead-modal-backdrop" id="mgmt-modal" onclick="if(event.target===this)closeManagementModal()">
+  <div class="lead-modal" style="max-width:480px">
+    <button class="lead-modal-close" onclick="closeManagementModal()">×</button>
+    <div class="lead-modal-label" style="background:rgba(184,130,30,0.12);color:#B8821E">Property Management</div>
+    <h3>Let Lanvivo manage your property</h3>
+
+    <div style="background:rgba(46,125,82,0.07);border:1px solid rgba(46,125,82,0.2);border-radius:8px;padding:12px 14px;margin-bottom:18px">
+      <div id="mgmt-prop-name" style="font-weight:600;font-size:14px;margin-bottom:3px"></div>
+      <div id="mgmt-prop-stats" style="font-size:12px;color:var(--slate)"></div>
+    </div>
+
+    <p class="lead-modal-intro" style="margin-bottom:16px">Tell us a bit about yourself and the property. We'll reach out within 1 business day to walk through our management services.</p>
+
+    <div class="lead-form-field">
+      <label>Full address of the property</label>
+      <input type="text" id="mgmt-address" placeholder="123 Main St, Austin TX 78701">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="lead-form-field">
+        <label>Your name</label>
+        <input type="text" id="mgmt-name">
+      </div>
+      <div class="lead-form-field">
+        <label>Phone (optional)</label>
+        <input type="tel" id="mgmt-phone" placeholder="+1 555 123 4567">
+      </div>
+    </div>
+    <div class="lead-form-field">
+      <label>Email</label>
+      <input type="email" id="mgmt-email">
+    </div>
+    <div class="lead-form-field">
+      <label>Anything else we should know? (optional)</label>
+      <textarea id="mgmt-note" rows="3" placeholder="e.g. Currently tenant-occupied, looking for full-service management..." style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--input-bg,var(--bg));color:inherit;font-size:14px;resize:vertical;box-sizing:border-box"></textarea>
+    </div>
+
+    <div id="mgmt-error" style="display:none;color:#c0392b;font-size:13px;margin-bottom:10px"></div>
+    <div id="mgmt-success" style="display:none;background:rgba(46,125,82,0.1);color:#2E7D52;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:10px">
+      ✓ Request received! Our team will be in touch within 1 business day.
+    </div>
+
+    <div class="lead-form-actions">
+      <button class="lead-cancel" onclick="closeManagementModal()">Cancel</button>
+      <button class="lead-submit" id="mgmt-submit-btn" onclick="submitManagementRequest()">Submit request →</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
