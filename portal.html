@@ -1504,16 +1504,21 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 // 2. The Supabase JS SDK loaded successfully from the CDN (window.supabase exists)
 // 3. The createClient call itself doesn't throw
 // If any of these fail, supabase is null and the portal runs in localStorage-only mode.
-let supabase = null;
+//
+// FIX: The @supabase/supabase-js CDN build declares `var supabase` at global scope.
+// `let supabase` in the same scope throws "Identifier already declared" (SyntaxError),
+// which kills the entire script before handleLogin or any other function is defined.
+// Solution: save a reference to the library first, then assign (not redeclare) supabase.
+const _supabaseLib = (typeof window !== 'undefined') ? window.supabase : null;
+supabase = null;
 try {
   if (
     SUPABASE_URL.startsWith('http') &&
     SUPABASE_ANON_KEY.length > 20 &&
-    typeof window !== 'undefined' &&
-    window.supabase &&
-    typeof window.supabase.createClient === 'function'
+    _supabaseLib &&
+    typeof _supabaseLib.createClient === 'function'
   ) {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    supabase = _supabaseLib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
     });
   }
