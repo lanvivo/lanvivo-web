@@ -606,11 +606,11 @@ async function handleForm(e, form) {
   let success = false;
   if (BACKEND_ENABLED) {
     try {
-      const { error } = await supabase.from('gpt_waitlist').upsert(
-        { email, source },
-        { onConflict: 'email' }
+      const { error } = await supabase.from('gpt_waitlist').insert(
+        { email, source }
       );
-      if (!error) success = true;
+      // 23505 = unique_violation (email already on waitlist) → treat as success
+      if (!error || error.code === '23505') success = true;
       else console.error('Waitlist insert error:', error);
     } catch(err) { console.error('Waitlist error:', err); }
   } else {
