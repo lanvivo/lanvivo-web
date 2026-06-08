@@ -549,7 +549,9 @@ try {
 } catch (e) {
   console.warn('Supabase client init failed; falling back to Formspree.', e);
 }
-const supabase = _supabaseClient;
+// FIX: CDN declares `var supabase` globally; `const supabase` here throws "already declared".
+// Assign to the existing global instead of redeclaring it.
+supabase = _supabaseClient;
 const BACKEND_ENABLED = supabase !== null;
 
 // Scroll reveal. The reveal-ready class on <html> is what activates the

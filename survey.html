@@ -161,7 +161,7 @@ textarea{min-height:100px;line-height:1.6}
 <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
 
 <nav class="survey-nav">
-  <a href="index.html" class="nav-brand" style="text-decoration:none">
+  <a href="/" class="nav-brand" style="text-decoration:none">
     <div class="coin">
       <svg viewBox="0 0 34 34" fill="none"><circle cx="17" cy="17" r="15.5" stroke="#C8942A" stroke-width="1.6"/><circle cx="17" cy="17" r="12.1" stroke="#C8942A" stroke-width="0.6" stroke-opacity="0.3"/><circle cx="17" cy="1.8" r="1.8" fill="#C8942A"/><circle cx="17" cy="32.2" r="1.8" fill="#C8942A"/><circle cx="1.8" cy="17" r="1.8" fill="#C8942A"/><circle cx="32.2" cy="17" r="1.8" fill="#C8942A"/></svg>
       <span class="coin-l">L</span>
@@ -434,8 +434,11 @@ textarea{min-height:100px;line-height:1.6}
 // ════════════════════════════════════════════════════════════════════════════
 const SUPABASE_URL = 'https://fumqbfxvtusnslkvacdz.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ1bXFiZnh2dHVzbnNsa3ZhY2R6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4NTczNjQsImV4cCI6MjA5NjQzMzM2NH0.w-yfWcBiFZJnosq7PQPxBIqGS2JZKxpHE-MqmCGwegE';
-const supabase = (SUPABASE_URL.startsWith('http') && SUPABASE_ANON_KEY.length > 20)
-  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+// FIX: CDN declares `var supabase` globally; `const supabase` here throws "already declared".
+// Save the library reference first, then assign (not redeclare) supabase.
+const _supabaseLib = (typeof window !== 'undefined') ? window.supabase : null;
+supabase = (SUPABASE_URL.startsWith('http') && SUPABASE_ANON_KEY.length > 20 && _supabaseLib)
+  ? _supabaseLib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   : null;
 const BACKEND_ENABLED = supabase !== null;
 
