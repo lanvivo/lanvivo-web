@@ -6,7 +6,7 @@
 <title>Lanvivo · Land that lives for you</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -15,7 +15,7 @@
   --muted: #6A7090; --cream: #F5F0E4; --off: #F2EEE4;
   --rule: #E2DED4; --white: #ffffff; --ink: #1A1C2A;
 }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: hidden; }
 body { font-family: 'DM Sans', sans-serif; font-weight: 300; background: var(--mid); color: var(--cream); overflow-x: hidden; }
 a { text-decoration: none; color: inherit; }
 
@@ -41,7 +41,7 @@ nav {
 .wordmark { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; letter-spacing: -0.5px; color: var(--white); }
 .wordmark span { color: var(--gold); }
 .nav-links { display: flex; gap: 30px; }
-.nav-links a { font-size: 12px; font-weight: 400; letter-spacing: 1px; text-transform: uppercase; color: var(--slate); transition: color .2s; }
+.nav-links a { font-size: 12px; font-weight: 400; letter-spacing: 1px; text-transform: uppercase; color: var(--slate); transition: color .2s; display: inline-flex; align-items: center; height: 64px; }
 .nav-links a:hover { color: var(--cream); }
 .nav-cta { background: var(--gold); color: var(--mid); font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; padding: 9px 22px; border-radius: 3px; transition: opacity .2s; }
 .nav-cta:hover { opacity: .88; }
@@ -256,8 +256,8 @@ html.reveal-ready .reveal.visible { opacity: 1; transform: none; }
     <a href="survey.html">Survey</a>
   </div>
   <div class="nav-cta-group">
-    <a href="portal.html" class="nav-signin">Sign in</a>
-    <a href="portal.html" class="nav-cta">Open portal</a>
+    <a href="portal.html?tab=signin" class="nav-signin">Sign in</a>
+    <a href="portal.html?tab=signup" class="nav-cta">Get started free</a>
   </div>
   <!-- Mobile menu trigger (hidden on desktop) -->
   <button class="nav-mobile-btn" id="nav-toggle" aria-label="Menu" aria-expanded="false">
@@ -271,8 +271,8 @@ html.reveal-ready .reveal.visible { opacity: 1; transform: none; }
   <a href="#journey" onclick="closeMobileNav()">How it works</a>
   <a href="#professionals" onclick="closeMobileNav()">Agents &amp; lenders</a>
   <a href="survey.html">Survey</a>
-  <a href="portal.html">Sign in</a>
-  <a href="portal.html" class="nav-drawer-cta">Open portal →</a>
+  <a href="portal.html?tab=signin">Sign in</a>
+  <a href="portal.html?tab=signup" class="nav-drawer-cta">Get started free →</a>
 </div>
 
 <!-- HERO -->
@@ -284,7 +284,7 @@ html.reveal-ready .reveal.visible { opacity: 1; transform: none; }
   <h1 class="hero-h1">US real estate.<br><em>Built for the one</em><br>who crossed borders.</h1>
   <p class="hero-sub">Visa-aware mortgage eligibility. Property cash flow analysis. Shareable PDF reports. The portal is free. Accounts let you save your work and return to it from any device.</p>
   <div class="hero-cta-row">
-    <a href="portal.html" class="hero-cta-primary">Analyze your first property →</a>
+    <a href="portal.html?tab=signup" class="hero-cta-primary">Analyze your first property →</a>
     <a href="#waitlist" class="hero-cta-secondary">Just looking? Join the waitlist instead</a>
   </div>
   <p class="hero-note">Free during beta. Account required so your analyses save and sync across devices.</p>
@@ -349,7 +349,7 @@ html.reveal-ready .reveal.visible { opacity: 1; transform: none; }
           <span class="feat-live-pill soon">Soon · ROI Explorer</span>
         </div>
       </div>
-      <a href="portal.html" class="btn-gold">Try it free →</a>
+      <a href="portal.html?tab=signup" class="btn-gold">Try it free →</a>
     </div>
   </div>
 </section>
@@ -471,7 +471,7 @@ html.reveal-ready .reveal.visible { opacity: 1; transform: none; }
     </form>
     <p class="w-note reveal">No spam. We'll only email when something new launches.</p>
     <div class="waitlist-divider reveal"><span>or skip the wait</span></div>
-    <a href="portal.html" class="btn-gold reveal" style="margin-top:4px">Analyze a property now →</a>
+    <a href="portal.html?tab=signup" class="btn-gold reveal" style="margin-top:4px">Analyze a property now →</a>
   </div>
 </section>
 
@@ -499,11 +499,11 @@ html.reveal-ready .reveal.visible { opacity: 1; transform: none; }
     <div class="footer-links">
       <div class="footer-col">
         <h4>Platform</h4>
-        <a href="portal.html">Open portal</a>
-        <a href="portal.html">Cash Flow Analyzer</a>
-        <a href="portal.html">Mortgage Engine</a>
-        <a href="portal.html">Property Reports</a>
-        <a href="portal.html">Lanvivo GPT</a>
+        <a href="portal.html?tab=signup">Open portal</a>
+        <a href="portal.html?tab=signup">Cash Flow Analyzer</a>
+        <a href="portal.html?tab=signup">Mortgage Engine</a>
+        <a href="portal.html?tab=signup">Property Reports</a>
+        <a href="portal.html?tab=signup">Lanvivo GPT</a>
       </div>
       <div class="footer-col">
         <h4>Who we serve</h4>
@@ -517,7 +517,7 @@ html.reveal-ready .reveal.visible { opacity: 1; transform: none; }
         <h4>Company</h4>
         <a href="survey.html">Take the survey</a>
         <a href="#waitlist">Join the waitlist</a>
-        <a href="portal.html">Sign in</a>
+        <a href="portal.html?tab=signin">Sign in</a>
         <a href="#">Privacy</a>
         <a href="#">Terms</a>
       </div>

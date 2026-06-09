@@ -16,6 +16,8 @@
   --rule:#DDD8CC;--deep-border:rgba(26,42,94,0.14);
   --green:#1A5C3A;--green-l:#D4EDDF;--red:#8B2020;--red-l:#FDECEA;
   --sidebar:224px;
+  /* Aliases used by perf/account pages */
+  --card-bg:var(--surface);--border:var(--rule);--input-bg:var(--bg);
 }
 html,body{height:100%;overflow:hidden}
 body{font-family:'DM Sans',sans-serif;font-weight:300;background:var(--bg);color:var(--body)}
@@ -131,7 +133,7 @@ body{font-family:'DM Sans',sans-serif;font-weight:300;background:var(--bg);color
 }
 .main-header h1{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600;color:var(--ink)}
 .header-badge{font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);background:rgba(184,130,30,0.1);padding:4px 10px;border-radius:20px;border:1px solid rgba(184,130,30,0.2)}
-.main-content{flex:1;overflow-y:auto;padding:28px;background:var(--bg)}
+.main-content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:28px;background:var(--bg)}
 
 /* Pages */
 .page{display:none}
@@ -795,12 +797,87 @@ body.dark .dscr-card .dscr-val{color:#F5F0E4}
 *::-webkit-scrollbar-track{background:transparent}
 *::-webkit-scrollbar-thumb{background:var(--rule);border-radius:2px}
 
+/* ══ MOBILE NAV ════════════════════════════════════════════════ */
+.mob-menu-btn{
+  display:none;flex-direction:column;justify-content:center;gap:5px;
+  width:40px;height:40px;padding:8px;background:transparent;border:none;
+  cursor:pointer;border-radius:4px;flex-shrink:0;
+}
+.mob-menu-btn span{display:block;width:22px;height:2px;background:var(--ink);border-radius:2px;transition:all .2s}
+body.dark .mob-menu-btn span{background:#C8D4E8}
+.mob-nav-overlay{display:none;position:fixed;inset:0;z-index:900}
+.mob-nav-overlay.active{display:block}
+.mob-nav-backdrop{position:absolute;inset:0;background:rgba(10,14,26,0.5)}
+.mob-nav-drawer{
+  position:absolute;top:0;left:0;bottom:0;width:264px;
+  background:var(--surface);display:flex;flex-direction:column;
+  border-right:1px solid var(--rule);overflow-y:auto;
+  transform:translateX(-100%);transition:transform .25s ease;
+}
+.mob-nav-overlay.active .mob-nav-drawer{transform:translateX(0)}
+.mob-nav-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;border-bottom:1px solid var(--rule);flex-shrink:0;
+}
+.mob-nav-close{
+  width:36px;height:36px;background:transparent;border:none;cursor:pointer;
+  font-size:18px;color:var(--muted);display:flex;align-items:center;justify-content:center;
+  border-radius:4px;
+}
+.mob-nav-close:hover{color:var(--ink);background:var(--bg)}
+.mob-nav-body{flex:1;padding:8px 0}
+.mob-nav-section-label{
+  font-size:9px;font-weight:500;letter-spacing:2px;text-transform:uppercase;
+  color:var(--muted);padding:12px 18px 4px;
+}
+.mob-nav-item{
+  display:flex;align-items:center;gap:10px;padding:0 18px;
+  font-size:13.5px;color:var(--body);cursor:pointer;transition:background .15s;
+  min-height:48px;border:none;background:transparent;width:100%;text-align:left;
+  font-family:'DM Sans',sans-serif;font-weight:300;
+}
+.mob-nav-item:hover{background:rgba(200,148,42,0.06)}
+.mob-nav-item.active{background:rgba(200,148,42,0.1);color:var(--deep);font-weight:500}
+.mob-nav-footer{
+  padding:14px 16px;border-top:1px solid var(--rule);display:flex;flex-direction:column;gap:4px;
+}
+.mob-nav-user{font-size:12px;color:var(--ink);font-weight:500;padding:4px 0}
+.mob-nav-signout{
+  font-size:12px;color:var(--muted);background:transparent;border:none;
+  cursor:pointer;text-align:left;padding:8px 0;min-height:44px;font-family:'DM Sans',sans-serif;
+}
+.mob-nav-signout:hover{color:var(--ink)}
+body.dark .mob-nav-drawer{background:#101624;border-color:rgba(26,42,94,0.7)}
+body.dark .mob-nav-head{border-color:rgba(26,42,94,0.7)}
+body.dark .mob-nav-close:hover{background:rgba(255,255,255,0.06)}
+body.dark .mob-nav-item{color:#C8D4E8}
+body.dark .mob-nav-item.active{background:rgba(200,148,42,0.12);color:#F5F0E4}
+body.dark .mob-nav-footer{border-color:rgba(26,42,94,0.7)}
+body.dark .mob-nav-user{color:#F5F0E4}
+body.dark .mob-nav-signout{color:#6A7090}
+body.dark .mob-nav-signout:hover{color:#C8D4E8}
+
+/* ══ RESPONSIVE BREAKPOINTS ════════════════════════════════════ */
 @media(max-width:900px){
   .sidebar{display:none}
+  .mob-menu-btn{display:flex}
+  .main-header{padding:0 16px}
+  .main-content{padding:20px 16px}
+  #theme-label{display:none}
   .tool-layout,.analyzer-grid{grid-template-columns:1fr;height:auto}
   .stats-row{grid-template-columns:1fr 1fr}
   .plan-compare{grid-template-columns:1fr}
   .metrics-grid{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+  .stats-row{grid-template-columns:1fr}
+  .perf-summary-row{grid-template-columns:1fr 1fr}
+  .perf-form-grid{grid-template-columns:1fr}
+  .main-content{padding:14px 12px}
+  .report-page{padding:16px 12px}
+  .properties-page{padding:14px 12px}
+  .gpt-soon-card{padding:28px 18px}
+  .lead-modal{padding:22px 18px}
 }
 
 /* ══ DARK MODE ═══════════════════════════════════════════════════ */
@@ -811,6 +888,7 @@ body.dark{
   --ink:#F5F0E4;--body:#C8D0E0;--muted:#6A7090;--slate:#9BA8C8;
   --rule:rgba(26,42,94,0.7);--deep-border:rgba(26,42,94,0.7);
   --green:#1A5C3A;--green-l:#D4EDDF;--red:#8B2020;--red-l:#F5DADA;
+  --card-bg:#101624;--border:rgba(26,42,94,0.7);--input-bg:rgba(255,255,255,0.04);
 }
 body.dark .auth-card{background:#101624;border-color:rgba(26,42,94,0.7)}
 body.dark .auth-card h2{color:#F5F0E4}
@@ -858,6 +936,39 @@ body.dark .plan-col .price{color:#F0D080}
 body.dark .plan-col ul{color:#9BA8C8}
 body.dark .plan-col ul li{border-color:rgba(26,42,94,0.6)}
 body.dark .locked-page h2{color:#F5F0E4}
+
+/* ══ ACCOUNT PAGE ════════════════════════════════════════════════ */
+.acct-page{max-width:500px;padding-bottom:40px}
+.acct-hero{
+  display:flex;align-items:center;gap:16px;
+  padding:24px 0 28px;border-bottom:1px solid var(--rule);margin-bottom:24px;
+}
+.acct-avatar{
+  width:52px;height:52px;border-radius:50%;
+  background:linear-gradient(135deg,var(--deep) 0%,var(--gold) 100%);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600;
+  color:#fff;flex-shrink:0;
+}
+.acct-hero-name{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:600;color:var(--ink);line-height:1.2}
+.acct-hero-sub{font-size:11px;color:var(--muted);margin-top:3px;letter-spacing:0.5px}
+.acct-card{background:var(--surface);border:1px solid var(--rule);padding:24px 26px;margin-bottom:16px}
+.acct-card-label{font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:18px}
+.acct-field{margin-bottom:16px}
+.acct-field label{display:block;font-size:11px;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:var(--slate);margin-bottom:7px}
+.acct-field input{
+  width:100%;padding:10px 13px;
+  border:1px solid var(--rule);background:var(--bg);
+  color:var(--ink);font-family:'DM Sans',sans-serif;font-size:14px;
+  outline:none;transition:border-color .2s;
+}
+.acct-field input:focus{border-color:var(--gold)}
+.acct-hint{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.5}
+body.dark .acct-hero{border-color:rgba(26,42,94,0.7)}
+body.dark .acct-hero-name{color:#F5F0E4}
+body.dark .acct-card{background:#101624;border-color:rgba(26,42,94,0.7)}
+body.dark .acct-field input{background:rgba(255,255,255,0.04);border-color:rgba(155,168,200,0.2);color:#F5F0E4}
+body.dark .acct-field input:focus{border-color:var(--gold)}
 
 /* ══ TOGGLE CONTROLS ═════════════════════════════════════════════ */
 .header-controls{display:flex;align-items:center;gap:10px}
@@ -1059,6 +1170,56 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
 ══════════════════════════════════════════ -->
 <div id="portal-screen" class="screen">
 
+  <!-- Mobile nav overlay (visible at ≤900px) -->
+  <div class="mob-nav-overlay no-print" id="mob-nav-overlay">
+    <div class="mob-nav-backdrop" onclick="closeMobNav()"></div>
+    <div class="mob-nav-drawer">
+      <div class="mob-nav-head">
+        <a href="/" style="text-decoration:none;display:flex;align-items:center;gap:8px">
+          <div class="coin-mark" style="width:26px;height:26px">
+            <svg viewBox="0 0 34 34" fill="none"><circle cx="17" cy="17" r="15.5" stroke="#C8942A" stroke-width="1.6"/><circle cx="17" cy="17" r="12.1" stroke="#C8942A" stroke-width="0.6" stroke-opacity="0.3"/></svg>
+            <span class="coin-l" style="font-size:12px">L</span>
+          </div>
+          <span style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--ink)">lan<span style="color:var(--gold-l)">vivo</span></span>
+        </a>
+        <button class="mob-nav-close" onclick="closeMobNav()" aria-label="Close menu">✕</button>
+      </div>
+      <div class="mob-nav-body">
+        <div class="mob-nav-section-label">Main</div>
+        <button class="mob-nav-item active" data-mob-page="dashboard">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="1" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="9" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="9" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>
+          Dashboard
+        </button>
+        <div class="mob-nav-section-label">Tools</div>
+        <button class="mob-nav-item" data-mob-page="cashflow">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 12L6 7l3 3 5-7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Cash Flow Analyzer
+        </button>
+        <button class="mob-nav-item" data-mob-page="properties">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 7l6-5 6 5v7H2V7z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 14V9h4v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          My Properties
+        </button>
+        <button class="mob-nav-item" data-mob-page="mortgage">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 1L2 5v9h4V9h4v5h4V5L8 1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          Mortgage Engine
+        </button>
+        <button class="mob-nav-item" data-mob-page="gpt">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h8M2 12h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          Lanvivo GPT
+        </button>
+        <div class="mob-nav-section-label">Account</div>
+        <button class="mob-nav-item" data-mob-page="account">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M2 13c0-2.21 2.686-4 6-4s6 1.79 6 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          My Account
+        </button>
+      </div>
+      <div class="mob-nav-footer">
+        <div class="mob-nav-user" id="mob-nav-username">—</div>
+        <button class="mob-nav-signout" onclick="handleLogout()">Sign out →</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Sidebar -->
   <div class="sidebar">
     <a href="/" class="sidebar-logo" style="text-decoration:none;cursor:pointer">
@@ -1123,8 +1284,13 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
 
   <!-- Main -->
   <div class="main">
-    <div class="main-header">
-      <h1 id="page-title">Dashboard</h1>
+    <div class="main-header no-print">
+      <div style="display:flex;align-items:center;gap:10px">
+        <button class="mob-menu-btn no-print" onclick="toggleMobNav()" aria-label="Open navigation">
+          <span></span><span></span><span></span>
+        </button>
+        <h1 id="page-title">Dashboard</h1>
+      </div>
       <div class="header-controls">
         <select class="lang-select" id="lang-select" onchange="setLang(this.value)" title="Language">
           <option value="en">🌐 English</option>
@@ -1518,33 +1684,48 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
 
       <!-- ACCOUNT -->
       <div class="page" id="page-account">
-        <div style="max-width:480px">
-          <h3 style="margin-bottom:20px;font-weight:600">My Account</h3>
+        <div class="acct-page">
 
-          <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:20px">
-            <h4 style="font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--slate);margin-bottom:16px">Profile</h4>
+          <!-- Avatar + name hero -->
+          <div class="acct-hero">
+            <div class="acct-avatar" id="acct-avatar-display">T</div>
+            <div>
+              <div class="acct-hero-name" id="acct-hero-name">User</div>
+              <div class="acct-hero-sub">Beta access · Lanvivo Investor Portal</div>
+            </div>
+          </div>
 
-            <div style="margin-bottom:14px">
-              <label style="font-size:13px;font-weight:500;display:block;margin-bottom:6px">Full name</label>
-              <input type="text" id="acct-name" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--input-bg,var(--bg));color:inherit;font-size:14px;box-sizing:border-box">
+          <!-- Profile form card -->
+          <div class="acct-card">
+            <div class="acct-card-label">Profile</div>
+
+            <div class="acct-field">
+              <label>Full name</label>
+              <input type="text" id="acct-name">
+            </div>
+            <div class="acct-field">
+              <label>Phone <span style="font-weight:300;color:var(--muted)">(optional)</span></label>
+              <input type="tel" id="acct-phone" placeholder="+1 555 123 4567">
+            </div>
+            <div class="acct-field">
+              <label>Email</label>
+              <input type="email" id="acct-email">
+              <p class="acct-hint">Changing your email sends a confirmation link to the new address.</p>
             </div>
 
-            <div style="margin-bottom:14px">
-              <label style="font-size:13px;font-weight:500;display:block;margin-bottom:6px">Phone (optional)</label>
-              <input type="tel" id="acct-phone" placeholder="+1 555 123 4567" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--input-bg,var(--bg));color:inherit;font-size:14px;box-sizing:border-box">
-            </div>
-
-            <div style="margin-bottom:20px">
-              <label style="font-size:13px;font-weight:500;display:block;margin-bottom:6px">Email</label>
-              <input type="email" id="acct-email" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--input-bg,var(--bg));color:inherit;font-size:14px;box-sizing:border-box">
-              <p style="font-size:11px;color:var(--slate);margin-top:5px">Changing your email will send a confirmation link to the new address.</p>
-            </div>
-
-            <div style="display:flex;align-items:center;gap:12px">
-              <button class="btn-analyze" style="width:auto;padding:9px 20px" onclick="saveAccountChanges()">Save changes</button>
+            <div style="display:flex;align-items:center;gap:12px;margin-top:20px">
+              <button class="btn-analyze" style="width:auto;padding:10px 22px" onclick="saveAccountChanges()">Save changes</button>
               <span id="acct-status" style="font-size:13px;display:none"></span>
             </div>
           </div>
+
+          <!-- Danger zone -->
+          <div class="acct-card acct-danger-zone">
+            <div class="acct-card-label">Session</div>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:14px">You are signed in on this device.</p>
+            <button class="btn-analyze" style="width:auto;padding:9px 20px;background:transparent;color:var(--ink);border:1px solid var(--rule)" onclick="handleLogout()">Sign out →</button>
+          </div>
+
         </div>
       </div>
 
@@ -2291,6 +2472,8 @@ async function initPortal() {
   document.getElementById('portal-screen').classList.add('active');
   const u = currentUser;
   document.getElementById('sidebar-name').textContent = u.name;
+  const mobUser = document.getElementById('mob-nav-username');
+  if (mobUser) mobUser.textContent = u.name;
   // Plan consolidation: elements still updated for back-compat but hidden via CSS.
   document.getElementById('sidebar-plan').textContent = 'Beta access';
   document.getElementById('plan-badge').textContent   = 'Beta';
@@ -2780,6 +2963,20 @@ function renderToolGrid() {
 // ── Navigation ────────────────────────────────────────────────────────────────
 const PAGE_TITLES = {dashboard:'Dashboard',gpt:'Lanvivo GPT',mortgage:'Mortgage Eligibility Engine',cashflow:'Cash Flow Analyzer',properties:'My Properties',compare:'Compare Properties',report:'Property Report',upgrade:'Plans & Pricing',account:'My Account',performance:'Performance Tracker'};
 
+// ── Mobile navigation ────────────────────────────────────────────────────────
+function toggleMobNav() {
+  document.getElementById('mob-nav-overlay').classList.toggle('active');
+}
+function closeMobNav() {
+  document.getElementById('mob-nav-overlay')?.classList.remove('active');
+}
+// Wire up mob-nav-item buttons (called once DOM is ready)
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.mob-nav-item[data-mob-page]').forEach(btn => {
+    btn.addEventListener('click', () => navigateTo(btn.dataset.mobPage, null));
+  });
+});
+
 function navigateTo(page, navEl) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   if (navEl) navEl.classList.add('active');
@@ -2788,6 +2985,11 @@ function navigateTo(page, navEl) {
     const items = document.querySelectorAll('.nav-item');
     if (items[map[page]]) items[map[page]].classList.add('active');
   }
+  // Sync mobile nav active state
+  document.querySelectorAll('.mob-nav-item[data-mob-page]').forEach(b => {
+    b.classList.toggle('active', b.dataset.mobPage === page);
+  });
+  closeMobNav();
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById(`page-${page}`).classList.add('active');
   document.getElementById('page-title').textContent = PAGE_TITLES[page] || page;
@@ -2837,7 +3039,11 @@ async function renderPerformancePage() {
   // projection.cumCF[0]=0, [1]=year1 cumulative, etc.
   // Per-year projected CF = cumCF[y] - cumCF[y-1]
   const projCFByYear = {};
-  const purchaseYear = prop.purchasedAt ? new Date(prop.purchasedAt).getFullYear() : new Date().getFullYear();
+  const currentYear = new Date().getFullYear();
+  // If purchased, anchor projections to purchase year. Otherwise anchor to current year.
+  const purchaseYear = prop.purchasedAt
+    ? new Date(prop.purchasedAt).getFullYear()
+    : currentYear;
   for (let y = 1; y <= 15; y++) {
     projCFByYear[purchaseYear + y - 1] = projection.cumCF[y] - projection.cumCF[y - 1];
   }
@@ -2852,10 +3058,12 @@ async function renderPerformancePage() {
     ? new Date(prop.purchasedAt).toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'})
     : 'Unknown';
 
-  const currentYear = new Date().getFullYear();
-  // Year range: from purchase year up to current year
+  // Year dropdown: from 10 years ago (or purchase year if earlier) up to next year,
+  // so users can log historical data even without a recorded purchase date.
+  const rangeStart = Math.min(purchaseYear, currentYear - 10);
+  const rangeEnd   = currentYear + 1;
   const yearOptions = [];
-  for (let y = purchaseYear; y <= currentYear; y++) yearOptions.push(y);
+  for (let y = rangeStart; y <= rangeEnd; y++) yearOptions.push(y);
 
   // ── Projected annual mortgage payment ──
   const s = prop.inputs;
@@ -3132,6 +3340,11 @@ function populateAccountForm() {
   document.getElementById('acct-name').value  = currentUser.name  || '';
   document.getElementById('acct-phone').value = currentUser.phone || '';
   document.getElementById('acct-email').value = currentUser.email || '';
+  // Hero section
+  const heroName = document.getElementById('acct-hero-name');
+  const heroAvatar = document.getElementById('acct-avatar-display');
+  if (heroName) heroName.textContent = currentUser.name || 'User';
+  if (heroAvatar) heroAvatar.textContent = (currentUser.name || 'U').charAt(0).toUpperCase();
   const s = document.getElementById('acct-status');
   s.style.display = 'none'; s.textContent = '';
 }
@@ -3171,10 +3384,16 @@ async function saveAccountChanges() {
     // Update in-memory user
     currentUser.name  = newName;
     currentUser.phone = newPhone;
-    // Update sidebar display
+    // Update sidebar, mobile nav, and account hero
     document.getElementById('sidebar-name').textContent = newName;
     document.getElementById('sidebar-avatar').textContent = newName.charAt(0).toUpperCase();
     document.getElementById('welcome-msg').innerHTML = `Welcome back, <em>${newName.split(' ')[0]}.</em>`;
+    const mobUser = document.getElementById('mob-nav-username');
+    if (mobUser) mobUser.textContent = newName;
+    const heroName = document.getElementById('acct-hero-name');
+    const heroAvatar = document.getElementById('acct-avatar-display');
+    if (heroName) heroName.textContent = newName;
+    if (heroAvatar) heroAvatar.textContent = newName.charAt(0).toUpperCase();
 
     statusEl.style.color = 'var(--green, #1a7a4a)';
     statusEl.style.display = 'inline';
@@ -3977,12 +4196,14 @@ function renderPropertiesList() {
     const rows = analyzing.map(buildAnalyzingRow).join('');
     html += `
       <div class="prop-section-label">Analyzing <span class="prop-section-count">${analyzing.length}</span></div>
+      <div style="overflow-x:auto">
       <table class="prop-table">
         <thead><tr>
           <th></th><th>Property</th><th>Monthly CF</th><th>CoC return</th><th>DSCR</th><th>15-yr return</th><th></th>
         </tr></thead>
         <tbody>${rows}</tbody>
-      </table>`;
+      </table>
+      </div>`;
   }
 
   // ── Owned section ──
@@ -3993,12 +4214,14 @@ function renderPropertiesList() {
         Owned properties <span class="prop-section-count">${owned.length}</span>
       </div>
       <div class="owned-section-intro">These are properties you've purchased. Click <strong>Get managed →</strong> to have Lanvivo manage them for you.</div>
+      <div style="overflow-x:auto">
       <table class="prop-table">
         <thead><tr>
           <th></th><th>Property</th><th>Monthly CF</th><th>CoC return</th><th>15-yr return</th><th></th>
         </tr></thead>
         <tbody>${rows}</tbody>
-      </table>`;
+      </table>
+      </div>`;
   }
 
   container.innerHTML = html;
@@ -5151,6 +5374,11 @@ async function submitGptWaitlist(evt) {
   // Check first if this is a shared-report URL (#share=...). If so, render the read-only view
   // and short-circuit the normal login/portal flow.
   if (checkForSharedReport()) return;
+
+  // Pre-select the correct auth tab if landing from the marketing site (?tab=signin / ?tab=signup)
+  const tabParam = new URLSearchParams(window.location.search).get('tab');
+  if (tabParam === 'signup') switchAuthTab('signup');
+  else if (tabParam === 'signin') switchAuthTab('login');
 
   try {
     // Try to restore an existing session. db.getCurrentSession() handles both Supabase
