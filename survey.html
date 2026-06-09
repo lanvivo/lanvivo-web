@@ -434,13 +434,21 @@ textarea{min-height:100px;line-height:1.6}
 // ════════════════════════════════════════════════════════════════════════════
 const SUPABASE_URL = 'https://fumqbfxvtusnslkvacdz.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ1bXFiZnh2dHVzbnNsa3ZhY2R6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4NTczNjQsImV4cCI6MjA5NjQzMzM2NH0.w-yfWcBiFZJnosq7PQPxBIqGS2JZKxpHE-MqmCGwegE';
-// FIX: CDN declares `var supabase` globally; `const supabase` here throws "already declared".
-// Save the library reference first, then assign (not redeclare) supabase.
-const _supabaseLib = (typeof window !== 'undefined') ? window.supabase : null;
-supabase = (SUPABASE_URL.startsWith('http') && SUPABASE_ANON_KEY.length > 20 && _supabaseLib)
-  ? _supabaseLib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-  : null;
-const BACKEND_ENABLED = supabase !== null;
+// The Supabase CDN script is loaded with `defer`, meaning it runs AFTER the inline
+// script block. Initializing the client here (at parse time) would capture
+// window.supabase=undefined and permanently disable the backend.
+// Fix: lazy-initialize on first use so the CDN is guaranteed to have run.
+supabase = null; // will be set on first getClient() call
+function getClient() {
+  if (!supabase) {
+    const lib = window.supabase;
+    if (lib && SUPABASE_URL.startsWith('http') && SUPABASE_ANON_KEY.length > 20) {
+      supabase = lib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+  }
+  return supabase;
+}
+const BACKEND_ENABLED = true; // treated as enabled; getClient() will return null if CDN failed
 
 // Formspree fallback for sites where Supabase isn't yet configured. Safe to leave; it's
 // only used when BACKEND_ENABLED is false.
@@ -560,10 +568,11 @@ async function submitSurvey() {
 
   let success = false;
 
-  // Try Supabase first
-  if (BACKEND_ENABLED) {
+  // Try Supabase first (lazy-initialize so deferred CDN is ready by now)
+  const db = getClient();
+  if (db) {
     try {
-      const { error } = await supabase.from('survey_responses').insert({
+      const { error } = await db.from('survey_responses').insert({
         email,
         answers,
         source: 'survey-page',
