@@ -4614,6 +4614,13 @@ async function copyShareLink() {
 
 // On portal load, check if the URL contains a shared-property fragment. If so, render the
 // read-only shared-report view instead of the normal authenticated portal.
+function enableSharedReportScroll() {
+  // The portal app shell forces html,body{height:100%;overflow:hidden} for its own layout.
+  // Shared report pages are standalone (no sidebar/main-content) so we must re-enable scrolling.
+  document.documentElement.style.cssText += ';height:auto!important;overflow:auto!important';
+  document.body.style.cssText += ';height:auto!important;overflow:auto!important';
+}
+
 function checkForSharedReport() {
   const hash = window.location.hash;
 
@@ -4622,6 +4629,7 @@ function checkForSharedReport() {
     const encoded = hash.substring('#share='.length);
     const inputs = decodeShareSnapshot(encoded);
     if (!inputs) return false;
+    enableSharedReportScroll();
     renderSharedReport(inputs);
     return true;
   }
@@ -4635,6 +4643,7 @@ function checkForSharedReport() {
       const snapshots = JSON.parse(atob(b64));
       const allInputs = snapshots.map(s => decodeShareSnapshot(s)).filter(Boolean);
       if (allInputs.length >= COMPARE_MIN) {
+        enableSharedReportScroll();
         renderSharedCompareReport(allInputs);
         return true;
       }
