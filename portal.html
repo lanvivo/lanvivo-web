@@ -1862,7 +1862,10 @@ const db = {
     }
     const { data, error } = await supabase.auth.signUp({
       email, password,
-      options: { data: { name } }   // stored as raw_user_meta_data, used by trigger to create profile
+      options: {
+        data: { name },   // stored as raw_user_meta_data, used by trigger to create profile
+        emailRedirectTo: window.location.origin + '/portal'
+      }
     });
     if (error) return { user: null, error };
     // signUp returns a user even if email confirmation is required (data.user is set, session may be null)
@@ -1903,9 +1906,12 @@ const db = {
       .select('name, primary_language, phone')
       .eq('id', authUser.id)
       .maybeSingle();
-    // Detect new users: account created within the last 90 seconds
+    // Detect new users: first sign-in is always within a few seconds of account creation.
+    // Comparing last_sign_in_at vs created_at works for both email signup and Google OAuth
+    // (the old Date.now() approach broke for OAuth because the redirect takes >90s).
     const createdMs = new Date(authUser.created_at).getTime();
-    const isNewUser = (Date.now() - createdMs) < 90_000;
+    const lastSignInMs = new Date(authUser.last_sign_in_at || authUser.created_at).getTime();
+    const isNewUser = (lastSignInMs - createdMs) < 5000;
     currentUser = {
       id: authUser.id,
       name: profile?.name || authUser.user_metadata?.name || authUser.email.split('@')[0],
@@ -5389,6 +5395,19 @@ async function submitGptWaitlist(evt) {
   // Check first if this is a shared-report URL (#share=...). If so, render the read-only view
   // and short-circuit the normal login/portal flow.
   if (checkForSharedReport()) return;
+
+  // Listen for auth state changes (handles email confirmation callback with #access_token hash)
+  if (BACKEND_ENABLED) {
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session && !currentUser) {
+        await db._hydrateCurrentUser(session.user);
+        const cover = document.getElementById('init-cover');
+        if (cover) cover.remove();
+        document.getElementById('auth-screen')?.classList.remove('active');
+        await initPortal();
+      }
+    });
+  }
 
   // Pre-select the correct auth tab if landing from the marketing site (?tab=signin / ?tab=signup)
   const tabParam = new URLSearchParams(window.location.search).get('tab');
