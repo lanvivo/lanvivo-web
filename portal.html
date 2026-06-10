@@ -5396,19 +5396,6 @@ async function submitGptWaitlist(evt) {
   // and short-circuit the normal login/portal flow.
   if (checkForSharedReport()) return;
 
-  // Listen for auth state changes (handles email confirmation callback with #access_token hash)
-  if (BACKEND_ENABLED) {
-    supabase.auth.onAuthStateChange(async (event, session) => {
-      if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session && !currentUser) {
-        await db._hydrateCurrentUser(session.user);
-        const cover = document.getElementById('init-cover');
-        if (cover) cover.remove();
-        document.getElementById('auth-screen')?.classList.remove('active');
-        await initPortal();
-      }
-    });
-  }
-
   // Pre-select the correct auth tab if landing from the marketing site (?tab=signin / ?tab=signup)
   const tabParam = new URLSearchParams(window.location.search).get('tab');
   if (tabParam === 'signup') switchAuthTab('signup');
