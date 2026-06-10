@@ -25,6 +25,7 @@ body{font-family:'DM Sans',sans-serif;font-weight:300;background:var(--bg);color
 /* ── Screens ── */
 .screen{position:fixed;inset:0;display:none}
 .screen.active{display:flex}
+@keyframes spin{to{transform:rotate(360deg)}}
 
 /* ══ AUTH ══════════════════════════════════════════════════════ */
 #auth-screen{
@@ -1073,7 +1074,12 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
 ══════════════════════════════════════════ -->
 <div id="toast-container"></div>
 
-<div id="auth-screen" class="screen active">
+<!-- Init cover: hides auth/portal flash while session check runs. Removed by init(). -->
+<div id="init-cover" style="position:fixed;inset:0;background:#0A0E1A;z-index:9999;display:flex;align-items:center;justify-content:center">
+  <div style="width:28px;height:28px;border:2px solid rgba(200,170,90,0.3);border-top-color:#C8AA5A;border-radius:50%;animation:spin .7s linear infinite"></div>
+</div>
+
+<div id="auth-screen" class="screen">
   <div class="auth-box">
     <a href="/" class="auth-logo" style="text-decoration:none;cursor:pointer">
       <div class="coin-mark">
@@ -5402,12 +5408,18 @@ async function submitGptWaitlist(evt) {
       await initPortal();
       // If this is the first login after the Supabase migration, offer to import local data
       maybeShowMigrationPrompt();
+    } else {
+      // No session — show auth screen
+      document.getElementById('auth-screen').classList.add('active');
     }
   } catch(e) {
-    // If Supabase is unreachable on load (CORS, network, tables not yet created),
-    // log the error but leave the auth screen visible so the user can still log in.
-    // The portal degrades to localStorage mode automatically.
+    // If Supabase is unreachable on load, show auth so user can still log in.
     console.error('Portal init error:', e);
+    document.getElementById('auth-screen').classList.add('active');
+  } finally {
+    // Always remove the init cover so the user is never left staring at a spinner
+    const cover = document.getElementById('init-cover');
+    if (cover) cover.remove();
   }
 })();
 
