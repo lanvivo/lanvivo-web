@@ -2370,6 +2370,63 @@ async function handleSignup() {
   await afterLogin();
 }
 
+// ── Security: inactivity timeout ─────────────────────────────────────────────
+// Auto-signs out after 30 minutes of no interaction. Shows a 1-minute warning first.
+const IDLE_TIMEOUT_MS = 30 * 60 * 1000;
+const IDLE_WARN_MS    = 29 * 60 * 1000;
+let _idleTimer = null, _idleWarnTimer = null, _idleActive = false;
+
+function _resetIdleTimer() {
+  clearTimeout(_idleTimer);
+  clearTimeout(_idleWarnTimer);
+  _idleWarnTimer = setTimeout(() => {
+    showToast('You\'ll be signed out in 1 minute due to inactivity.', 'default', 10000);
+  }, IDLE_WARN_MS);
+  _idleTimer = setTimeout(async () => {
+    await handleLogout();
+    showToast('Signed out due to inactivity.', 'default', 5000);
+  }, IDLE_TIMEOUT_MS);
+}
+
+function startIdleTimer() {
+  if (!_idleActive) {
+    ['mousemove','keydown','click','scroll','touchstart'].forEach(ev =>
+      document.addEventListener(ev, _resetIdleTimer, { passive: true })
+    );
+    _idleActive = true;
+  }
+  _resetIdleTimer();
+}
+
+function stopIdleTimer() {
+  clearTimeout(_idleTimer);
+  clearTimeout(_idleWarnTimer);
+  ['mousemove','keydown','click','scroll','touchstart'].forEach(ev =>
+    document.removeEventListener(ev, _resetIdleTimer)
+  );
+  _idleActive = false;
+}
+
+// ── Security: expired session watcher ────────────────────────────────────────
+// Supabase auto-refreshes JWTs in the background. If the refresh fails (network
+// outage, revoked token), Supabase fires SIGNED_OUT. We catch that and force a
+// clean logout rather than leaving the user in a broken half-authenticated state.
+let _sessionWatcherStarted = false;
+function startSessionWatcher() {
+  if (!BACKEND_ENABLED || _sessionWatcherStarted) return;
+  _sessionWatcherStarted = true;
+  supabase.auth.onAuthStateChange((event) => {
+    if (event === 'SIGNED_OUT' && currentUser) {
+      // Token refresh failed — Supabase already cleared the session
+      currentUser = null;
+      stopIdleTimer();
+      document.getElementById('portal-screen')?.classList.remove('active');
+      document.getElementById('auth-screen')?.classList.add('active');
+      showToast('Your session expired. Please sign in again.', 'default', 6000);
+    }
+  });
+}
+
 // Called after any successful sign-in or signup. Initializes the portal and triggers
 // the localStorage migration prompt if the user has pre-Supabase data to import.
 async function afterLogin() {
@@ -2386,6 +2443,7 @@ function loginUser(email, user) {
 }
 
 async function handleLogout() {
+  stopIdleTimer();
   await db.signOut();
   chatHistory = []; chatQueryCount = 0;
   document.getElementById('auth-screen').classList.add('active');
@@ -2505,6 +2563,9 @@ async function initPortal() {
   // empty state vs. populated state shows correctly on first paint.
   await refreshProperties();
   renderDashboard();
+  // Start security timers after portal is fully loaded
+  startSessionWatcher();
+  startIdleTimer();
 }
 
 // ── Partner CTAs ─────────────────────────────────────────────────────────────
