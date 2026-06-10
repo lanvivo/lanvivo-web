@@ -438,7 +438,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 // script block. Initializing the client here (at parse time) would capture
 // window.supabase=undefined and permanently disable the backend.
 // Fix: lazy-initialize on first use so the CDN is guaranteed to have run.
-supabase = null; // will be set on first getClient() call
+let supabase = null; // will be set on first getClient() call
 function getClient() {
   if (!supabase) {
     const lib = window.supabase;
