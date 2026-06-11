@@ -422,7 +422,11 @@ body.dark .dash-recent-card .recent-metric-val{color:#F5F0E4}
 .info-tip:hover{background:var(--gold);color:#fff}
 .info-tip .tip-text{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);width:220px;background:var(--ink);color:#fff;font-size:11px;font-weight:400;font-style:normal;line-height:1.5;padding:9px 11px;border-radius:3px;text-transform:none;letter-spacing:normal;opacity:0;pointer-events:none;transition:opacity .15s;z-index:50;text-align:left;box-shadow:0 4px 12px rgba(0,0,0,0.18)}
 .info-tip .tip-text::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--ink)}
-.info-tip:hover .tip-text{opacity:1}
+.info-tip:hover .tip-text,.info-tip.active .tip-text{opacity:1;pointer-events:auto}
+@media(max-width:600px){
+  .info-tip .tip-text{width:200px;left:auto;right:-6px;transform:none}
+  .info-tip .tip-text::after{left:auto;right:14px;transform:none}
+}
 
 /* Plain-English subtitle under metric labels, for new investors */
 .metric-card .plain-sub{font-size:10.5px;color:var(--muted);font-style:italic;margin-top:1px;line-height:1.3}
@@ -1075,9 +1079,11 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
 <div id="toast-container"></div>
 
 <!-- Init cover: hides auth/portal flash while session check runs. Removed by init(). -->
+<!-- Safety net: auto-removes after 6s in case of a fatal JS error before finally runs. -->
 <div id="init-cover" style="position:fixed;inset:0;background:#0A0E1A;z-index:9999;display:flex;align-items:center;justify-content:center">
   <div style="width:28px;height:28px;border:2px solid rgba(200,170,90,0.3);border-top-color:#C8AA5A;border-radius:50%;animation:spin .7s linear infinite"></div>
 </div>
+<script>setTimeout(function(){var c=document.getElementById('init-cover');if(c)c.remove();var a=document.getElementById('auth-screen');if(a&&!document.getElementById('portal-screen')?.classList.contains('active'))a.classList.add('active');},6000);</script>
 
 <div id="auth-screen" class="screen">
   <div class="auth-box">
@@ -1423,7 +1429,7 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
             <h3>Mortgage Eligibility Engine</h3>
             <p>Enter your details and we will surface every loan product you qualify for right now.</p>
             <div class="form-field">
-              <label>Visa / immigration status</label>
+              <label>Visa / immigration status <i class="info-tip">?<span class="tip-text">Lenders offer different loan programs depending on your status. H-1B holders have the most options; foreign nationals need specialist lenders.</span></i></label>
               <select id="m-visa">
                 <option value="">Select your status</option>
                 <option value="h1b">H-1B visa holder</option>
@@ -1436,14 +1442,14 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
               </select>
             </div>
             <div class="form-field">
-              <label>Annual income (USD)</label>
+              <label>Annual income (USD) <i class="info-tip">?<span class="tip-text">Your gross (before-tax) salary from employment. Lenders use this to calculate the maximum mortgage you can qualify for.</span></i></label>
               <div class="input-number">
                 <span class="input-prefix">$</span>
                 <input type="number" min="0" id="m-income" placeholder="120,000">
               </div>
             </div>
             <div class="form-field">
-              <label>Years of US employment history</label>
+              <label>Years of US employment history <i class="info-tip">?<span class="tip-text">Most conventional lenders want 2+ years of US employment history. Less than 2 years limits your options but specialist immigrant lenders can still help.</span></i></label>
               <select id="m-history">
                 <option value="0">Less than 1 year</option>
                 <option value="1">1 to 2 years</option>
@@ -1451,7 +1457,7 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
               </select>
             </div>
             <div class="form-field">
-              <label>Do you have a Social Security Number?</label>
+              <label>Do you have a Social Security Number? <i class="info-tip">?<span class="tip-text">Most conventional lenders require an SSN. If you only have an ITIN, you'll need specialist lenders — they exist and Lanvivo can connect you.</span></i></label>
               <select id="m-ssn">
                 <option value="yes">Yes</option>
                 <option value="itin">No, I have an ITIN</option>
@@ -1459,7 +1465,7 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
               </select>
             </div>
             <div class="form-field">
-              <label>US credit score (if known)</label>
+              <label>US credit score (if known) <i class="info-tip">?<span class="tip-text">Your US credit score is separate from your home country score. Many recent immigrants have no US credit history — select that option and we'll show programs designed for you.</span></i></label>
               <select id="m-credit">
                 <option value="none">No US credit history</option>
                 <option value="580">580 to 619</option>
@@ -1469,7 +1475,7 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
               </select>
             </div>
             <div class="form-field">
-              <label>Property purpose</label>
+              <label>Property purpose <i class="info-tip">?<span class="tip-text">Investment properties usually require a larger down payment (20–25%) than a primary home (as low as 3–5% for some programs). This affects which loans you qualify for.</span></i></label>
               <select id="m-purpose">
                 <option value="primary">Primary home</option>
                 <option value="investment">Investment / rental property</option>
@@ -1477,7 +1483,7 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
               </select>
             </div>
             <div class="form-field">
-              <label>Down payment available</label>
+              <label>Down payment available <i class="info-tip">?<span class="tip-text">The cash you pay upfront. More down payment = more loan options. Foreign nationals typically need 20–30%. H-1B holders can sometimes qualify with less.</span></i></label>
               <select id="m-down">
                 <option value="3">3 to 5%</option>
                 <option value="10">10 to 19%</option>
@@ -1503,31 +1509,31 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
             <h3>Property Cash Flow Analyzer</h3>
             <p>Enter a property's numbers to instantly see projected income, expenses, and return on investment.</p>
             <div class="form-field">
-              <label>Property name or address</label>
+              <label>Property name or address <i class="info-tip">?<span class="tip-text">Just a label for your reference — used to identify this property in your saved list. Can be an address, nickname, or anything you like.</span></i></label>
               <input type="text" id="cf-name" placeholder="123 Main St, Little Rock" style="width:100%;padding:10px 12px;border:1px solid var(--rule);background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:13px;border-radius:3px">
             </div>
             <div class="form-field">
-              <label>Purchase price</label>
+              <label>Purchase price <i class="info-tip">?<span class="tip-text">The agreed sale price you're paying for the property. This drives your loan amount, down payment, and overall returns.</span></i></label>
               <div class="input-number"><span class="input-prefix">$</span><input type="number" min="0" id="cf-price" placeholder="350,000" oninput="calcCashFlow()"></div>
             </div>
             <div class="form-field">
-              <label>Closing &amp; loan costs</label>
+              <label>Closing &amp; loan costs <i class="info-tip">?<span class="tip-text">Fees you pay at closing: lender origination fee, title insurance, escrow, recording fees, etc. Typically 2–5% of the purchase price. Ask your lender for a Loan Estimate.</span></i></label>
               <div class="input-number"><span class="input-prefix">$</span><input type="number" min="0" id="cf-closing" placeholder="5,000" oninput="calcCashFlow()"></div>
             </div>
             <div class="form-field">
-              <label>Initial repair costs</label>
+              <label>Initial repair costs <i class="info-tip">?<span class="tip-text">Money you'll spend fixing or renovating the property before your first tenant moves in. Enter 0 if it's move-in ready. This is part of your total cash invested.</span></i></label>
               <div class="input-number"><span class="input-prefix">$</span><input type="number" min="0" id="cf-repairs" placeholder="0" oninput="calcCashFlow()"></div>
             </div>
             <div class="form-field">
-              <label>Down payment</label>
+              <label>Down payment <i class="info-tip">?<span class="tip-text">The percentage of the purchase price you pay in cash upfront. The rest is your mortgage. H-1B holders often use 20–25%; foreign nationals typically need 25–30%.</span></i></label>
               <div class="input-number"><input type="number" min="0" max="100" step="0.5" id="cf-down" value="25" placeholder="25" oninput="calcCashFlow()" style="padding-right:32px"><span class="input-prefix" style="left:auto;right:12px">%</span></div>
             </div>
             <div class="form-field">
-              <label>Interest rate (annual)</label>
+              <label>Interest rate (annual) <i class="info-tip">?<span class="tip-text">Your mortgage interest rate per year. Check with your lender for a current quote — rates vary by loan type and your profile. 7–8% is a typical range in 2025.</span></i></label>
               <div class="input-number"><input type="number" min="0" max="20" step="0.001" id="cf-rate" value="7.5" placeholder="7.5" oninput="calcCashFlow()" style="padding-right:32px"><span class="input-prefix" style="left:auto;right:12px">%</span></div>
             </div>
             <div class="form-field">
-              <label>Loan term</label>
+              <label>Loan term <i class="info-tip">?<span class="tip-text">How long you have to repay the mortgage. 30 years = lower monthly payments, more interest paid overall. 15 years = higher payments, but you build equity faster and pay much less interest.</span></i></label>
               <select id="cf-term" onchange="calcCashFlow()">
                 <option value="30">30 years</option>
                 <option value="15">15 years</option>
@@ -1535,51 +1541,51 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
               </select>
             </div>
             <div class="form-field">
-              <label>Monthly rent (expected)</label>
+              <label>Monthly rent (expected) <i class="info-tip">?<span class="tip-text">How much you expect to charge a tenant per month. Check Zillow, Rentometer, or local listings for comparable rents in that neighbourhood before estimating.</span></i></label>
               <div class="input-number"><span class="input-prefix">$</span><input type="number" min="0" id="cf-rent" placeholder="2,200" oninput="calcCashFlow()"></div>
             </div>
             <div class="form-field">
-              <label>Vacancy rate</label>
+              <label>Vacancy rate <i class="info-tip">?<span class="tip-text">The percentage of the year the property sits empty between tenants. 8% = about 1 month vacant per year. Use 5–10% for most markets; higher in slower rental areas.</span></i></label>
               <div class="slider-row">
                 <input type="range" id="cf-vacancy" min="0" max="20" value="8" oninput="updateSlider('cf-vacancy','cf-vacancy-val','%');calcCashFlow()">
                 <span class="slider-val" id="cf-vacancy-val">8%</span>
               </div>
             </div>
             <div class="form-field">
-              <label>Property management fee</label>
+              <label>Property management fee <i class="info-tip">?<span class="tip-text">What you pay a property manager to handle tenants, collect rent, and coordinate repairs. Typically 8–12% of monthly rent. Set to 0 if you'll self-manage.</span></i></label>
               <div class="slider-row">
                 <input type="range" id="cf-mgmt" min="0" max="15" value="10" oninput="updateSlider('cf-mgmt','cf-mgmt-val','%');calcCashFlow()">
                 <span class="slider-val" id="cf-mgmt-val">10%</span>
               </div>
             </div>
             <div class="form-field">
-              <label>Annual property tax</label>
+              <label>Annual property tax <i class="info-tip">?<span class="tip-text">The yearly tax charged by the local government on the property. Varies widely by state and county — check the county assessor's website for the actual figure on a specific address.</span></i></label>
               <div class="input-number"><span class="input-prefix">$</span><input type="number" min="0" id="cf-tax" placeholder="3,500" oninput="calcCashFlow()"></div>
             </div>
             <div class="form-field">
-              <label>Annual insurance</label>
+              <label>Annual insurance <i class="info-tip">?<span class="tip-text">Landlord insurance (also called rental property insurance) — not the same as homeowner's insurance. It covers the building and liability but not the tenant's belongings. Typically $800–$2,000/yr.</span></i></label>
               <div class="input-number"><span class="input-prefix">$</span><input type="number" min="0" id="cf-insurance" placeholder="1,200" oninput="calcCashFlow()"></div>
             </div>
             <div class="form-field">
-              <label>Monthly HOA fee</label>
+              <label>Monthly HOA fee <i class="info-tip">?<span class="tip-text">A monthly fee paid to a homeowners association if the property is in a managed community (common with condos and townhomes). Enter 0 for single-family homes with no HOA.</span></i></label>
               <div class="input-number"><span class="input-prefix">$</span><input type="number" min="0" id="cf-hoa" placeholder="0" oninput="calcCashFlow()"></div>
             </div>
             <div class="form-field">
-              <label>Annual rent growth</label>
+              <label>Annual rent growth <i class="info-tip">?<span class="tip-text">How much rents typically increase each year in this market. The US long-run average is around 3%. High-demand cities can run 4–5%; slower markets may be 1–2%.</span></i></label>
               <div class="slider-row">
                 <input type="range" id="cf-rent-growth" min="0" max="8" step="0.5" value="3" oninput="updateSlider('cf-rent-growth','cf-rent-growth-val','%');calcCashFlow()">
                 <span class="slider-val" id="cf-rent-growth-val">3%</span>
               </div>
             </div>
             <div class="form-field">
-              <label>Annual appreciation</label>
+              <label>Annual appreciation <i class="info-tip">?<span class="tip-text">How much the property's market value is expected to grow per year. The US long-run average is about 3–4%. This affects your projected equity and total return over time.</span></i></label>
               <div class="slider-row">
                 <input type="range" id="cf-appreciation" min="0" max="8" step="0.5" value="3" oninput="updateSlider('cf-appreciation','cf-appreciation-val','%');calcCashFlow()">
                 <span class="slider-val" id="cf-appreciation-val">3%</span>
               </div>
             </div>
             <div class="form-field">
-              <label>Your marginal tax bracket</label>
+              <label>Your marginal tax bracket <i class="info-tip">?<span class="tip-text">The income tax rate on your last dollar earned. Used to estimate your depreciation tax savings — a major benefit of owning rental property. Most H-1B engineers on $120k–$200k salaries fall in the 24–32% bracket.</span></i></label>
               <div class="slider-row">
                 <input type="range" id="cf-tax-rate" min="10" max="37" step="1" value="24" oninput="updateSlider('cf-tax-rate','cf-tax-rate-val','%');calcCashFlow()">
                 <span class="slider-val" id="cf-tax-rate-val">24%</span>
@@ -5489,6 +5495,20 @@ async function submitGptWaitlist(evt) {
     if (cover) cover.remove();
   }
 })();
+
+// ── Tooltip tap support (mobile) ─────────────────────────────────────────────
+// Hover works on desktop; on mobile we toggle .active on tap.
+document.addEventListener('click', function(e) {
+  const tip = e.target.closest('.info-tip');
+  if (tip) {
+    e.preventDefault();
+    const wasActive = tip.classList.contains('active');
+    document.querySelectorAll('.info-tip.active').forEach(t => t.classList.remove('active'));
+    if (!wasActive) tip.classList.add('active');
+  } else {
+    document.querySelectorAll('.info-tip.active').forEach(t => t.classList.remove('active'));
+  }
+});
 
 // ── Theme toggle ──────────────────────────────────────────────────────────────
 function toggleTheme() {
