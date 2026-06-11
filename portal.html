@@ -1618,6 +1618,7 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
             <div class="properties-actions">
               <button class="btn-analyze" id="compare-btn" style="opacity:0.5;cursor:not-allowed" onclick="goToCompare()">Compare selected (0 of 2–4)</button>
               <button class="btn-analyze" style="background:transparent;color:var(--ink);border:1px solid var(--rule)" onclick="startNewPropertyAnalysis()">+ Analyze new property</button>
+              <button class="btn-analyze" style="background:transparent;color:var(--gold,#C8AA5A);border:1px solid var(--gold,#C8AA5A)" onclick="openAddOwnedModal()">+ Add a property I own</button>
             </div>
           </div>
           <div id="properties-list-container"></div>
@@ -1950,14 +1951,17 @@ const db = {
       localStorage.setItem('lv_properties', JSON.stringify(list));
       return prop;
     }
+    const insertPayload = {
+      user_id: currentUser.id,
+      name: prop.name,
+      inputs: prop.inputs,
+      metrics: prop.metrics,
+    };
+    if (prop.status) insertPayload.status = prop.status;
+    if (prop.purchasedAt) insertPayload.purchased_at = new Date(prop.purchasedAt).toISOString();
     const { data, error } = await supabase
       .from('saved_properties')
-      .insert({
-        user_id: currentUser.id,
-        name: prop.name,
-        inputs: prop.inputs,
-        metrics: prop.metrics,
-      })
+      .insert(insertPayload)
       .select()
       .single();
     if (error) { console.error('saveProperty error:', error); throw error; }
@@ -2378,15 +2382,15 @@ async function handleSignup() {
 
 // ── Security: inactivity timeout ─────────────────────────────────────────────
 // Auto-signs out after 30 minutes of no interaction. Shows a 1-minute warning first.
-const IDLE_TIMEOUT_MS = 30 * 60 * 1000;
-const IDLE_WARN_MS    = 29 * 60 * 1000;
+const IDLE_TIMEOUT_MS = 60 * 60 * 1000;   // 60 min — real estate research sessions run long
+const IDLE_WARN_MS    = 55 * 60 * 1000;   // warn 5 min before timeout
 let _idleTimer = null, _idleWarnTimer = null, _idleActive = false;
 
 function _resetIdleTimer() {
   clearTimeout(_idleTimer);
   clearTimeout(_idleWarnTimer);
   _idleWarnTimer = setTimeout(() => {
-    showToast('You\'ll be signed out in 1 minute due to inactivity.', 'default', 10000);
+    showToast('You\'ll be signed out in 5 minutes due to inactivity.', 'default', 10000);
   }, IDLE_WARN_MS);
   _idleTimer = setTimeout(async () => {
     await handleLogout();
@@ -4053,6 +4057,104 @@ async function confirmMarkPurchased(id) {
   }
 }
 
+// ── Add owned property flow ──────────────────────────────────────────────────
+// Shortcut for users who already own a property and want to go straight to
+// the Performance Tracker, skipping the Cash Flow Analyzer entirely.
+
+function openAddOwnedModal() {
+  // Reset form
+  ['aop-name','aop-price','aop-date','aop-rent'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const err = document.getElementById('aop-error');
+  if (err) { err.style.display = 'none'; err.textContent = ''; }
+  const btn = document.getElementById('aop-submit-btn');
+  if (btn) { btn.disabled = false; btn.textContent = 'Add & track performance →'; }
+  document.getElementById('add-owned-modal').classList.add('active');
+}
+
+function closeAddOwnedModal() {
+  document.getElementById('add-owned-modal').classList.remove('active');
+}
+
+async function submitAddOwnedProperty() {
+  const nameEl  = document.getElementById('aop-name');
+  const priceEl = document.getElementById('aop-price');
+  const dateEl  = document.getElementById('aop-date');
+  const rentEl  = document.getElementById('aop-rent');
+  const errEl   = document.getElementById('aop-error');
+  const btn     = document.getElementById('aop-submit-btn');
+
+  const name  = nameEl.value.trim();
+  const price = parseFloat(priceEl.value) || 0;
+  const rent  = parseFloat(rentEl.value)  || 0;
+  const dateVal = dateEl.value; // YYYY-MM-DD string
+
+  // Validation
+  const errors = [];
+  if (!name)      errors.push('Property name or address is required.');
+  if (price <= 0) errors.push('Purchase price must be greater than 0.');
+  if (!dateVal)   errors.push('Purchase date is required.');
+  if (rent <= 0)  errors.push('Monthly rent must be greater than 0.');
+
+  if (errors.length) {
+    errEl.textContent = errors[0];
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  // Build a minimal inputs snapshot — no mortgage assumed (100% equity).
+  // Vacancy 5%, no mgmt/tax/insurance entered yet (user adds detail in tracker).
+  const inputs = {
+    name,
+    price,
+    rent,
+    closing:  0,
+    repairs:  0,
+    down:     100,    // 100% equity = no mortgage payment
+    rate:     0,
+    term:     30,
+    vacancy:  5,
+    mgmt:     0,
+    tax:      0,
+    insurance:0,
+    hoa:      0,
+    rentGrowth:   3,
+    appreciation: 3,
+  };
+
+  const metrics = computePropertyMetrics(inputs);
+  const purchasedAt = new Date(dateVal).getTime();
+
+  const entry = {
+    id: 'prop_' + Date.now() + '_' + Math.random().toString(36).slice(2,8),
+    name,
+    savedAt: Date.now(),
+    inputs,
+    metrics,
+    status: 'purchased',
+    purchasedAt,
+  };
+
+  try {
+    const saved = await db.saveProperty(entry);
+    await refreshProperties();
+    closeAddOwnedModal();
+    showToast('Property added. Taking you to the Performance Tracker…', 'success', 3000);
+    setTimeout(() => openPerformancePage(saved.id), 600);
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = 'Add & track performance →';
+    errEl.textContent = 'Could not save right now. Please try again.';
+    errEl.style.display = 'block';
+  }
+}
+
 // ── Management lead modal ────────────────────────────────────────────────────
 let _mgmtPropertyId = null;
 
@@ -4203,9 +4305,22 @@ function renderPropertiesList() {
     container.innerHTML = `
       <div class="properties-empty">
         <div class="icon">🏠</div>
-        <h3>No saved properties yet</h3>
-        <p>When you analyze a property in the Cash Flow Analyzer, click "Save this property" to keep it here for later comparison.</p>
-        <button class="btn-analyze" style="max-width:240px;margin:0 auto" onclick="startNewPropertyAnalysis()">Analyze your first property →</button>
+        <h3>No properties yet</h3>
+        <p>Choose how you want to get started.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-top:8px">
+          <div style="flex:1;min-width:200px;max-width:260px;background:var(--card-bg,var(--surface));border:1px solid var(--rule);border-radius:12px;padding:20px 18px;text-align:left;cursor:pointer" onclick="startNewPropertyAnalysis()">
+            <div style="font-size:22px;margin-bottom:8px">🔍</div>
+            <div style="font-weight:600;font-size:14px;margin-bottom:6px">Analyzing a deal</div>
+            <div style="font-size:12px;color:var(--slate);line-height:1.5;margin-bottom:14px">Run the Cash Flow Analyzer to model a property before you buy.</div>
+            <button class="btn-analyze" style="width:100%;padding:9px 12px;font-size:13px" onclick="startNewPropertyAnalysis()">Analyze a property →</button>
+          </div>
+          <div style="flex:1;min-width:200px;max-width:260px;background:var(--card-bg,var(--surface));border:1px solid var(--gold,#C8AA5A);border-radius:12px;padding:20px 18px;text-align:left;cursor:pointer" onclick="openAddOwnedModal()">
+            <div style="font-size:22px;margin-bottom:8px">🏡</div>
+            <div style="font-weight:600;font-size:14px;margin-bottom:6px">I already own a property</div>
+            <div style="font-size:12px;color:var(--slate);line-height:1.5;margin-bottom:14px">Add it here and go straight to the Performance Tracker to monitor it.</div>
+            <button class="btn-analyze" style="width:100%;padding:9px 12px;font-size:13px;background:transparent;color:var(--gold,#C8AA5A);border:1px solid var(--gold,#C8AA5A)" onclick="openAddOwnedModal()">Add a property I own →</button>
+          </div>
+        </div>
       </div>`;
     return;
   }
@@ -5841,6 +5956,42 @@ function updateChatLimit() {
   </div>
 </div>
 <!-- ── Management request modal ─────────────────────────────────────────── -->
+<!-- ADD OWNED PROPERTY MODAL -->
+<div class="lead-modal-backdrop" id="add-owned-modal" onclick="if(event.target===this)closeAddOwnedModal()">
+  <div class="lead-modal" style="max-width:460px">
+    <button class="lead-modal-close" onclick="closeAddOwnedModal()">×</button>
+    <div class="lead-modal-label" style="background:rgba(200,170,90,0.12);color:#C8AA5A">My Properties</div>
+    <h3>Add a property you own</h3>
+    <p class="lead-modal-intro" style="margin-bottom:20px">Enter the basics — you can add more detail in the Performance Tracker afterwards.</p>
+
+    <div class="lead-form-field">
+      <label>Property name or address *</label>
+      <input type="text" id="aop-name" placeholder="e.g. 123 Oak Ave, Austin TX" autocomplete="off">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="lead-form-field">
+        <label>Purchase price *</label>
+        <input type="number" id="aop-price" placeholder="350000" min="0" step="1000">
+      </div>
+      <div class="lead-form-field">
+        <label>Purchase date *</label>
+        <input type="date" id="aop-date">
+      </div>
+    </div>
+    <div class="lead-form-field">
+      <label>Current monthly rent *</label>
+      <input type="number" id="aop-rent" placeholder="2200" min="0" step="50">
+    </div>
+
+    <div id="aop-error" style="display:none;color:#c0392b;font-size:13px;margin-bottom:10px"></div>
+
+    <div class="lead-form-actions">
+      <button class="lead-cancel" onclick="closeAddOwnedModal()">Cancel</button>
+      <button class="lead-submit" id="aop-submit-btn" onclick="submitAddOwnedProperty()">Add & track performance →</button>
+    </div>
+  </div>
+</div>
+
 <div class="lead-modal-backdrop" id="mgmt-modal" onclick="if(event.target===this)closeManagementModal()">
   <div class="lead-modal" style="max-width:480px">
     <button class="lead-modal-close" onclick="closeManagementModal()">×</button>
