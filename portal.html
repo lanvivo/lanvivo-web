@@ -4066,7 +4066,7 @@ async function confirmMarkPurchased(id) {
 
 function openAddOwnedModal() {
   // Reset form
-  ['aop-name','aop-price','aop-date','aop-rent'].forEach(id => {
+  ['aop-name','aop-price','aop-date','aop-rent','aop-mortgage','aop-mgmt','aop-tax','aop-insurance'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -4082,17 +4082,25 @@ function closeAddOwnedModal() {
 }
 
 async function submitAddOwnedProperty() {
-  const nameEl  = document.getElementById('aop-name');
-  const priceEl = document.getElementById('aop-price');
-  const dateEl  = document.getElementById('aop-date');
-  const rentEl  = document.getElementById('aop-rent');
-  const errEl   = document.getElementById('aop-error');
-  const btn     = document.getElementById('aop-submit-btn');
+  const nameEl      = document.getElementById('aop-name');
+  const priceEl     = document.getElementById('aop-price');
+  const dateEl      = document.getElementById('aop-date');
+  const rentEl      = document.getElementById('aop-rent');
+  const mortgageEl  = document.getElementById('aop-mortgage');
+  const mgmtEl      = document.getElementById('aop-mgmt');
+  const taxEl       = document.getElementById('aop-tax');
+  const insuranceEl = document.getElementById('aop-insurance');
+  const errEl       = document.getElementById('aop-error');
+  const btn         = document.getElementById('aop-submit-btn');
 
-  const name  = nameEl.value.trim();
-  const price = parseFloat(priceEl.value) || 0;
-  const rent  = parseFloat(rentEl.value)  || 0;
-  const dateVal = dateEl.value; // YYYY-MM-DD string
+  const name           = nameEl.value.trim();
+  const price          = parseFloat(priceEl.value)     || 0;
+  const rent           = parseFloat(rentEl.value)      || 0;
+  const dateVal        = dateEl.value;
+  const mortgageMonthly = parseFloat(mortgageEl.value) || 0;
+  const mgmtPct        = parseFloat(mgmtEl.value)      || 0;
+  const annualTax      = parseFloat(taxEl.value)       || 0;
+  const annualIns      = parseFloat(insuranceEl.value) || 0;
 
   // Validation
   const errors = [];
@@ -4111,27 +4119,39 @@ async function submitAddOwnedProperty() {
   btn.disabled = true;
   btn.textContent = 'Saving…';
 
-  // Build a minimal inputs snapshot — no mortgage assumed (100% equity).
-  // Vacancy 5%, no mgmt/tax/insurance entered yet (user adds detail in tracker).
+  // Compute metrics directly from known monthly figures rather than reverse-engineering
+  // rate/term/down — this gives accurate cashflow when the user has an existing mortgage.
+  const effRent      = rent * 0.95;                         // 5% vacancy
+  const mgmtMonthly  = effRent * (mgmtPct / 100);
+  const capexMonthly = price * 0.01 / 12;                   // 1% capex reserve
+  const taxMonthly   = annualTax / 12;
+  const insMonthly   = annualIns / 12;
+  const piti         = mortgageMonthly + taxMonthly + insMonthly;
+  const cashflow     = effRent - piti - mgmtMonthly - capexMonthly;
+  const annualNOI    = effRent * 12 - annualTax - annualIns - mgmtMonthly * 12 - capexMonthly * 12;
+  const capRate      = price > 0 ? annualNOI / price : 0;
+  const cocReturn    = price > 0 ? (cashflow * 12) / price : 0;  // uses price as proxy for total cash in
+  const dscr         = mortgageMonthly > 0 ? annualNOI / (mortgageMonthly * 12) : 0;
+  // 15-yr simplified projection: appreciation + cumulative cash flow
+  const propValue15  = price * Math.pow(1.03, 15);
+  const totalReturn15 = (propValue15 - price) + cashflow * 12 * 15;
+
+  const metrics = { cashflow, cocReturn, capRate, dscr, piti, totalCashIn: price, totalReturn15, mortgage: mortgageMonthly };
+
+  // Store all inputs so the analyzer can open and edit this property later
   const inputs = {
-    name,
-    price,
-    rent,
-    closing:  0,
-    repairs:  0,
-    down:     100,    // 100% equity = no mortgage payment
-    rate:     0,
-    term:     30,
-    vacancy:  5,
-    mgmt:     0,
-    tax:      0,
-    insurance:0,
-    hoa:      0,
-    rentGrowth:   3,
-    appreciation: 3,
+    name, price, rent,
+    closing: 0, repairs: 0,
+    down: 100, rate: 0, term: 30,   // kept for analyzer compatibility; metrics computed above
+    vacancy: 5,
+    mgmt: mgmtPct,
+    tax: annualTax,
+    insurance: annualIns,
+    hoa: 0,
+    rentGrowth: 3, appreciation: 3,
+    _monthlyMortgage: mortgageMonthly,  // stored separately since we bypass rate/term calculation
   };
 
-  const metrics = computePropertyMetrics(inputs);
   const purchasedAt = new Date(dateVal).getTime();
 
   const entry = {
@@ -5961,29 +5981,69 @@ function updateChatLimit() {
 <!-- ── Management request modal ─────────────────────────────────────────── -->
 <!-- ADD OWNED PROPERTY MODAL -->
 <div class="lead-modal-backdrop" id="add-owned-modal" onclick="if(event.target===this)closeAddOwnedModal()">
-  <div class="lead-modal" style="max-width:460px">
+  <div class="lead-modal" style="max-width:480px;max-height:90vh;overflow-y:auto">
     <button class="lead-modal-close" onclick="closeAddOwnedModal()">×</button>
     <div class="lead-modal-label" style="background:rgba(200,170,90,0.12);color:#C8AA5A">My Properties</div>
     <h3>Add a property you own</h3>
-    <p class="lead-modal-intro" style="margin-bottom:20px">Enter the basics — you can add more detail in the Performance Tracker afterwards.</p>
+    <p class="lead-modal-intro" style="margin-bottom:20px">Fill in the required fields. Add expenses below for accurate projected figures.</p>
 
+    <!-- Required fields -->
     <div class="lead-form-field">
       <label>Property name or address *</label>
       <input type="text" id="aop-name" placeholder="e.g. 123 Oak Ave, Austin TX" autocomplete="off">
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
       <div class="lead-form-field">
-        <label>Purchase price *</label>
+        <label>Purchase price *
+          <i class="info-tip">?<span class="tip-text">The price you originally paid for the property. Used to calculate your return on investment and equity.</span></i>
+        </label>
         <input type="number" id="aop-price" placeholder="350000" min="0" step="1000">
       </div>
       <div class="lead-form-field">
-        <label>Purchase date *</label>
+        <label>Purchase date *
+          <i class="info-tip">?<span class="tip-text">When you closed on the property. Used to track how long you've held it and build the performance timeline.</span></i>
+        </label>
         <input type="date" id="aop-date">
       </div>
     </div>
     <div class="lead-form-field">
-      <label>Current monthly rent *</label>
+      <label>Current monthly rent *
+        <i class="info-tip">?<span class="tip-text">The gross rent you collect each month. If vacant, enter what you expect to charge when rented.</span></i>
+      </label>
       <input type="number" id="aop-rent" placeholder="2200" min="0" step="50">
+    </div>
+
+    <!-- Optional expense fields -->
+    <div style="border-top:1px solid var(--rule);margin:18px 0 14px;padding-top:14px">
+      <div style="font-size:12px;font-weight:600;color:var(--slate);letter-spacing:.04em;text-transform:uppercase;margin-bottom:12px">Monthly expenses <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional — improves accuracy)</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="lead-form-field" style="margin-bottom:0">
+          <label>Mortgage payment
+            <i class="info-tip">?<span class="tip-text">Your total monthly mortgage payment (principal + interest). Leave blank if you own the property free and clear.</span></i>
+          </label>
+          <input type="number" id="aop-mortgage" placeholder="1450" min="0" step="10">
+        </div>
+        <div class="lead-form-field" style="margin-bottom:0">
+          <label>Mgmt fee %
+            <i class="info-tip">?<span class="tip-text">If a property manager collects rent and handles day-to-day issues, enter their fee as a % of monthly rent. Typically 8–12%. Enter 0 if self-managed.</span></i>
+          </label>
+          <input type="number" id="aop-mgmt" placeholder="0" min="0" max="30" step="1">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+        <div class="lead-form-field" style="margin-bottom:0">
+          <label>Annual property tax
+            <i class="info-tip">?<span class="tip-text">Your yearly property tax bill. Find it on your tax assessment notice or mortgage statement. Divided by 12 in the cash flow calculation.</span></i>
+          </label>
+          <input type="number" id="aop-tax" placeholder="4800" min="0" step="100">
+        </div>
+        <div class="lead-form-field" style="margin-bottom:0">
+          <label>Annual insurance
+            <i class="info-tip">?<span class="tip-text">Your yearly homeowner's or landlord insurance premium. Divided by 12 in the cash flow calculation. Typically $1,200–$3,000/year.</span></i>
+          </label>
+          <input type="number" id="aop-insurance" placeholder="1800" min="0" step="100">
+        </div>
+      </div>
     </div>
 
     <div id="aop-error" style="display:none;color:#c0392b;font-size:13px;margin-bottom:10px"></div>
