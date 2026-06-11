@@ -3773,6 +3773,9 @@ async function refreshProperties() {
   // if multiple refresh calls race (initPortal + saveCurrentProperty firing in parallel).
   if (BACKEND_ENABLED) {
     try { localStorage.setItem('lv_properties', JSON.stringify(_propertyCache)); } catch(e) {}
+    // Mark as migrated — we successfully fetched from Supabase so localStorage is just a cache.
+    // This prevents the migration prompt from firing on a new device where lv_migrated was never set.
+    localStorage.setItem('lv_migrated', '1');
   }
   return _propertyCache;
 }
