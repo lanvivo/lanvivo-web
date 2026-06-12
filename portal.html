@@ -1204,6 +1204,26 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
         </button>
       </div>
     </div>
+
+    <!-- Reset Password (shown when user lands from reset-password email link) -->
+    <div id="reset-form" style="display:none">
+      <div class="auth-card">
+        <h2>Set new password.</h2>
+        <p>Choose a new password for your Lanvivo account.</p>
+        <div id="reset-error" class="auth-error"></div>
+        <div id="reset-success" class="auth-success"></div>
+        <div class="field">
+          <label>New password</label>
+          <input type="password" id="reset-password" placeholder="At least 8 characters" onkeydown="if(event.key==='Enter')handleSetNewPassword()">
+        </div>
+        <div class="field">
+          <label>Confirm new password</label>
+          <input type="password" id="reset-password-confirm" placeholder="Repeat password" onkeydown="if(event.key==='Enter')handleSetNewPassword()">
+        </div>
+        <button class="btn-primary" onclick="handleSetNewPassword()">Set new password</button>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -1946,12 +1966,13 @@ const db = {
       .select('name, primary_language, phone')
       .eq('id', authUser.id)
       .maybeSingle();
-    // Detect new users: first sign-in is always within a few seconds of account creation.
-    // Comparing last_sign_in_at vs created_at works for both email signup and Google OAuth
-    // (the old Date.now() approach broke for OAuth because the redirect takes >90s).
-    const createdMs = new Date(authUser.created_at).getTime();
-    const lastSignInMs = new Date(authUser.last_sign_in_at || authUser.created_at).getTime();
-    const isNewUser = (lastSignInMs - createdMs) < 5000;
+    // Detect new users via a localStorage flag scoped to the user ID.
+    // The timestamp approach (last_sign_in_at - created_at < 5s) fails for email-confirmation
+    // signups because the user confirms their email minutes/hours after account creation,
+    // so the gap always exceeds the threshold and everyone sees "Welcome back" on first login.
+    const seenKey = `lv_seen_${authUser.id}`;
+    const isNewUser = !localStorage.getItem(seenKey);
+    if (isNewUser) localStorage.setItem(seenKey, '1');
     currentUser = {
       id: authUser.id,
       name: profile?.name || authUser.user_metadata?.name || authUser.email.split('@')[0],
@@ -2562,6 +2583,52 @@ async function handlePasswordReset() {
   setTimeout(() => { errEl.style.color = ''; }, 8000);
 }
 
+// Show the set-new-password form (hides login/signup tabs, used after PASSWORD_RECOVERY event).
+function showResetPasswordForm() {
+  document.getElementById('auth-screen').classList.add('active');
+  document.getElementById('portal-screen').classList.remove('active');
+  document.querySelector('.auth-tabs').style.display = 'none';
+  document.getElementById('login-form').style.display = 'none';
+  document.getElementById('signup-form').style.display = 'none';
+  document.getElementById('reset-form').style.display = 'block';
+  setTimeout(() => { const f = document.getElementById('reset-password'); if (f) f.focus(); }, 100);
+}
+
+async function handleSetNewPassword() {
+  const pw  = document.getElementById('reset-password').value;
+  const pw2 = document.getElementById('reset-password-confirm').value;
+  const errEl  = document.getElementById('reset-error');
+  const succEl = document.getElementById('reset-success');
+  errEl.style.display = 'none';
+  succEl.style.display = 'none';
+  if (pw.length < 8) {
+    errEl.textContent = 'Password must be at least 8 characters.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (pw !== pw2) {
+    errEl.textContent = 'Passwords do not match.';
+    errEl.style.display = 'block';
+    return;
+  }
+  const btn = document.querySelector('#reset-form .btn-primary');
+  btn.disabled = true; btn.textContent = 'Updating...';
+  const { error } = await supabase.auth.updateUser({ password: pw });
+  btn.disabled = false; btn.textContent = 'Set new password';
+  if (error) {
+    errEl.textContent = error.message;
+    errEl.style.display = 'block';
+    return;
+  }
+  succEl.textContent = 'Password updated. Taking you to your portal...';
+  succEl.style.display = 'block';
+  setTimeout(async () => {
+    document.querySelector('.auth-tabs').style.display = '';
+    document.getElementById('reset-form').style.display = 'none';
+    await afterLogin();
+  }, 1500);
+}
+
 // Migration: if the user has existing localStorage properties from before Supabase was wired,
 // offer to import them on first login. Done as a friendly modal, non-destructive (originals
 // kept until import completes successfully).
@@ -3132,9 +3199,10 @@ function renderOnboardingChecklist() {
   // Permanently dismissed?
   if (localStorage.getItem(_onboardingKey()) === '1') { el.innerHTML = ''; return; }
 
+  const uid = currentUser?.id || 'anon';
   const props = loadSavedProperties();
-  const hasMortgageProfile = !!localStorage.getItem('lv_visited_mortgage');
-  const hasAnalyzed        = !!localStorage.getItem('lv_visited_cashflow');
+  const hasMortgageProfile = !!localStorage.getItem(`lv_visited_mortgage_${uid}`);
+  const hasAnalyzed        = !!localStorage.getItem(`lv_visited_cashflow_${uid}`);
   const hasSaved           = props.length > 0;
 
   const steps = [
@@ -3253,8 +3321,8 @@ function navigateTo(page, navEl) {
   // and may be reintroduced if pricing is added later.
   if (page==='properties') renderPropertiesList();
   if (page==='compare') renderComparePage();
-  if (page==='cashflow') { updateSaveButtonsForMode(); localStorage.setItem('lv_visited_cashflow','1'); }
-  if (page==='mortgage') localStorage.setItem('lv_visited_mortgage','1');
+  if (page==='cashflow') { updateSaveButtonsForMode(); localStorage.setItem(`lv_visited_cashflow_${currentUser?.id||'anon'}`,'1'); }
+  if (page==='mortgage') localStorage.setItem(`lv_visited_mortgage_${currentUser?.id||'anon'}`,'1');
   if (page==='dashboard') renderDashboard();
   if (page==='account') populateAccountForm();
   if (page==='performance') renderPerformancePage();
@@ -5780,6 +5848,14 @@ async function submitGptWaitlist(evt) {
   const tabParam = new URLSearchParams(window.location.search).get('tab');
   if (tabParam === 'signup') switchAuthTab('signup');
   else if (tabParam === 'signin') switchAuthTab('login');
+
+  // Register PASSWORD_RECOVERY listener BEFORE session check so it catches the event
+  // when Supabase processes the recovery token in the URL hash on page load.
+  if (BACKEND_ENABLED) {
+    supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') showResetPasswordForm();
+    });
+  }
 
   try {
     // Try to restore an existing session. db.getCurrentSession() handles both Supabase
