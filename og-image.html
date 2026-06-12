@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1200px; height: 630px; overflow: hidden;
+    background: #0A0E1A;
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* Subtle background orbs */
+  .orb {
+    position: absolute; border-radius: 50%;
+    filter: blur(80px); opacity: 0.18; pointer-events: none;
+  }
+  .orb-1 { width: 500px; height: 500px; background: #1A2A5E; top: -120px; right: -80px; }
+  .orb-2 { width: 360px; height: 360px; background: #C8942A; bottom: -120px; left: -60px; opacity: 0.10; }
+
+  /* Thin gold border frame */
+  .frame {
+    position: absolute; inset: 28px;
+    border: 1px solid rgba(200, 148, 42, 0.22);
+    border-radius: 16px; pointer-events: none;
+  }
+
+  .content {
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column;
+    align-items: flex-start; justify-content: center;
+    width: 100%; height: 100%;
+    padding: 0 96px;
+  }
+
+  /* Logo row */
+  .logo-row {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 36px;
+  }
+  .coin {
+    width: 48px; height: 48px;
+    border: 1.5px solid rgba(200,148,42,0.6);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(200,148,42,0.08);
+  }
+  .coin-l {
+    font-size: 22px; font-weight: 600; font-style: italic;
+    color: #C8942A; line-height: 1;
+    font-family: Georgia, 'Times New Roman', serif;
+  }
+  .wordmark {
+    font-size: 30px; font-weight: 700; letter-spacing: -0.5px;
+    color: #ffffff;
+  }
+  .wordmark span { color: #C8942A; }
+
+  /* Main headline */
+  .headline {
+    font-size: 52px; font-weight: 700; line-height: 1.12;
+    color: #F5F0E4; letter-spacing: -1px;
+    margin-bottom: 18px; max-width: 720px;
+  }
+  .headline em {
+    font-style: italic; color: #C8942A;
+    font-family: Georgia, 'Times New Roman', serif; font-weight: 400;
+  }
+
+  /* Sub copy */
+  .sub {
+    font-size: 20px; font-weight: 300; color: #9BA8C8;
+    line-height: 1.5; margin-bottom: 40px; max-width: 660px;
+  }
+
+  /* Feature pills */
+  .pills { display: flex; gap: 10px; flex-wrap: wrap; }
+  .pill {
+    background: rgba(200,148,42,0.1);
+    border: 1px solid rgba(200,148,42,0.28);
+    border-radius: 100px;
+    padding: 7px 16px;
+    font-size: 13px; font-weight: 400; color: #C8942A;
+    letter-spacing: 0.2px;
+  }
+
+  /* Right side decorative stat column */
+  .stats {
+    position: absolute; right: 96px; top: 50%;
+    transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 28px;
+    align-items: flex-end;
+  }
+  .stat { text-align: right; }
+  .stat-num {
+    font-size: 36px; font-weight: 700; color: #C8942A;
+    line-height: 1; letter-spacing: -1px;
+  }
+  .stat-label {
+    font-size: 12px; color: #6A7090; letter-spacing: 0.5px;
+    text-transform: uppercase; margin-top: 4px;
+  }
+  .stat-divider {
+    width: 1px; height: 32px;
+    background: rgba(200,148,42,0.2);
+    align-self: flex-end;
+  }
+
+  /* Domain badge */
+  .domain {
+    position: absolute; bottom: 50px; right: 96px;
+    font-size: 14px; color: #6A7090; letter-spacing: 0.5px;
+  }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="frame"></div>
+
+  <div class="content">
+    <div class="logo-row">
+      <div class="coin"><span class="coin-l">L</span></div>
+      <div class="wordmark">lan<span>vivo</span></div>
+    </div>
+
+    <div class="headline">US real estate,<br><em>built for the one</em><br>who crossed borders.</div>
+
+    <div class="sub">Visa-aware mortgage eligibility · Cash flow analysis<br>Shareable reports · Free during beta</div>
+
+    <div class="pills">
+      <div class="pill">H-1B &amp; work visas</div>
+      <div class="pill">ITIN buyers</div>
+      <div class="pill">Foreign nationals</div>
+      <div class="pill">F-1 / OPT</div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-num">45M+</div>
+      <div class="stat-label">Immigrants in the US</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat">
+      <div class="stat-num">8M+</div>
+      <div class="stat-label">Work visa holders</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat">
+      <div class="stat-num">$15B+</div>
+      <div class="stat-label">Foreign purchases / yr</div>
+    </div>
+  </div>
+
+  <div class="domain">lanvivo.com</div>
+</body>
+</html>

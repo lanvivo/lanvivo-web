@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terms of Service · Lanvivo</title>
+<meta name="description" content="Lanvivo Terms of Service — the rules and agreements that govern your use of the Lanvivo platform.">
+<link rel="canonical" href="https://lanvivo.com/terms">
+<meta name="robots" content="index, follow">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --mid: #0A0E1A; --deep: #1A2A5E; --card: #101624;
+  --gold: #C8942A; --gl: #F0D080; --slate: #9BA8C8;
+  --muted: #6A7090; --cream: #F5F0E4; --off: #F2EEE4;
+  --white: #ffffff; --ink: #1A1C2A;
+}
+html { scroll-behavior: smooth; }
+body { font-family: 'DM Sans', sans-serif; font-weight: 300; background: var(--mid); color: var(--cream); line-height: 1.7; }
+a { text-decoration: none; color: inherit; }
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 5vw; height: 64px;
+  background: rgba(10,14,26,0.96); backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(200,148,42,0.14);
+}
+.nav-logo { display: flex; align-items: center; gap: 11px; }
+.coin-mark {
+  width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative;
+}
+.coin-mark svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.coin-l { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; font-style: italic; color: var(--gold); position: relative; z-index: 1; line-height: 1; }
+.wordmark { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; letter-spacing: -0.5px; color: var(--white); }
+.wordmark span { color: var(--gold); }
+.nav-right { display: flex; align-items: center; gap: 22px; }
+.nav-link { font-size: 12px; font-weight: 400; letter-spacing: 1px; text-transform: uppercase; color: var(--slate); transition: color .2s; }
+.nav-link:hover { color: var(--cream); }
+.nav-cta { background: var(--gold); color: var(--mid); font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; padding: 9px 22px; border-radius: 3px; transition: opacity .2s; }
+.nav-cta:hover { opacity: .88; }
+
+/* PAGE */
+.page-wrap {
+  max-width: 780px; margin: 0 auto;
+  padding: 112px 24px 100px;
+}
+.page-eyebrow {
+  font-size: 11px; font-weight: 400; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 16px;
+}
+.page-title {
+  font-family: 'Syne', sans-serif; font-size: clamp(28px, 5vw, 44px); font-weight: 800;
+  color: var(--white); letter-spacing: -1px; line-height: 1.1; margin-bottom: 12px;
+}
+.page-meta {
+  font-size: 13px; color: var(--muted); margin-bottom: 56px;
+  padding-bottom: 32px; border-bottom: 1px solid rgba(200,148,42,0.14);
+}
+
+/* Doc content */
+.doc h2 {
+  font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700;
+  color: var(--white); margin: 44px 0 14px; letter-spacing: -0.3px;
+}
+.doc h3 {
+  font-size: 14px; font-weight: 500; color: var(--cream);
+  margin: 28px 0 10px; text-transform: uppercase; letter-spacing: 0.8px;
+}
+.doc p { font-size: 15px; color: var(--slate); margin-bottom: 16px; }
+.doc ul { margin: 0 0 16px 20px; }
+.doc li { font-size: 15px; color: var(--slate); margin-bottom: 6px; line-height: 1.65; }
+.doc a { color: var(--gold); text-decoration: underline; text-underline-offset: 3px; }
+.doc a:hover { opacity: .8; }
+.doc .highlight-box {
+  background: rgba(200,148,42,0.08); border-left: 2px solid var(--gold);
+  border-radius: 4px; padding: 16px 20px; margin: 24px 0;
+}
+.doc .highlight-box p { margin: 0; font-size: 14px; }
+.doc .warning-box {
+  background: rgba(255,100,80,0.07); border-left: 2px solid rgba(255,100,80,0.5);
+  border-radius: 4px; padding: 16px 20px; margin: 24px 0;
+}
+.doc .warning-box p { margin: 0; font-size: 14px; color: #FFB4A8; }
+
+/* FOOTER */
+footer {
+  border-top: 1px solid rgba(200,148,42,0.12);
+  padding: 36px 5vw; text-align: center;
+}
+.footer-links { display: flex; justify-content: center; gap: 28px; flex-wrap: wrap; margin-bottom: 14px; }
+.footer-links a { font-size: 12px; color: var(--muted); letter-spacing: 0.5px; transition: color .2s; }
+.footer-links a:hover { color: var(--cream); }
+.footer-copy { font-size: 12px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo" aria-label="Lanvivo home">
+    <div class="coin-mark">
+      <svg viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="17" cy="17" r="16" stroke="rgba(200,148,42,0.55)" stroke-width="1"/>
+      </svg>
+      <span class="coin-l">L</span>
+    </div>
+    <span class="wordmark">lan<span>vivo</span></span>
+  </a>
+  <div class="nav-right">
+    <a href="/" class="nav-link">Home</a>
+    <a href="/portal" class="nav-cta">Open portal</a>
+  </div>
+</nav>
+
+<main class="page-wrap">
+  <p class="page-eyebrow">Legal</p>
+  <h1 class="page-title">Terms of Service</h1>
+  <p class="page-meta">Last updated: June 12, 2026 &nbsp;·&nbsp; Effective: June 12, 2026</p>
+
+  <div class="doc">
+
+    <div class="highlight-box">
+      <p>By using Lanvivo, you agree to these Terms. The short version: Lanvivo is a free, informational real estate tool — not a lender, broker, or financial advisor. Everything you see in the portal is for educational and planning purposes only. Always verify with a licensed professional before making real estate or mortgage decisions.</p>
+    </div>
+
+    <h2>1. Acceptance of Terms</h2>
+    <p>These Terms of Service ("Terms") are a legal agreement between you and Lanvivo ("Lanvivo", "we", "our", or "us"). By accessing or using lanvivo.com or the Lanvivo portal (together, the "Service"), you agree to be bound by these Terms and our <a href="/privacy.html">Privacy Policy</a>.</p>
+    <p>If you do not agree to these Terms, do not use the Service.</p>
+
+    <h2>2. Description of Service</h2>
+    <p>Lanvivo is an informational real estate platform designed to help immigrant buyers in the United States — including H-1B, F-1/OPT, ITIN, and foreign-national buyers — understand mortgage eligibility options, analyze property cash flows, and track property performance. The Service includes:</p>
+    <ul>
+      <li>A visa-aware mortgage eligibility engine that surfaces potentially compatible loan product types based on inputs you provide.</li>
+      <li>A property cash flow analyzer that projects income, expenses, and returns based on user-supplied assumptions.</li>
+      <li>A property performance tracker for properties you own.</li>
+      <li>Shareable property reports.</li>
+      <li>AI-powered real estate guidance (Lanvivo GPT).</li>
+    </ul>
+    <p>The Service is provided free of charge during the beta period. We reserve the right to introduce paid tiers in the future with advance notice to existing users.</p>
+
+    <h2>3. Not Financial, Legal, or Mortgage Advice</h2>
+
+    <div class="warning-box">
+      <p>Lanvivo is an informational tool. Nothing on this platform constitutes financial advice, investment advice, legal advice, or mortgage advice. Lanvivo is not a licensed lender, mortgage broker, real estate agent, or financial advisor. All projections and calculations are estimates based solely on the inputs you provide.</p>
+    </div>
+
+    <p>Specifically:</p>
+    <ul>
+      <li>Mortgage eligibility results indicate which loan <em>types</em> may be worth exploring — not that you qualify for any specific loan or rate. Actual eligibility is determined solely by licensed lenders.</li>
+      <li>Cash flow projections are based on assumptions you provide and standard real estate modeling conventions. Actual performance will differ. Past market conditions do not guarantee future returns.</li>
+      <li>Nothing in the portal should be relied upon as a basis for any real estate purchase, refinance, or investment decision without independent verification by qualified professionals.</li>
+    </ul>
+    <p>Always consult a licensed mortgage professional, real estate attorney, and/or financial advisor before making any real estate decision.</p>
+
+    <h2>4. Eligibility and Accounts</h2>
+    <p>You must be 18 years or older to create an account. By creating an account, you represent that the information you provide is accurate and that you will keep it current.</p>
+    <p>You are responsible for maintaining the confidentiality of your account credentials. You are responsible for all activity that occurs under your account. Notify us immediately at <a href="mailto:hello@lanvivo.com">hello@lanvivo.com</a> if you suspect unauthorized access.</p>
+    <p>We reserve the right to suspend or terminate accounts that violate these Terms or that we believe are being used fraudulently.</p>
+
+    <h2>5. Acceptable Use</h2>
+    <p>You may use Lanvivo only for lawful purposes and in accordance with these Terms. You agree not to:</p>
+    <ul>
+      <li>Use the Service for any illegal purpose or in violation of any applicable law.</li>
+      <li>Scrape, crawl, or extract data from the Service by automated means without written permission.</li>
+      <li>Attempt to gain unauthorized access to any part of the Service, its servers, or its databases.</li>
+      <li>Transmit any harmful, offensive, or fraudulent content.</li>
+      <li>Use the Service to build a competing product or service.</li>
+      <li>Share your account credentials with others.</li>
+    </ul>
+
+    <h2>6. Intellectual Property</h2>
+    <p>All content, design, code, and features of the Lanvivo platform — including but not limited to the Lanvivo name, logo, wordmark, and the eligibility engine — are owned by or licensed to Lanvivo and are protected by intellectual property laws.</p>
+    <p>You retain ownership of the data you input into the Service (property details, financial figures, etc.). By using the Service, you grant Lanvivo a limited license to process and store that data for the purpose of providing the Service to you.</p>
+    <p>You may not copy, reproduce, distribute, or create derivative works from any part of the Lanvivo platform without our prior written consent.</p>
+
+    <h2>7. User-Provided Data and Accuracy</h2>
+    <p>The quality of the Service's outputs depends entirely on the accuracy of the data you provide. Lanvivo is not responsible for errors that result from inaccurate, incomplete, or outdated inputs. You are responsible for verifying all inputs before relying on any output.</p>
+
+    <h2>8. Third-Party Services and Links</h2>
+    <p>The Service may contain links to third-party websites, lenders, or services. These links are provided for informational convenience only. Lanvivo does not endorse, control, or assume responsibility for third-party content, products, or services. Your interactions with third parties are governed by their own terms and policies.</p>
+
+    <h2>9. Disclaimers</h2>
+    <p>THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED. TO THE MAXIMUM EXTENT PERMITTED BY LAW, LANVIVO DISCLAIMS ALL WARRANTIES INCLUDING IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.</p>
+    <p>We do not warrant that the Service will be uninterrupted, error-free, or that any projections will be accurate. Real estate markets are unpredictable and past performance does not guarantee future results.</p>
+
+    <h2>10. Limitation of Liability</h2>
+    <p>TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, LANVIVO AND ITS OFFICERS, EMPLOYEES, AND AFFILIATES SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES — INCLUDING LOSS OF PROFITS, DATA, OR GOODWILL — ARISING OUT OF OR IN CONNECTION WITH YOUR USE OF OR INABILITY TO USE THE SERVICE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.</p>
+    <p>In no event shall Lanvivo's total liability to you for all claims exceed the amount you paid to use the Service in the 12 months preceding the claim (or $100 if you used the Service for free).</p>
+
+    <h2>11. Indemnification</h2>
+    <p>You agree to indemnify and hold harmless Lanvivo and its officers, employees, and agents from and against any claims, damages, losses, and expenses (including reasonable legal fees) arising from your use of the Service, your violation of these Terms, or your violation of any third-party rights.</p>
+
+    <h2>12. Modifications to Service and Terms</h2>
+    <p>We reserve the right to modify, suspend, or discontinue any part of the Service at any time. We will provide reasonable notice of material changes where practicable.</p>
+    <p>We may update these Terms from time to time. Material changes will be communicated via email or a notice in the portal. Continued use of the Service after changes take effect constitutes your acceptance of the revised Terms.</p>
+
+    <h2>13. Governing Law and Disputes</h2>
+    <p>These Terms are governed by the laws of the State of Delaware, United States, without regard to its conflict of law provisions.</p>
+    <p>Any dispute arising under these Terms shall first be subject to good-faith negotiation. If unresolved, disputes shall be submitted to binding arbitration in accordance with the rules of the American Arbitration Association, conducted in English. This does not limit either party's ability to seek injunctive relief in a court of competent jurisdiction.</p>
+
+    <h2>14. Termination</h2>
+    <p>You may stop using the Service and delete your account at any time by contacting <a href="mailto:hello@lanvivo.com">hello@lanvivo.com</a>. We may terminate or suspend your access for violation of these Terms, at our sole discretion, with or without notice.</p>
+    <p>Sections 3, 9, 10, 11, and 13 of these Terms survive termination.</p>
+
+    <h2>15. Contact</h2>
+    <p>For questions about these Terms, contact us at:</p>
+    <p><a href="mailto:hello@lanvivo.com">hello@lanvivo.com</a></p>
+
+  </div>
+</main>
+
+<footer>
+  <div class="footer-links">
+    <a href="/">Home</a>
+    <a href="/portal">Portal</a>
+    <a href="/privacy.html">Privacy Policy</a>
+    <a href="/terms.html">Terms of Service</a>
+    <a href="mailto:hello@lanvivo.com">Contact</a>
+  </div>
+  <p class="footer-copy">&copy; 2026 Lanvivo. All rights reserved.</p>
+</footer>
+
+</body>
+</html>

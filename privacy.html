@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy · Lanvivo</title>
+<meta name="description" content="Lanvivo Privacy Policy — how we collect, use, and protect your data.">
+<link rel="canonical" href="https://lanvivo.com/privacy">
+<meta name="robots" content="index, follow">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --mid: #0A0E1A; --deep: #1A2A5E; --card: #101624;
+  --gold: #C8942A; --gl: #F0D080; --slate: #9BA8C8;
+  --muted: #6A7090; --cream: #F5F0E4; --off: #F2EEE4;
+  --white: #ffffff; --ink: #1A1C2A;
+}
+html { scroll-behavior: smooth; }
+body { font-family: 'DM Sans', sans-serif; font-weight: 300; background: var(--mid); color: var(--cream); line-height: 1.7; }
+a { text-decoration: none; color: inherit; }
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 5vw; height: 64px;
+  background: rgba(10,14,26,0.96); backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(200,148,42,0.14);
+}
+.nav-logo { display: flex; align-items: center; gap: 11px; }
+.coin-mark {
+  width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative;
+}
+.coin-mark svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.coin-l { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; font-style: italic; color: var(--gold); position: relative; z-index: 1; line-height: 1; }
+.wordmark { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; letter-spacing: -0.5px; color: var(--white); }
+.wordmark span { color: var(--gold); }
+.nav-right { display: flex; align-items: center; gap: 22px; }
+.nav-link { font-size: 12px; font-weight: 400; letter-spacing: 1px; text-transform: uppercase; color: var(--slate); transition: color .2s; }
+.nav-link:hover { color: var(--cream); }
+.nav-cta { background: var(--gold); color: var(--mid); font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; padding: 9px 22px; border-radius: 3px; transition: opacity .2s; }
+.nav-cta:hover { opacity: .88; }
+
+/* PAGE */
+.page-wrap {
+  max-width: 780px; margin: 0 auto;
+  padding: 112px 24px 100px;
+}
+.page-eyebrow {
+  font-size: 11px; font-weight: 400; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 16px;
+}
+.page-title {
+  font-family: 'Syne', sans-serif; font-size: clamp(28px, 5vw, 44px); font-weight: 800;
+  color: var(--white); letter-spacing: -1px; line-height: 1.1; margin-bottom: 12px;
+}
+.page-meta {
+  font-size: 13px; color: var(--muted); margin-bottom: 56px;
+  padding-bottom: 32px; border-bottom: 1px solid rgba(200,148,42,0.14);
+}
+
+/* Doc content */
+.doc h2 {
+  font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700;
+  color: var(--white); margin: 44px 0 14px; letter-spacing: -0.3px;
+}
+.doc h3 {
+  font-size: 14px; font-weight: 500; color: var(--cream);
+  margin: 28px 0 10px; text-transform: uppercase; letter-spacing: 0.8px;
+}
+.doc p { font-size: 15px; color: var(--slate); margin-bottom: 16px; }
+.doc ul { margin: 0 0 16px 20px; }
+.doc li { font-size: 15px; color: var(--slate); margin-bottom: 6px; line-height: 1.65; }
+.doc a { color: var(--gold); text-decoration: underline; text-underline-offset: 3px; }
+.doc a:hover { opacity: .8; }
+.doc .highlight-box {
+  background: rgba(200,148,42,0.08); border-left: 2px solid var(--gold);
+  border-radius: 4px; padding: 16px 20px; margin: 24px 0;
+}
+.doc .highlight-box p { margin: 0; font-size: 14px; }
+
+/* FOOTER */
+footer {
+  border-top: 1px solid rgba(200,148,42,0.12);
+  padding: 36px 5vw; text-align: center;
+}
+.footer-links { display: flex; justify-content: center; gap: 28px; flex-wrap: wrap; margin-bottom: 14px; }
+.footer-links a { font-size: 12px; color: var(--muted); letter-spacing: 0.5px; transition: color .2s; }
+.footer-links a:hover { color: var(--cream); }
+.footer-copy { font-size: 12px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo" aria-label="Lanvivo home">
+    <div class="coin-mark">
+      <svg viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="17" cy="17" r="16" stroke="rgba(200,148,42,0.55)" stroke-width="1"/>
+      </svg>
+      <span class="coin-l">L</span>
+    </div>
+    <span class="wordmark">lan<span>vivo</span></span>
+  </a>
+  <div class="nav-right">
+    <a href="/" class="nav-link">Home</a>
+    <a href="/portal" class="nav-cta">Open portal</a>
+  </div>
+</nav>
+
+<main class="page-wrap">
+  <p class="page-eyebrow">Legal</p>
+  <h1 class="page-title">Privacy Policy</h1>
+  <p class="page-meta">Last updated: June 12, 2026 &nbsp;·&nbsp; Effective: June 12, 2026</p>
+
+  <div class="doc">
+
+    <div class="highlight-box">
+      <p>Lanvivo is built for immigrant buyers who often face questions about privacy and data sharing with institutions. We collect only what we need to run the product, we never sell your data, and you can delete your account and all associated data at any time by emailing <a href="mailto:hello@lanvivo.com">hello@lanvivo.com</a>.</p>
+    </div>
+
+    <h2>1. Who We Are</h2>
+    <p>Lanvivo ("Lanvivo", "we", "our", or "us") is a US real estate platform built for immigrant buyers — including H-1B, F-1/OPT, ITIN, and foreign-national buyers. Our portal is available at <a href="https://lanvivo.com">lanvivo.com</a>. This Privacy Policy describes how we collect, use, and protect information when you use our website and portal.</p>
+    <p>For privacy questions, contact us at <a href="mailto:hello@lanvivo.com">hello@lanvivo.com</a>.</p>
+
+    <h2>2. Information We Collect</h2>
+
+    <h3>2a. Information You Provide</h3>
+    <ul>
+      <li><strong>Account data:</strong> Email address and password (hashed, never stored in plain text) when you create an account.</li>
+      <li><strong>Profile data:</strong> Visa type, income range, credit score range, and down payment range if you complete the mortgage eligibility survey. This data is used solely to surface relevant loan products within the portal.</li>
+      <li><strong>Property analyses:</strong> Property addresses or names, purchase price, rent estimates, and financial inputs you enter into the cash flow analyzer. This data is saved to your account when you choose to save a property.</li>
+      <li><strong>Owned property data:</strong> For properties you mark as "purchased", we may store mortgage amount, tax, insurance, and management fee data you provide.</li>
+      <li><strong>Survey responses:</strong> If you complete our community survey at lanvivo.com/survey.html, we collect your responses to better understand immigrant buyer needs.</li>
+    </ul>
+
+    <h3>2b. Information Collected Automatically</h3>
+    <ul>
+      <li><strong>Usage data:</strong> Pages visited, features used, and time spent in the portal. We use this to improve the product.</li>
+      <li><strong>Device and browser data:</strong> Browser type, operating system, screen resolution, and approximate location (country/city level via IP address).</li>
+      <li><strong>Log data:</strong> IP address, access times, and referring URLs, retained for up to 90 days for security purposes.</li>
+    </ul>
+
+    <h3>2c. Cookies and Local Storage</h3>
+    <p>We use browser localStorage to cache your property data for faster load times. We do not use third-party advertising cookies. We may use a minimal session cookie to keep you logged in. No data is shared with advertising networks.</p>
+
+    <h2>3. How We Use Your Information</h2>
+    <ul>
+      <li>To create and maintain your account and saved property data.</li>
+      <li>To run the mortgage eligibility engine and surface relevant loan products for your situation.</li>
+      <li>To send transactional emails: account confirmation, password reset, and — with your consent — product update notifications.</li>
+      <li>To improve Lanvivo by understanding how features are used in aggregate (anonymized).</li>
+      <li>To investigate abuse, fraud, or security incidents if they arise.</li>
+    </ul>
+    <p>We do not use your financial inputs (income, credit score, visa status) to make credit decisions. Lanvivo is an informational tool, not a lender.</p>
+
+    <h2>4. How We Share Your Information</h2>
+    <p>We do not sell, rent, or trade your personal data. We share data only in these limited circumstances:</p>
+    <ul>
+      <li><strong>Service providers:</strong> We use Supabase (database and authentication) and Cloudflare (hosting and CDN). These providers process data on our behalf under data processing agreements and do not use your data for their own purposes.</li>
+      <li><strong>Legal requirements:</strong> We may disclose information if required by law, court order, or to protect the rights and safety of Lanvivo users.</li>
+      <li><strong>Business transfer:</strong> If Lanvivo is acquired or merges with another company, user data may transfer to the acquiring entity. We will notify users before any such transfer and give you the option to delete your account.</li>
+    </ul>
+
+    <h2>5. Data Retention</h2>
+    <p>We retain your account and property data for as long as your account is active. If you delete your account, we permanently delete all associated data within 30 days, except where retention is required by law. Anonymized, aggregated usage data (with no personal identifiers) may be retained indefinitely.</p>
+
+    <h2>6. Your Rights</h2>
+    <p>Regardless of where you are located, you have the following rights:</p>
+    <ul>
+      <li><strong>Access:</strong> Request a copy of all data we hold about you.</li>
+      <li><strong>Correction:</strong> Ask us to correct inaccurate data.</li>
+      <li><strong>Deletion:</strong> Delete your account and all associated data at any time.</li>
+      <li><strong>Portability:</strong> Request your saved property data in a machine-readable format (JSON or CSV).</li>
+      <li><strong>Opt-out:</strong> Unsubscribe from marketing emails at any time using the unsubscribe link in any email.</li>
+    </ul>
+    <p>To exercise any of these rights, email <a href="mailto:hello@lanvivo.com">hello@lanvivo.com</a>. We will respond within 30 days.</p>
+
+    <h2>7. Security</h2>
+    <p>We use industry-standard security practices including HTTPS/TLS encryption in transit, password hashing (via Supabase Auth), and row-level security on our database so users can only access their own data. We do not store credit card numbers or government ID numbers.</p>
+    <p>No system is completely secure. If you believe your account has been compromised, please contact us immediately at <a href="mailto:hello@lanvivo.com">hello@lanvivo.com</a>.</p>
+
+    <h2>8. Children's Privacy</h2>
+    <p>Lanvivo is not directed at children under 13. We do not knowingly collect personal data from children. If you believe we have inadvertently collected data from a child, please contact us and we will delete it promptly.</p>
+
+    <h2>9. International Users</h2>
+    <p>Lanvivo is operated from the United States. If you access Lanvivo from outside the US, your data will be transferred to and processed in the United States. By using Lanvivo, you consent to this transfer. We take appropriate safeguards to ensure your data is treated in accordance with this Privacy Policy.</p>
+
+    <h2>10. Changes to This Policy</h2>
+    <p>We may update this Privacy Policy from time to time. We will notify you of material changes by posting a notice on the portal or by email. Your continued use of Lanvivo after changes take effect constitutes acceptance of the updated policy. The "Last updated" date at the top of this page reflects the most recent revision.</p>
+
+    <h2>11. Contact</h2>
+    <p>If you have questions about this Privacy Policy or how we handle your data, contact us at:</p>
+    <p><a href="mailto:hello@lanvivo.com">hello@lanvivo.com</a></p>
+
+  </div>
+</main>
+
+<footer>
+  <div class="footer-links">
+    <a href="/">Home</a>
+    <a href="/portal">Portal</a>
+    <a href="/privacy.html">Privacy Policy</a>
+    <a href="/terms.html">Terms of Service</a>
+    <a href="mailto:hello@lanvivo.com">Contact</a>
+  </div>
+  <p class="footer-copy">&copy; 2026 Lanvivo. All rights reserved.</p>
+</footer>
+
+</body>
+</html>
