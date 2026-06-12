@@ -1,0 +1,61 @@
+# Lanvivo robots.txt
+# https://lanvivo.com
+
+# All crawlers — allow public pages, block the authenticated portal
+User-agent: *
+Allow: /
+Allow: /survey.html
+Disallow: /portal.html
+Disallow: /portal
+
+# Google
+User-agent: Googlebot
+Allow: /
+Allow: /survey.html
+Disallow: /portal.html
+Disallow: /portal
+
+# AI crawlers — explicitly permitted on public content
+User-agent: GPTBot
+Allow: /
+Allow: /survey.html
+Disallow: /portal.html
+Disallow: /portal
+
+User-agent: ChatGPT-User
+Allow: /
+Allow: /survey.html
+Disallow: /portal.html
+Disallow: /portal
+
+User-agent: ClaudeBot
+Allow: /
+Allow: /survey.html
+Disallow: /portal.html
+Disallow: /portal
+
+User-agent: PerplexityBot
+Allow: /
+Allow: /survey.html
+Disallow: /portal.html
+Disallow: /portal
+
+User-agent: cohere-ai
+Allow: /
+Allow: /survey.html
+Disallow: /portal.html
+Disallow: /portal
+
+User-agent: anthropic-ai
+Allow: /
+Allow: /survey.html
+Disallow: /portal.html
+Disallow: /portal
+
+User-agent: meta-externalagent
+Allow: /
+Allow: /survey.html
+Disallow: /portal.html
+Disallow: /portal
+
+Sitemap: https://lanvivo.com/sitemap.xml
