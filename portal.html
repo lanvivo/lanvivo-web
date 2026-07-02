@@ -1257,6 +1257,10 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 12L6 7l3 3 5-7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
           Cash Flow Analyzer
         </button>
+        <button class="mob-nav-item" data-mob-page="market">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.3"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M7 4v6M4 7h6" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+          Market Research
+        </button>
         <button class="mob-nav-item" data-mob-page="properties">
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 7l6-5 6 5v7H2V7z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 14V9h4v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
           My Properties
@@ -1306,6 +1310,10 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
           <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M2 12L6 7l3 3 5-7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <span class="nav-label">Cash Flow Analyzer</span>
           <span class="nav-lock" id="cashflow-lock">Investor</span>
+        </div>
+        <div class="nav-item" id="nav-market" onclick="navigateTo('market',this)">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.3"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M7 4v6M4 7h6" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+          <span class="nav-label">Market Research</span>
         </div>
         <div class="nav-item" id="nav-properties" onclick="navigateTo('properties',this)">
           <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M2 7l6-5 6 5v7H2V7z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 14V9h4v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1562,6 +1570,21 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
             <h3>Property Cash Flow Analyzer</h3>
             <p>Enter a property's numbers to instantly see projected income, expenses, and return on investment.</p>
             <div class="form-field">
+              <label>Zipcode <i class="info-tip">?<span class="tip-text">Enter the property's zipcode to automatically score the rental market — vacancy rate, crime, jobs, school quality, landlord laws, and more. The market score appears in the results panel alongside your deal numbers.</span></i></label>
+              <div style="display:flex;gap:8px">
+                <input type="text" id="cf-zip" placeholder="e.g. 72712" maxlength="5" style="width:100px;padding:10px 12px;border:1px solid var(--rule);background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:13px;border-radius:3px" oninput="onCfZipInput(this.value)">
+                <button id="cf-zip-btn" onclick="fetchCfMarketScore()" style="background:var(--deep);color:#fff;border:none;border-radius:3px;padding:0 14px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;display:none">Score market →</button>
+              </div>
+              <div id="cf-market-strip" style="display:none;margin-top:10px;padding:10px 14px;background:var(--bg);border:1px solid var(--rule);border-left:3px solid var(--gold);border-radius:3px">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+                  <span style="font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold)">Market Score</span>
+                  <span id="cf-market-grade" style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:600;color:var(--deep)"></span>
+                </div>
+                <div id="cf-market-dims" style="display:grid;grid-template-columns:1fr 1fr;gap:3px 12px"></div>
+                <button onclick="navigateTo('market',null);document.getElementById('mr-zip').value=document.getElementById('cf-zip').value;fetchMarketScore()" style="margin-top:8px;background:none;border:none;font-size:11px;color:var(--gold);cursor:pointer;padding:0;font-family:'DM Sans',sans-serif">View full scorecard →</button>
+              </div>
+            </div>
+            <div class="form-field">
               <label>Property name or address <i class="info-tip">?<span class="tip-text">Just a label for your reference — used to identify this property in your saved list. Can be an address, nickname, or anything you like.</span></i></label>
               <input type="text" id="cf-name" placeholder="123 Main St, Little Rock" style="width:100%;padding:10px 12px;border:1px solid var(--rule);background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:13px;border-radius:3px">
             </div>
@@ -1655,6 +1678,53 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
             <div class="results-placeholder">
               <div class="icon">📊</div>
               <p>Enter a purchase price and monthly rent to see instant cash flow projections.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MARKET RESEARCH -->
+      <div class="page" id="page-market" style="padding:0;margin:-28px">
+        <div class="tool-layout">
+          <div class="tool-form">
+            <h3>Market Research</h3>
+            <p>Score any US rental market across 8 investor dimensions. No property needed — just a zipcode.</p>
+            <div class="form-field">
+              <label>Zipcode *</label>
+              <input type="text" id="mr-zip" placeholder="e.g. 72712" maxlength="5" style="width:100%;letter-spacing:2px" oninput="onMrZipInput(this.value)" onkeydown="if(event.key==='Enter')fetchMarketScore()">
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div class="form-field">
+                <label>Bedrooms</label>
+                <select id="mr-beds">
+                  <option value="0">Studio</option>
+                  <option value="1">1 BR</option>
+                  <option value="2" selected>2 BR</option>
+                  <option value="3">3 BR</option>
+                  <option value="4">4 BR</option>
+                  <option value="5">5+ BR</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label>Bathrooms</label>
+                <select id="mr-baths">
+                  <option value="1">1 BA</option>
+                  <option value="2" selected>2 BA</option>
+                  <option value="3">3 BA</option>
+                  <option value="4">4+ BA</option>
+                </select>
+                <p style="font-size:10px;color:var(--muted);margin-top:3px;font-style:italic">Used for rent estimate only</p>
+              </div>
+            </div>
+            <button class="btn-analyze" id="mr-btn" onclick="fetchMarketScore()">Analyze market →</button>
+            <div style="border-top:1px solid var(--rule);margin:18px 0 14px"></div>
+            <p style="font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:6px"><strong style="color:var(--ink);font-weight:500">Have a specific deal?</strong><br>Run cash flow, DSCR, and 1% rule in the analyzer. The deal score appears alongside this market score.</p>
+            <button onclick="navigateTo('cashflow',null)" style="background:none;border:1px solid var(--rule);border-radius:3px;padding:9px 14px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink);cursor:pointer;width:100%;text-align:left">Open Cash Flow Analyzer →</button>
+          </div>
+          <div class="tool-results" id="market-results">
+            <div class="results-placeholder">
+              <div class="icon">📍</div>
+              <p>Enter a zipcode to score the rental market across 8 investor-specific dimensions.</p>
             </div>
           </div>
         </div>
@@ -3171,6 +3241,7 @@ function renderToolGrid() {
     { id:'gpt', icon:'✦', name:'Lanvivo GPT', desc:'An AI assistant trained on visa-status, loan-product, and immigrant-buyer questions. Currently in development. Join the waitlist to be notified.', comingSoon:true },
     { id:'mortgage', icon:'🏦', name:'Mortgage Eligibility Engine', desc:'Enter your visa status and income. See exactly which loan products you qualify for right now.' },
     { id:'cashflow', icon:'📊', name:'Cash Flow Analyzer', desc:'Model any property\'s rental income, expenses, cap rate, and return on investment instantly.' },
+    { id:'market', icon:'🔍', name:'Market Research', desc:'Score any US zipcode across 8 investor dimensions — vacancy, crime, jobs, schools, landlord laws, and more.' },
     { id:'properties', icon:'🏠', name:'My Properties', desc:'Save analyses, compare up to 4 properties side-by-side, and generate shareable PDF reports.' },
   ];
   document.getElementById('tool-grid').innerHTML = tools.map(t => `
@@ -3283,7 +3354,7 @@ function dismissOnboarding() {
 }
 
 // ── Navigation ────────────────────────────────────────────────────────────────
-const PAGE_TITLES = {dashboard:'Dashboard',gpt:'Lanvivo GPT',mortgage:'Mortgage Eligibility Engine',cashflow:'Cash Flow Analyzer',properties:'My Properties',compare:'Compare Properties',report:'Property Report',upgrade:'Plans & Pricing',account:'My Account',performance:'Performance Tracker'};
+const PAGE_TITLES = {dashboard:'Dashboard',gpt:'Lanvivo GPT',mortgage:'Mortgage Eligibility Engine',cashflow:'Cash Flow Analyzer',market:'Market Research',properties:'My Properties',compare:'Compare Properties',report:'Property Report',upgrade:'Plans & Pricing',account:'My Account',performance:'Performance Tracker'};
 
 // ── Mobile navigation ────────────────────────────────────────────────────────
 function toggleMobNav() {
@@ -3303,7 +3374,7 @@ function navigateTo(page, navEl) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   if (navEl) navEl.classList.add('active');
   else {
-    const map = {dashboard:0,cashflow:1,properties:2,mortgage:3,gpt:4,upgrade:5};
+    const map = {dashboard:0,cashflow:1,market:2,properties:3,mortgage:4,gpt:5,upgrade:6};
     const items = document.querySelectorAll('.nav-item');
     if (items[map[page]]) items[map[page]].classList.add('active');
   }
@@ -3319,6 +3390,7 @@ function navigateTo(page, navEl) {
   // The Upgrade page still exists in the codebase but is not surfaced in the nav. Plan flags on
   // user records ('free' / 'pro' / 'investor') are preserved for back-compat with existing accounts
   // and may be reintroduced if pricing is added later.
+  if (page==='market') renderMarketPage();
   if (page==='properties') renderPropertiesList();
   if (page==='compare') renderComparePage();
   if (page==='cashflow') { updateSaveButtonsForMode(); localStorage.setItem(`lv_visited_cashflow_${currentUser?.id||'anon'}`,'1'); }
@@ -5928,7 +6000,7 @@ function toggleTheme() {
 const TRANSLATIONS = {
   en: {
     dashboard:'Dashboard', gpt:'Lanvivo GPT', mortgage:'Mortgage Engine',
-    cashflow:'Cash Flow Analyzer', upgrade:'Plans & Pricing',
+    cashflow:'Cash Flow Analyzer', market:'Market Research', upgrade:'Plans & Pricing',
     welcome:'Welcome back,', signout:'Sign out',
     nav_main:'Main', nav_tools:'Tools', nav_account:'Account',
     chat_placeholder:'Ask about buying property in the US on your visa...',
@@ -5940,7 +6012,7 @@ const TRANSLATIONS = {
   },
   es: {
     dashboard:'Panel', gpt:'Lanvivo GPT', mortgage:'Motor Hipotecario',
-    cashflow:'Analizador de Flujo de Caja', upgrade:'Planes y Precios',
+    cashflow:'Analizador de Flujo de Caja', market:'Investigación de Mercado', upgrade:'Planes y Precios',
     welcome:'Bienvenido,', signout:'Cerrar sesión',
     nav_main:'Principal', nav_tools:'Herramientas', nav_account:'Cuenta',
     chat_placeholder:'Pregunta sobre comprar una propiedad en EEUU con tu visa...',
@@ -5952,7 +6024,7 @@ const TRANSLATIONS = {
   },
   hi: {
     dashboard:'डैशबोर्ड', gpt:'Lanvivo GPT', mortgage:'मॉर्गेज इंजन',
-    cashflow:'कैश फ्लो विश्लेषक', upgrade:'योजनाएं और मूल्य',
+    cashflow:'कैश फ्लो विश्लेषक', market:'बाजार अनुसंधान', upgrade:'योजनाएं और मूल्य',
     welcome:'वापस स्वागत है,', signout:'साइन आउट',
     nav_main:'मुख्य', nav_tools:'उपकरण', nav_account:'खाता',
     chat_placeholder:'अपने वीजा पर अमेरिका में संपत्ति खरीदने के बारे में पूछें...',
@@ -5964,7 +6036,7 @@ const TRANSLATIONS = {
   },
   zh: {
     dashboard:'控制台', gpt:'Lanvivo GPT', mortgage:'抵押贷款引擎',
-    cashflow:'现金流分析器', upgrade:'方案和定价',
+    cashflow:'现金流分析器', market:'市场研究', upgrade:'方案和定价',
     welcome:'欢迎回来,', signout:'退出登录',
     nav_main:'主要', nav_tools:'工具', nav_account:'账户',
     chat_placeholder:'询问有关在美国购买房产的签证问题...',
@@ -5976,7 +6048,7 @@ const TRANSLATIONS = {
   },
   yo: {
     dashboard:'Pẹpẹ Iṣakoso', gpt:'Lanvivo GPT', mortgage:'Ẹrọ Ifowopamọ',
-    cashflow:'Atupale Owo', upgrade:'Awọn Eto ati Idiyele',
+    cashflow:'Atupale Owo', market:'Iwadi Oja', upgrade:'Awọn Eto ati Idiyele',
     welcome:'Kaabo pada,', signout:'Jade',
     nav_main:'Akọkọ', nav_tools:'Awọn Irinṣẹ', nav_account:'Akọọlẹ',
     chat_placeholder:'Beere nipa rira ohun ini ni Amẹrika pẹlu iwe iwọlu rẹ...',
@@ -5988,7 +6060,7 @@ const TRANSLATIONS = {
   },
   pt: {
     dashboard:'Painel', gpt:'Lanvivo GPT', mortgage:'Motor Hipotecário',
-    cashflow:'Analisador de Fluxo de Caixa', upgrade:'Planos e Preços',
+    cashflow:'Analisador de Fluxo de Caixa', market:'Pesquisa de Mercado', upgrade:'Planos e Preços',
     welcome:'Bem-vindo de volta,', signout:'Sair',
     nav_main:'Principal', nav_tools:'Ferramentas', nav_account:'Conta',
     chat_placeholder:'Pergunte sobre comprar imóveis nos EUA com seu visto...',
@@ -6018,7 +6090,7 @@ function applyHardcodedTranslations(lang) {
   if (navSectionLabels[2]) navSectionLabels[2].textContent = t.nav_account;
 
   // Nav item labels
-  const navKeys = ['dashboard','gpt','mortgage','cashflow','upgrade'];
+  const navKeys = ['dashboard','gpt','mortgage','cashflow','market','upgrade'];
   const navItemLabels = document.querySelectorAll('.nav-label');
   navItemLabels.forEach((lbl, i) => {
     if (navKeys[i] && t[navKeys[i]]) lbl.textContent = t[navKeys[i]];
@@ -6174,6 +6246,240 @@ async function setLang(lang) {
 }
 
 // Translation hook removed from override, handled inside navigateTo directly
+
+// ── Market Research ───────────────────────────────────────────────────────────
+// Called when the Market Research page loads — resets to placeholder state.
+function renderMarketPage() {
+  const el = document.getElementById('market-results');
+  if (!el) return;
+  const zip = document.getElementById('mr-zip')?.value?.trim();
+  if (!zip || zip.length < 5) {
+    el.innerHTML = `<div class="results-placeholder"><div class="icon">📍</div><p>Enter a zipcode to score the rental market across 8 investor-specific dimensions.</p></div>`;
+  }
+}
+
+function onMrZipInput(val) {
+  const btn = document.getElementById('mr-btn');
+  if (btn) btn.textContent = val.length === 5 ? 'Analyze market →' : 'Analyze market →';
+}
+
+function onCfZipInput(val) {
+  const btn = document.getElementById('cf-zip-btn');
+  if (btn) btn.style.display = val.length === 5 ? 'block' : 'none';
+  if (val.length === 5) fetchCfMarketScore();
+}
+
+// Shared function — calls the Supabase edge function and returns parsed data
+async function callMarketScore(zip, beds, baths) {
+  const { data, error } = await supabase.functions.invoke('market-score', {
+    body: { zip, beds: parseInt(beds), baths: parseInt(baths) }
+  });
+  if (error) throw new Error(error.message || 'Edge function error');
+  if (data?.error) throw new Error(data.error);
+  return data;
+}
+
+// Full Market Research page render
+async function fetchMarketScore() {
+  const zip   = document.getElementById('mr-zip')?.value?.trim();
+  const beds  = document.getElementById('mr-beds')?.value  ?? '2';
+  const baths = document.getElementById('mr-baths')?.value ?? '2';
+  const el    = document.getElementById('market-results');
+  if (!el) return;
+  if (!zip || !/^\d{5}$/.test(zip)) {
+    el.innerHTML = `<div class="results-placeholder"><div class="icon">⚠️</div><p>Enter a valid 5-digit US zipcode.</p></div>`;
+    return;
+  }
+  el.innerHTML = `<div class="results-placeholder"><div style="width:24px;height:24px;border:2px solid var(--rule);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px"></div><p>Fetching market data…</p></div>`;
+  try {
+    const d = await callMarketScore(zip, beds, baths);
+    el.innerHTML = buildMarketResultsHTML(d, beds);
+  } catch(err) {
+    el.innerHTML = `<div class="results-placeholder"><div class="icon">⚠️</div><p>Could not load market data: ${escapeHTML(String(err.message))}.<br>Check your connection and try again.</p></div>`;
+  }
+}
+
+// Inline strip for the Cash Flow Analyzer
+async function fetchCfMarketScore() {
+  const zip   = document.getElementById('cf-zip')?.value?.trim();
+  const strip = document.getElementById('cf-market-strip');
+  const dims  = document.getElementById('cf-market-dims');
+  const grade = document.getElementById('cf-market-grade');
+  if (!zip || !/^\d{5}$/.test(zip) || !strip) return;
+  strip.style.display = 'block';
+  dims.innerHTML = `<span style="font-size:11px;color:var(--muted);grid-column:1/-1">Loading…</span>`;
+  grade.textContent = '';
+  try {
+    const d = await callMarketScore(zip, 2, 1);
+    grade.textContent = `${d.grade} · ${d.composite}`;
+    const dimDefs = [
+      { key:'vacancy',      short:'Vacancy' },
+      { key:'crime',        short:'Crime'   },
+      { key:'income',       short:'Income'  },
+      { key:'jobs',         short:'Jobs'    },
+      { key:'schools',      short:'Schools' },
+      { key:'costOfLiving', short:'Cost'    },
+      { key:'renter',       short:'Renters' },
+      { key:'landlord',     short:'LL laws' },
+    ];
+    dims.innerHTML = dimDefs.map(({ key, short }) => {
+      const dim = d.dimensions?.[key];
+      if (!dim) return '';
+      const tagColor = dim.tag === 'strong' ? 'color:var(--green)' : dim.tag === 'moderate' ? 'color:var(--gold)' : 'color:var(--red)';
+      return `<div style="display:flex;align-items:center;justify-content:space-between;font-size:10.5px;padding:2px 0;border-bottom:1px solid var(--rule)">
+        <span style="color:var(--body)">${short}</span>
+        <span style="font-weight:500;${tagColor}">${dim.tag}</span>
+      </div>`;
+    }).join('');
+  } catch {
+    dims.innerHTML = `<span style="font-size:11px;color:var(--muted);grid-column:1/-1">Could not load market data.</span>`;
+  }
+}
+
+// Build the full results HTML for the Market Research page
+function buildMarketResultsHTML(d, beds) {
+  const ll = d.landlord;
+  const c  = d.census;
+  const h  = d.hud;
+  const f  = d.fbi;
+  const dims = d.dimensions || {};
+
+  const gradeColor = { A:'color:#1A5C3A;background:#D4EDDF', B:'color:#1A2A5E;background:rgba(26,42,94,0.1)', C:'color:#7A5010;background:#FDF3DC', D:'color:#8B2020;background:#FDECEA' };
+  const gc = gradeColor[d.grade] || gradeColor['C'];
+
+  const tagStyle = (tag) => tag === 'strong'
+    ? 'background:var(--green-l);color:var(--green)'
+    : tag === 'moderate'
+    ? 'background:#FDF3DC;color:#7A5010'
+    : 'background:var(--red-l);color:var(--red)';
+
+  function dimRow(key, overrideLabel, overrideVal) {
+    const dim = dims[key];
+    if (!dim) return '';
+    const label = overrideLabel || dim.label;
+    let valStr = overrideVal ?? '';
+    if (!overrideVal) {
+      if (dim.value === null || dim.value === undefined) valStr = '—';
+      else if (dim.unit === '%')     valStr = dim.value.toFixed(1) + '%';
+      else if (dim.unit === '$')     valStr = '$' + Math.round(dim.value).toLocaleString();
+      else if (dim.unit === '/100k') valStr = Math.round(dim.value) + '/100k';
+      else if (dim.unit === 'ratio') valStr = (dim.value * 100).toFixed(0) + '% burden';
+      else valStr = String(dim.value);
+    }
+    const barW = Math.round(dim.score);
+    const barColor = dim.score >= 65 ? '#1A5C3A' : dim.score >= 45 ? '#B8821E' : '#8B2020';
+    return `
+      <div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--rule)">
+        <span style="font-size:11.5px;color:var(--body);flex:1">${label}</span>
+        <div style="width:56px;height:3px;background:var(--rule);border-radius:2px;flex-shrink:0">
+          <div style="width:${barW}%;height:3px;border-radius:2px;background:${barColor}"></div>
+        </div>
+        <span style="font-size:10.5px;color:var(--ink);min-width:60px;text-align:right;flex-shrink:0">${valStr}</span>
+        <span style="font-size:9px;padding:2px 6px;border-radius:8px;font-weight:500;${tagStyle(dim.tag)};flex-shrink:0;min-width:52px;text-align:center">${dim.tag}</span>
+      </div>`;
+  }
+
+  const hudLine = h?.fmr
+    ? `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--rule);font-size:11.5px"><span style="color:var(--muted)">HUD Fair Market Rent (${['Studio','1 BR','2 BR','3 BR','4 BR','5+ BR'][parseInt(beds)] || '2 BR'})</span><span style="font-weight:500;color:var(--ink)">$${h.fmr.toLocaleString()}/mo${h.level === 'zip' ? ' <span style="font-size:9px;color:var(--muted)">(zip-level)</span>' : ''}</span></div>`
+    : '';
+
+  const medGrossRentLine = c?.medGrossRent
+    ? `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--rule);font-size:11.5px"><span style="color:var(--muted)">Census median gross rent</span><span style="font-weight:500;color:var(--ink)">$${c.medGrossRent.toLocaleString()}/mo</span></div>`
+    : '';
+
+  return `
+    <!-- Grade block -->
+    <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--rule);background:var(--bg);margin-bottom:16px">
+      <div style="width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;flex-shrink:0;${gc}">${d.grade}</div>
+      <div style="flex:1">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:600;color:var(--ink);margin-bottom:2px">${escapeHTML(d.stateName)} · ${escapeHTML(d.zip)}</div>
+        <div style="font-size:10px;color:var(--muted)">${h?.area ? escapeHTML(h.area) + ' · ' : ''}${d.stateName}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;color:var(--deep);line-height:1">${d.composite}</div>
+        <div style="font-size:9px;color:var(--muted)">/ 100</div>
+      </div>
+    </div>
+
+    <!-- Source pills -->
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+      ${['Census ACS 2022','HUD FMR','FBI UCR','State Law'].map(s=>`<span style="font-size:9px;color:var(--muted);background:var(--bg2);border:1px solid var(--rule);padding:2px 8px;border-radius:10px">${s}</span>`).join('')}
+    </div>
+
+    <!-- Market score header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--rule)">
+      <span style="font-size:9px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--gold)">Market score — zipcode</span>
+      <span style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:600;color:var(--deep)">${d.grade} · ${d.composite} / 100</span>
+    </div>
+
+    <!-- 8 dimensions, 2-col layout -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 20px;margin-bottom:16px">
+      <div>
+        ${dimRow('vacancy',    'Vacancy rate',      c?.vacancyRate != null ? c.vacancyRate.toFixed(1)+'%' : null)}
+        ${dimRow('income',     'Income trajectory', c?.medIncome   != null ? '$'+Math.round(c.medIncome).toLocaleString() : null)}
+        ${dimRow('jobs',       'Job market',        c?.unempRate   != null ? c.unempRate.toFixed(1)+'% unemp' : null)}
+        ${dimRow('costOfLiving','Cost of living',   null)}
+      </div>
+      <div>
+        ${dimRow('crime',   'Crime & safety', f?.violentCrimeRate != null ? Math.round(f.violentCrimeRate)+'/100k' : null)}
+        ${dimRow('schools', 'School quality',  null)}
+        ${dimRow('renter',  'Renter demand',   c?.renterRatio != null ? c.renterRatio.toFixed(1)+'%' : null)}
+        ${dimRow('landlord','Landlord laws',   ll?.rating || null)}
+      </div>
+    </div>
+
+    <!-- Deal score placeholder -->
+    <div style="border:1px dashed var(--rule);padding:14px 16px;margin-bottom:16px;text-align:center">
+      <p style="font-size:11.5px;color:var(--muted);line-height:1.7;margin-bottom:8px">Deal score — rent-to-price, cash flow, DSCR, cash-on-cash return — requires a specific property.</p>
+      <button onclick="navigateTo('cashflow',null);setTimeout(()=>{const z=document.getElementById('cf-zip');if(z){z.value='${escapeHTML(d.zip)}';onCfZipInput('${escapeHTML(d.zip)}');}},100)" style="background:none;border:1px solid var(--rule);border-radius:3px;padding:8px 14px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink);cursor:pointer">Open Cash Flow Analyzer for ${escapeHTML(d.zip)} →</button>
+    </div>
+
+    <!-- Raw signals -->
+    <div style="margin-bottom:16px">
+      <h4 style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:600;color:var(--ink);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--rule)">Market signals</h4>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        ${[
+          ['Median household income', c?.medIncome != null ? '$'+Math.round(c.medIncome).toLocaleString() : '—', 'Census ACS'],
+          ['Rental vacancy rate',     c?.vacancyRate != null ? c.vacancyRate.toFixed(1)+'%' : '—', 'vs nat. avg 6.6%'],
+          ['Renter household ratio',  c?.renterRatio != null ? c.renterRatio.toFixed(1)+'%' : '—', 'tenant pool depth'],
+          ['Unemployment rate',       c?.unempRate != null ? c.unempRate.toFixed(1)+'%' : '—', 'Census ACS'],
+          ['Median age',              c?.medAge != null ? c.medAge+'yrs' : '—', 'tenant stability proxy'],
+          ['Census median rent',      c?.medGrossRent != null ? '$'+c.medGrossRent.toLocaleString()+'/mo' : '—', 'all bedrooms'],
+        ].map(([lbl,val,sub])=>`
+          <div style="background:var(--bg);border:1px solid var(--rule);padding:8px 10px">
+            <div style="font-size:9px;color:var(--muted);margin-bottom:2px">${lbl}</div>
+            <div style="font-size:12px;font-weight:500;color:var(--ink)">${val}</div>
+            <div style="font-size:9px;color:var(--muted);margin-top:1px">${sub}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- Rent data -->
+    ${(hudLine || medGrossRentLine) ? `
+    <div style="margin-bottom:16px">
+      <h4 style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:600;color:var(--ink);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--rule)">Rent benchmarks</h4>
+      <div style="border:1px solid rgba(184,130,30,0.25);background:rgba(184,130,30,0.04);padding:10px 14px;border-radius:3px">
+        ${hudLine}${medGrossRentLine}
+        <p style="font-size:10px;color:var(--muted);margin-top:6px;font-style:italic">HUD FMR = 40th percentile gross rent. Market rents typically run 10–30% above FMR.</p>
+      </div>
+    </div>` : ''}
+
+    <!-- Landlord details -->
+    ${ll ? `
+    <div style="margin-bottom:16px">
+      <h4 style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:600;color:var(--ink);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--rule)">Landlord profile — ${escapeHTML(ll.label)}</h4>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        ${[['Eviction timeline',ll.eviction],['Rent control',ll.rentControl],['Security deposit',ll.deposit],['Overall rating',ll.rating]].map(([lbl,val])=>`
+          <div style="background:var(--bg2);border:1px solid var(--rule);padding:7px 10px;border-radius:3px">
+            <div style="font-size:9px;color:var(--muted);margin-bottom:1px">${lbl}</div>
+            <div style="font-size:11.5px;font-weight:500;color:${val==='Friendly'?'var(--green)':val==='Restrictive'?'var(--red)':'var(--ink)'}">${val}</div>
+          </div>`).join('')}
+      </div>
+    </div>` : ''}
+
+    <p style="font-size:10px;color:var(--muted);line-height:1.5;font-style:italic">Market score uses Census ACS 2022, FBI UCR crime data, HUD Fair Market Rents, and BLS employment data. Landlord data reflects state law as of 2024. Scores are relative to US national benchmarks. Not financial advice.</p>
+  `;
+}
 
 function updateChatLimit() {
   const u = currentUser;
