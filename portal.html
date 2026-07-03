@@ -1261,6 +1261,10 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.3"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M7 4v6M4 7h6" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
           Market Research
         </button>
+        <button class="mob-nav-item" data-mob-page="roi">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 13L5 9l3 3 3-4 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="13" cy="5" r="1.5" stroke="currentColor" stroke-width="1.2"/></svg>
+          ROI Explorer
+        </button>
         <button class="mob-nav-item" data-mob-page="properties">
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 7l6-5 6 5v7H2V7z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 14V9h4v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
           My Properties
@@ -1314,6 +1318,10 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
         <div class="nav-item" id="nav-market" onclick="navigateTo('market',this)">
           <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.3"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M7 4v6M4 7h6" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
           <span class="nav-label">Market Research</span>
+        </div>
+        <div class="nav-item" id="nav-roi" onclick="navigateTo('roi',this)">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M2 13L5 9l3 3 3-4 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="13" cy="5" r="1.5" stroke="currentColor" stroke-width="1.2"/></svg>
+          <span class="nav-label">ROI Explorer</span>
         </div>
         <div class="nav-item" id="nav-properties" onclick="navigateTo('properties',this)">
           <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M2 7l6-5 6 5v7H2V7z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 14V9h4v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1725,6 +1733,89 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
             <div class="results-placeholder">
               <div class="icon">📍</div>
               <p>Enter a zipcode to score the rental market across 8 investor-specific dimensions.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROI EXPLORER -->
+      <div class="page" id="page-roi" style="padding:0;margin:-28px">
+        <div class="tool-layout">
+          <div class="tool-form">
+            <h3>ROI Explorer</h3>
+            <p>Estimate returns for any US zip code before you find a property. Adjust assumptions to match your deal.</p>
+            <div class="form-field">
+              <label>Zip code *</label>
+              <input type="text" id="roi-zip" placeholder="e.g. 78701" maxlength="5" style="width:100%;letter-spacing:2px" onkeydown="if(event.key==='Enter')runROIAnalysis()">
+              <p style="font-size:10px;color:var(--muted);margin-top:3px;font-style:italic">Not sure of the zip? Google the neighborhood name + zip code.</p>
+            </div>
+            <div class="form-field">
+              <label>Bedrooms <i class="info-tip">?<span class="tip-text">Used to pull the HUD Fair Market Rent estimate for that zip code. Affects monthly rent shown in results.</span></i></label>
+              <select id="roi-beds">
+                <option value="0">Studio</option>
+                <option value="1">1 BR</option>
+                <option value="2" selected>2 BR</option>
+                <option value="3">3 BR</option>
+                <option value="4">4 BR</option>
+                <option value="5">5+ BR</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label>Purchase price ($) *</label>
+              <div class="input-number"><span class="input-prefix">$</span><input type="number" id="roi-price" placeholder="350,000" min="0"></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div class="form-field">
+                <label>Down payment <i class="info-tip">?<span class="tip-text">The upfront cash you put in. A larger down payment lowers your monthly mortgage but ties up more capital.</span></i></label>
+                <select id="roi-down">
+                  <option value="5">5%</option>
+                  <option value="10">10%</option>
+                  <option value="20" selected>20%</option>
+                  <option value="25">25%</option>
+                  <option value="30">30%+</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label>Loan term</label>
+                <select id="roi-term">
+                  <option value="15">15 years</option>
+                  <option value="20">20 years</option>
+                  <option value="30" selected>30 years</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-field">
+              <label>Mortgage rate (%) <i class="info-tip">?<span class="tip-text">Use 5–10% for most markets; higher in slower rental areas.</span></i></label>
+              <input type="number" id="roi-rate" value="7.0" step="0.1" min="0" max="20">
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div class="form-field">
+                <label>Vacancy rate (%) <i class="info-tip">?<span class="tip-text">Pre-filled from Census data for this zip. Adjust if you have local knowledge.</span></i></label>
+                <input type="number" id="roi-vacancy" value="6.6" step="0.1" min="0" max="100">
+              </div>
+              <div class="form-field">
+                <label>Expense ratio (%) <i class="info-tip">?<span class="tip-text">Operating expenses as % of gross rent. Covers maintenance, insurance, property tax, and PM fees. 40% is a common rule of thumb.</span></i></label>
+                <input type="number" id="roi-expenses" value="40" step="1" min="0" max="100">
+              </div>
+            </div>
+            <div class="form-field">
+              <label>Holding period <i class="info-tip">?<span class="tip-text">How long you plan to hold the property. Used to project appreciation and total return.</span></i></label>
+              <select id="roi-hold">
+                <option value="3">3 years</option>
+                <option value="5" selected>5 years</option>
+                <option value="7">7 years</option>
+                <option value="10">10 years</option>
+              </select>
+            </div>
+            <button class="btn-analyze" onclick="runROIAnalysis()">Estimate returns →</button>
+            <div style="border-top:1px solid var(--rule);margin:18px 0 14px"></div>
+            <p style="font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:6px"><strong style="color:var(--ink);font-weight:500">Have a specific deal?</strong><br>Run full DSCR and 1% rule analysis with your exact numbers.</p>
+            <button onclick="navigateTo('cashflow',null)" style="background:none;border:1px solid var(--rule);border-radius:3px;padding:9px 14px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink);cursor:pointer;width:100%;text-align:left">Open Cash Flow Analyzer →</button>
+          </div>
+          <div class="tool-results" id="roi-results">
+            <div class="results-placeholder">
+              <div class="icon">📈</div>
+              <p>Enter a zip code and purchase price to estimate returns.</p>
             </div>
           </div>
         </div>
@@ -3920,6 +4011,208 @@ function addTyping() {
   msgs.appendChild(div);
   msgs.scrollTop = msgs.scrollHeight;
   return div;
+}
+
+// ── ROI Explorer ──────────────────────────────────────────────────────────────
+async function runROIAnalysis() {
+  const zip      = (document.getElementById('roi-zip')?.value || '').trim();
+  const beds     = document.getElementById('roi-beds')?.value ?? '2';
+  const price    = parseFloat(document.getElementById('roi-price')?.value) || 0;
+  const downPct  = parseFloat(document.getElementById('roi-down')?.value) || 20;
+  const term     = parseInt(document.getElementById('roi-term')?.value) || 30;
+  const ratePct  = parseFloat(document.getElementById('roi-rate')?.value) || 7;
+  const vacPct   = parseFloat(document.getElementById('roi-vacancy')?.value) ?? 6.6;
+  const expPct   = parseFloat(document.getElementById('roi-expenses')?.value) || 40;
+  const hold     = parseInt(document.getElementById('roi-hold')?.value) || 5;
+  const el       = document.getElementById('roi-results');
+  if (!el) return;
+
+  if (!zip || !/^\d{5}$/.test(zip)) {
+    el.innerHTML = `<div class="results-placeholder"><div class="icon">⚠️</div><p>Enter a valid 5-digit US zip code.</p></div>`;
+    return;
+  }
+  if (!price || price <= 0) {
+    el.innerHTML = `<div class="results-placeholder"><div class="icon">⚠️</div><p>Enter a purchase price to estimate returns.</p></div>`;
+    return;
+  }
+
+  el.innerHTML = `<div class="results-placeholder"><div style="width:24px;height:24px;border:2px solid var(--rule);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px"></div><p>Fetching market data…</p></div>`;
+
+  let d = null;
+  try {
+    d = await callMarketScore(zip, beds, 1);
+    // Pre-fill vacancy from Census if user hasn't touched it
+    const vacInput = document.getElementById('roi-vacancy');
+    if (d.census?.vacancyRate != null && vacInput && parseFloat(vacInput.value) === 6.6) {
+      vacInput.value = d.census.vacancyRate.toFixed(1);
+    }
+  } catch(err) {
+    el.innerHTML = `<div class="results-placeholder"><div class="icon">⚠️</div><p>Could not load market data: ${escapeHTML(String(err.message))}</p></div>`;
+    return;
+  }
+
+  // ── Rent ──
+  const rentSource = d.hud?.fmr ? 'HUD FMR' : d.census?.medGrossRent ? 'Census ACS' : null;
+  const monthlyRent = d.hud?.fmr || d.census?.medGrossRent || 0;
+
+  // ── Core calculations ──
+  const annualRent       = monthlyRent * 12;
+  const effectiveRent    = annualRent * (1 - vacPct / 100);
+  const annualExpenses   = effectiveRent * (expPct / 100);
+  const NOI              = effectiveRent - annualExpenses;
+  const downAmt          = price * (downPct / 100);
+  const loanAmt          = price - downAmt;
+  const monthlyRate      = ratePct / 100 / 12;
+  const n                = term * 12;
+  const monthlyPayment   = monthlyRate > 0
+    ? loanAmt * (monthlyRate * Math.pow(1 + monthlyRate, n)) / (Math.pow(1 + monthlyRate, n) - 1)
+    : loanAmt / n;
+  const annualDebt       = monthlyPayment * 12;
+  const annualCashFlow   = NOI - annualDebt;
+  const monthlyCashFlow  = annualCashFlow / 12;
+  const cashOnCash       = downAmt > 0 ? (annualCashFlow / downAmt) * 100 : 0;
+  const capRate          = price > 0 ? (NOI / price) * 100 : 0;
+  const grossYield       = price > 0 ? (annualRent / price) * 100 : 0;
+  const dscr             = annualDebt > 0 ? NOI / annualDebt : 0;
+
+  // ── Appreciation / exit projection ──
+  const appRate       = 3.5 / 100;
+  const futureValue   = price * Math.pow(1 + appRate, hold);
+  const holdN         = hold * 12;
+  const remainingBal  = monthlyRate > 0
+    ? loanAmt * Math.pow(1 + monthlyRate, holdN) - monthlyPayment * (Math.pow(1 + monthlyRate, holdN) - 1) / monthlyRate
+    : Math.max(0, loanAmt - monthlyPayment * holdN);
+  const sellingCosts  = futureValue * 0.06;
+  const equityAtSale  = futureValue - remainingBal - sellingCosts;
+  const totalReturn   = downAmt > 0
+    ? ((annualCashFlow * hold + equityAtSale - downAmt) / downAmt) * 100
+    : 0;
+
+  // ── Colour helpers ──
+  function metricColor(val, good, bad, higherBetter) {
+    if (higherBetter) return val >= good ? 'var(--green,#2E7D52)' : val >= bad ? 'var(--gold)' : 'var(--red,#C62828)';
+    return val <= good ? 'var(--green,#2E7D52)' : val <= bad ? 'var(--gold)' : 'var(--red,#C62828)';
+  }
+  function metricBg(val, good, bad, higherBetter) {
+    if (higherBetter) return val >= good ? 'rgba(46,125,82,0.07)' : val >= bad ? 'rgba(184,130,30,0.07)' : 'rgba(198,40,40,0.05)';
+    return val <= good ? 'rgba(46,125,82,0.07)' : val <= bad ? 'rgba(184,130,30,0.07)' : 'rgba(198,40,40,0.05)';
+  }
+  function fmtPct(v) { return (v >= 0 ? '+' : '') + v.toFixed(1) + '%'; }
+  function fmtMoney(v) {
+    const abs = Math.abs(v);
+    const str = abs >= 1000 ? '$' + Math.round(abs / 100) / 10 + 'k' : '$' + Math.round(abs);
+    return v < 0 ? '−' + str : str;
+  }
+
+  // primary metric card
+  function metricCard(label, value, fmtFn, good, bad, higherBetter, note) {
+    const col = metricColor(value, good, bad, higherBetter);
+    const bg  = metricBg(value, good, bad, higherBetter);
+    return `<div style="background:${bg};border:1px solid ${col}33;border-radius:4px;padding:14px 16px;display:flex;flex-direction:column;gap:3px">
+      <span style="font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted)">${label}</span>
+      <span style="font-family:'Cormorant Garamond',serif;font-size:1.9rem;font-weight:600;color:${col};line-height:1">${fmtFn(value)}</span>
+      ${note ? `<span style="font-size:10.5px;color:var(--muted);margin-top:2px">${note}</span>` : ''}
+    </div>`;
+  }
+
+  function secondaryRow(label, value) {
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--rule);font-size:12.5px">
+      <span style="color:var(--muted)">${label}</span>
+      <span style="font-weight:500;color:var(--ink)">${value}</span>
+    </div>`;
+  }
+
+  const ll = d.landlord;
+  const mktGrade = d.grade;
+  const mktComposite = d.composite;
+
+  // DSCR badge
+  const dscrColor = dscr >= 1.25 ? 'var(--green,#2E7D52)' : dscr >= 1.0 ? 'var(--gold)' : 'var(--red,#C62828)';
+  const dscrLabel = dscr >= 1.25 ? 'DSCR lender eligible' : dscr >= 1.0 ? 'Borderline DSCR' : 'Below DSCR threshold';
+
+  el.innerHTML = `
+    <div style="padding:24px 28px">
+
+      <!-- Header -->
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:8px">
+        <div>
+          <div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:2px">ROI ESTIMATE</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600;color:var(--deep)">${d.stateName} · ${zip}</div>
+        </div>
+        ${rentSource ? `<div style="font-size:10.5px;color:var(--muted)">Rent: <strong style="color:var(--ink)">${fmt(monthlyRent)}/mo</strong> <span style="opacity:0.6">(${rentSource})</span></div>` : `<div style="font-size:10.5px;color:var(--red,#C62828)">⚠ No rent data — results estimated at $0 rent</div>`}
+      </div>
+
+      <!-- Primary metrics 2×2 grid -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px">
+        ${metricCard('Gross yield', grossYield, v => v.toFixed(1)+'%', 7, 4, true, 'annual rent ÷ price')}
+        ${metricCard('Cap rate', capRate, v => v.toFixed(1)+'%', 5, 3, true, 'NOI ÷ price')}
+        ${metricCard('Cash-on-cash', cashOnCash, v => fmtPct(v), 6, 2, true, 'annual cash flow ÷ down')}
+        ${metricCard('Monthly cash flow', monthlyCashFlow, fmtMoney, 0, -200, true, annualDebt > 0 ? `after $${Math.round(monthlyPayment).toLocaleString()}/mo mortgage` : '')}
+      </div>
+
+      <!-- DSCR row -->
+      <div style="display:flex;align-items:center;gap:14px;background:var(--surface,#FAF8F4);border:1px solid var(--rule);padding:11px 14px;border-radius:3px;margin-bottom:18px">
+        <span style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:700;color:${dscrColor};line-height:1">${dscr.toFixed(2)}x</span>
+        <div style="flex:1;font-size:11.5px;color:var(--body)"><strong>DSCR</strong> — ${dscrLabel}</div>
+      </div>
+
+      <!-- Secondary rows -->
+      <div style="margin-bottom:20px">
+        ${secondaryRow('Annual NOI', fmt(NOI))}
+        ${secondaryRow('Annual debt service', fmt(annualDebt))}
+        ${secondaryRow('Down payment', fmt(downAmt) + ' (' + downPct + '%)')}
+        ${secondaryRow('Loan amount', fmt(loanAmt))}
+        ${secondaryRow('Vacancy assumed', vacPct.toFixed(1) + '%')}
+        ${secondaryRow('Expense ratio', expPct + '%')}
+      </div>
+
+      <!-- Projection card -->
+      <div style="background:var(--surface,#FAF8F4);border:1px solid var(--rule);border-radius:4px;padding:16px;margin-bottom:20px">
+        <div style="font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px">${hold}-YEAR PROJECTION <span style="font-weight:400;text-transform:none;letter-spacing:0">(3.5% p.a. appreciation)</span></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+          <div><div style="font-size:10px;color:var(--muted);margin-bottom:2px">Est. future value</div><div style="font-weight:600;color:var(--ink);font-size:13px">${fmt(futureValue)}</div></div>
+          <div><div style="font-size:10px;color:var(--muted);margin-bottom:2px">Equity at sale</div><div style="font-weight:600;color:var(--ink);font-size:13px">${fmt(equityAtSale)}</div></div>
+          <div><div style="font-size:10px;color:var(--muted);margin-bottom:2px">Total return</div><div style="font-weight:600;color:${totalReturn >= 0 ? 'var(--green,#2E7D52)' : 'var(--red,#C62828)'};font-size:13px">${fmtPct(totalReturn)}</div></div>
+        </div>
+        <p style="font-size:10px;color:var(--muted);margin-top:10px;margin-bottom:0;line-height:1.5">Projection assumes ${hold} years of ownership, 6% selling costs, and 3.5% annual appreciation (US long-run average). Actual returns will vary.</p>
+      </div>
+
+      <!-- Market score strip -->
+      ${mktGrade ? `<div style="background:var(--surface,#FAF8F4);border:1px solid var(--rule);border-radius:4px;padding:14px 16px;margin-bottom:20px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <span style="font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted)">Market quality</span>
+          <span style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:600;color:var(--deep)">${mktGrade} · ${mktComposite}/100</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px 14px">
+          ${['vacancy','income','jobs','crime','schools','costOfLiving','renter','landlord'].map(k => {
+            const dim = d.dimensions?.[k];
+            if (!dim) return '';
+            const col = dim.tag === 'strong' ? 'var(--green,#2E7D52)' : dim.tag === 'moderate' ? 'var(--gold)' : 'var(--red,#C62828)';
+            const labels = {vacancy:'Vacancy',income:'Income',jobs:'Jobs',crime:'Crime',schools:'Schools',costOfLiving:'Cost of living',renter:'Renter demand',landlord:'Landlord laws'};
+            return `<div style="display:flex;align-items:center;justify-content:space-between;font-size:10.5px;padding:3px 0;border-bottom:1px solid var(--rule)">
+              <span style="color:var(--body)">${labels[k]}</span>
+              <span style="font-weight:500;color:${col}">${dim.tag}</span>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>` : ''}
+
+      <!-- Landlord profile -->
+      ${ll ? `<div style="background:var(--surface,#FAF8F4);border:1px solid var(--rule);border-radius:4px;padding:14px 16px;margin-bottom:20px">
+        <div style="font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Landlord profile — ${ll.label}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div><div style="font-size:10px;color:var(--muted)">Eviction timeline</div><div style="font-size:12px;font-weight:500;color:var(--ink);margin-top:2px">${ll.eviction}</div></div>
+          <div><div style="font-size:10px;color:var(--muted)">Rent control</div><div style="font-size:12px;font-weight:500;color:var(--ink);margin-top:2px">${ll.rentControl}</div></div>
+          <div><div style="font-size:10px;color:var(--muted)">Security deposit</div><div style="font-size:12px;font-weight:500;color:var(--ink);margin-top:2px">${ll.deposit}</div></div>
+          <div><div style="font-size:10px;color:var(--muted)">Overall rating</div><div style="font-size:12px;font-weight:500;color:${ll.rating==='Friendly'?'var(--green,#2E7D52)':ll.rating==='Restrictive'?'var(--red,#C62828)':'var(--gold)'};margin-top:2px">${ll.rating}</div></div>
+        </div>
+      </div>` : ''}
+
+      <!-- CTA -->
+      <button onclick="navigateTo('cashflow',null)" style="width:100%;background:none;border:1px solid var(--rule);border-radius:3px;padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink);cursor:pointer;text-align:left">Open Cash Flow Analyzer with a specific property →</button>
+      <p style="font-size:10px;color:var(--muted);margin-top:12px;line-height:1.5">Estimates use HUD Fair Market Rents, Census ACS 2022, and static appreciation of 3.5% p.a. Results are illustrative only and do not constitute financial advice.</p>
+    </div>
+  `;
 }
 
 // ── Mortgage Engine ───────────────────────────────────────────────────────────
