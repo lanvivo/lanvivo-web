@@ -3961,7 +3961,7 @@ function runMortgageAnalysis() {
   } else if (visa==='f1opt') {
     overallStatus = 'cond';
     overallMsg = 'F-1/OPT buyers face the most lender resistance but options exist. ITIN mortgages and DSCR loans are your most reliable paths.';
-    if (ssn==='itin') loans.push({name:'ITIN Mortgage',rate:'7.5–9.5%',desc:'Some community banks accept OPT workers with 12 months of income history and ITIN.',tags:['12mo income history','Alternative credit'],ok:true});
+    if (ssn==='itin'||ssn==='yes') loans.push({name:'ITIN Mortgage',rate:'7.5–9.5%',desc:'Some community banks accept OPT workers with 12 months of income history and ITIN or SSN.',tags:['12mo income history','Alternative credit'],ok:true});
     if (purpose!=='primary') loans.push({name:'DSCR Loan',rate:'8.0–10%',desc:'Best option during OPT. Property rental income qualifies you, not your employment status.',tags:['Investment property','No employment check'],ok:true});
   } else if (visa==='foreign'||visa==='itin') {
     overallStatus = 'cond';
