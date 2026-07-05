@@ -1946,7 +1946,24 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
             </div>
           </div>
 
-          <!-- Danger zone -->
+          <!-- Password change card -->
+          <div class="acct-card" id="acct-password-card">
+            <div class="acct-card-label">Security</div>
+            <div class="acct-field">
+              <label>New password</label>
+              <input type="password" id="acct-pw-new" placeholder="At least 8 characters" autocomplete="new-password">
+            </div>
+            <div class="acct-field">
+              <label>Confirm new password</label>
+              <input type="password" id="acct-pw-confirm" placeholder="Repeat password" autocomplete="new-password" onkeydown="if(event.key==='Enter')changePassword()">
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;margin-top:20px">
+              <button class="btn-analyze" style="width:auto;padding:10px 22px" onclick="changePassword()">Update password</button>
+              <span id="acct-pw-status" style="font-size:13px;display:none"></span>
+            </div>
+          </div>
+
+          <!-- Session card -->
           <div class="acct-card acct-danger-zone">
             <div class="acct-card-label">Session</div>
             <p style="font-size:13px;color:var(--muted);margin-bottom:14px">You are signed in on this device.</p>
@@ -2633,42 +2650,12 @@ async function handleSignup() {
   triggerWelcomeEmail(); // fire-and-forget
 }
 
-// ── Security: inactivity timeout ─────────────────────────────────────────────
-// Auto-signs out after 30 minutes of no interaction. Shows a 1-minute warning first.
-const IDLE_TIMEOUT_MS = 60 * 60 * 1000;   // 60 min — real estate research sessions run long
-const IDLE_WARN_MS    = 55 * 60 * 1000;   // warn 5 min before timeout
-let _idleTimer = null, _idleWarnTimer = null, _idleActive = false;
-
-function _resetIdleTimer() {
-  clearTimeout(_idleTimer);
-  clearTimeout(_idleWarnTimer);
-  _idleWarnTimer = setTimeout(() => {
-    showToast('You\'ll be signed out in 5 minutes due to inactivity.', 'default', 10000);
-  }, IDLE_WARN_MS);
-  _idleTimer = setTimeout(async () => {
-    await handleLogout();
-    showToast('Signed out due to inactivity.', 'default', 5000);
-  }, IDLE_TIMEOUT_MS);
-}
-
-function startIdleTimer() {
-  if (!_idleActive) {
-    ['mousemove','keydown','click','scroll','touchstart'].forEach(ev =>
-      document.addEventListener(ev, _resetIdleTimer, { passive: true })
-    );
-    _idleActive = true;
-  }
-  _resetIdleTimer();
-}
-
-function stopIdleTimer() {
-  clearTimeout(_idleTimer);
-  clearTimeout(_idleWarnTimer);
-  ['mousemove','keydown','click','scroll','touchstart'].forEach(ev =>
-    document.removeEventListener(ev, _resetIdleTimer)
-  );
-  _idleActive = false;
-}
+// ── Inactivity timeout ────────────────────────────────────────────────────────
+// Disabled — Lanvivo is a research portal with no sensitive financial transactions.
+// Session continuity is handled by Supabase's autoRefreshToken mechanism.
+// Re-enable with a configured IDLE_TIMEOUT_MS if a high-security mode is ever needed.
+function startIdleTimer() { /* no-op */ }
+function stopIdleTimer()  { /* no-op */ }
 
 // ── Security: expired session watcher ────────────────────────────────────────
 // Supabase auto-refreshes JWTs in the background. If the refresh fails (network
@@ -2680,12 +2667,16 @@ function startSessionWatcher() {
   _sessionWatcherStarted = true;
   supabase.auth.onAuthStateChange((event) => {
     if (event === 'SIGNED_OUT' && currentUser) {
-      // Token refresh failed — Supabase already cleared the session
+      // Token refresh failed — Supabase already cleared the session.
+      // Show the toast FIRST, then swap screens after a short delay so the
+      // user actually sees the message before the auth screen covers everything.
       currentUser = null;
       stopIdleTimer();
-      document.getElementById('portal-screen')?.classList.remove('active');
-      document.getElementById('auth-screen')?.classList.add('active');
       showToast('Your session expired. Please sign in again.', 'default', 6000);
+      setTimeout(() => {
+        document.getElementById('portal-screen')?.classList.remove('active');
+        document.getElementById('auth-screen')?.classList.add('active');
+      }, 1200);
     }
   });
 }
@@ -3828,6 +3819,9 @@ function populateAccountForm() {
   document.getElementById('acct-name').value  = currentUser.name  || '';
   document.getElementById('acct-phone').value = currentUser.phone || '';
   document.getElementById('acct-email').value = currentUser.email || '';
+  // Hide password card in local-only mode (no Supabase auth, no passwords)
+  const pwCard = document.getElementById('acct-password-card');
+  if (pwCard) pwCard.style.display = BACKEND_ENABLED ? '' : 'none';
   // Hero section
   const heroName = document.getElementById('acct-hero-name');
   const heroAvatar = document.getElementById('acct-avatar-display');
@@ -3893,6 +3887,45 @@ async function saveAccountChanges() {
     showToast('Save failed.', 'error');
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = 'Save changes'; }
+  }
+}
+
+async function changePassword() {
+  const newPw  = document.getElementById('acct-pw-new').value;
+  const confPw = document.getElementById('acct-pw-confirm').value;
+  const statusEl = document.getElementById('acct-pw-status');
+  const btn = document.querySelector('[onclick="changePassword()"]');
+
+  statusEl.style.display = 'none';
+
+  if (!newPw) { showToast('Enter a new password.', 'error'); return; }
+  if (newPw.length < 8) { showToast('Password must be at least 8 characters.', 'error'); return; }
+  if (newPw !== confPw) { showToast('Passwords do not match.', 'error'); return; }
+
+  if (!BACKEND_ENABLED) {
+    showToast('Password change requires Supabase — not available in local mode.', 'error');
+    return;
+  }
+
+  if (btn) { btn.disabled = true; btn.textContent = 'Updating...'; }
+
+  try {
+    const { error } = await supabase.auth.updateUser({ password: newPw });
+    if (error) throw error;
+    // Clear fields on success
+    document.getElementById('acct-pw-new').value = '';
+    document.getElementById('acct-pw-confirm').value = '';
+    statusEl.textContent = 'Password updated.';
+    statusEl.style.color = 'var(--green, #1a7a4a)';
+    statusEl.style.display = 'inline';
+    showToast('Password updated successfully.', 'success');
+  } catch(err) {
+    statusEl.textContent = err.message || 'Update failed. Please try again.';
+    statusEl.style.color = 'var(--red, #c0392b)';
+    statusEl.style.display = 'inline';
+    showToast('Password update failed.', 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Update password'; }
   }
 }
 
