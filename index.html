@@ -60,15 +60,16 @@
       },
       "description": "US real estate portal for H-1B, F-1/OPT, ITIN, and foreign-national buyers. Includes visa-aware mortgage eligibility engine, property cash flow analyzer, shareable PDF reports, and AI-powered real estate guidance.",
       "featureList": [
+        "Zip code market research — 8-dimension investor scorecard",
+        "Zip code ROI explorer — yield, cap rate, cash-on-cash, DSCR",
         "Visa-aware mortgage eligibility engine",
-        "Property cash flow analyzer",
+        "Property cash flow analyzer with 15-year projection",
+        "After-tax return calculator with depreciation",
         "Shareable PDF property reports",
         "Side-by-side property comparison",
-        "Lanvivo GPT AI real estate guide",
-        "Zip code ROI explorer",
-        "Immigrant-specialist agent marketplace",
-        "ITIN and foreign national lender directory",
-        "Property performance tracker"
+        "Lanvivo GPT AI real estate guide (coming soon)",
+        "Immigrant-specialist agent marketplace (coming soon)",
+        "ITIN and foreign national lender directory (coming soon)"
       ],
       "audience": {
         "@type": "Audience",
@@ -306,12 +307,13 @@ html.reveal-ready .reveal.visible { opacity: 1; transform: none; }
   .nav-mobile-btn { display: flex; }
   .stats-grid { grid-template-columns: 1fr; }
   .feat-grid { grid-template-columns: 1fr; }
-  .journey-grid { grid-template-columns: 1fr; }
+  .journey-grid { grid-template-columns: 1fr !important; }
   .footer-top { flex-direction: column; }
   .survey-cta-inner { grid-template-columns: 1fr; gap: 32px; }
   .feat-live { flex-direction: column; align-items: flex-start; gap: 18px; }
   .hero-cta-row { flex-direction: column; align-items: flex-start; gap: 14px; }
   .journey-roadmap { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .preview-grid { grid-template-columns: 1fr !important; }
 }
 @media (max-width: 580px) { .w-form { flex-direction: column; } .survey-cta-meta { flex-wrap: wrap; gap: 18px; } }
 </style>
@@ -366,7 +368,7 @@ html.reveal-ready .reveal.visible { opacity: 1; transform: none; }
   <div class="hero-bg c2"></div>
   <div class="hero-badge">For H-1B, F-1/OPT, ITIN, and foreign-national buyers</div>
   <h1 class="hero-h1">US real estate.<br><em>Built for the one</em><br>who crossed borders.</h1>
-  <p class="hero-sub">Visa-aware mortgage eligibility. Property cash flow analysis. Shareable PDF reports. The portal is free. Accounts let you save your work and return to it from any device.</p>
+  <p class="hero-sub">Score rental markets by zip code. Estimate returns before you search. Run visa-aware mortgage eligibility and full cash flow analysis on any deal. Shareable PDF reports included. Free during beta.</p>
   <div class="hero-cta-row">
     <a href="portal.html?tab=signup" class="hero-cta-primary">Analyze your first property →</a>
     <a href="#waitlist" class="hero-cta-secondary">Just looking? Join the waitlist instead</a>
@@ -392,33 +394,39 @@ html.reveal-ready .reveal.visible { opacity: 1; transform: none; }
     <div class="feat-grid">
       <div class="feat reveal">
         <div class="feat-eye">Market intelligence</div>
-        <div class="feat-name">Zip Code ROI Explorer</div>
-        <div class="feat-desc">Interactive map showing cash-on-cash return, gross rental yield, vacancy rate, and appreciation by zip code. Filterable by investment strategy. Proprietary 0 to 100 Lanvivo ROI Score refreshed quarterly.</div>
+        <div class="feat-name">Market Research</div>
+        <div class="feat-desc">Score any US rental market across 8 investor dimensions (vacancy, crime, income, jobs, schools, cost of living, renter demand, and landlord law) using Census ACS, FBI UCR, and HUD data. Enter a zip code, get an A–D grade with a plain-English verdict instantly.</div>
       </div>
-      <div class="feat dk reveal" style="transition-delay:.08s">
-        <div class="feat-eye">Mortgage</div>
-        <div class="feat-name">Visa-Aware Mortgage Engine</div>
-        <div class="feat-desc">Input your visa type, income, and ITIN or SSN status. Surfaces compatible ITIN loans, DSCR loans, foreign national mortgages, and FHA options with short work history waivers. No guesswork.</div>
+      <div class="feat dk reveal" style="transition-delay:.06s">
+        <div class="feat-eye">Market intelligence</div>
+        <div class="feat-name">Zip Code ROI Explorer</div>
+        <div class="feat-desc">Enter a zip code and purchase price. Get gross yield, cap rate, cash-on-cash return, monthly cash flow, DSCR, and a 5-year appreciation projection, all pulled from HUD Fair Market Rents and Census data. No property address needed.</div>
       </div>
       <div class="feat dk reveal" style="transition-delay:.12s">
+        <div class="feat-eye">Mortgage</div>
+        <div class="feat-name">Visa-Aware Mortgage Engine</div>
+        <div class="feat-desc">Enter your visa type, income, credit score, and down payment. The engine tells you which loan products (DSCR, ITIN, conventional, FHA) actually work for your situation, with plain-English next steps.</div>
+      </div>
+      <div class="feat reveal" style="transition-delay:.18s">
         <div class="feat-eye">Analysis</div>
         <div class="feat-name">Property Cash Flow Analyzer</div>
-        <div class="feat-desc">Enter a listing address for instant projected NOI, cap rate, cash-on-cash return, and break-even analysis. Accounts for HOA, insurance, vacancy, management fees, and capital reserves.</div>
-      </div>
-      <div class="feat reveal" style="transition-delay:.16s">
-        <div class="feat-eye">Professional network</div>
-        <div class="feat-name">Immigrant-Specialist Agent Marketplace</div>
-        <div class="feat-desc">Vetted buyer's agents screened for immigrant deal experience. Profiles include languages spoken, visa types served, average days to close, and investor versus primary-home specialisation.</div>
-      </div>
-      <div class="feat reveal" style="transition-delay:.2s">
-        <div class="feat-eye">Lending</div>
-        <div class="feat-name">ITIN and Foreign National Lender Directory</div>
-        <div class="feat-desc">Curated lenders offering ITIN loans, DSCR loans, asset-depletion mortgages, and foreign national products. Each profile shows rates, LTV limits, and minimum FICO requirements.</div>
+        <div class="feat-desc">Enter price, rent, taxes, and expenses. See monthly cash flow, cap rate, cash-on-cash return, DSCR, after-tax returns with depreciation, and a 15-year equity projection. Save deals and compare up to four side by side.</div>
       </div>
       <div class="feat dk reveal" style="transition-delay:.24s">
-        <div class="feat-eye">AI guide</div>
-        <div class="feat-name">Lanvivo GPT</div>
-        <div class="feat-desc">Conversational AI trained on US real estate and immigration law. Answers questions like "Can I buy on an H-1B?" or "Which markets work for foreign nationals?" Available 24 hours a day in 6 languages.</div>
+        <div class="feat-eye">Reports</div>
+        <div class="feat-name">Shareable Property Reports</div>
+        <div class="feat-desc">Generate a clean PDF from any saved analysis and share it with a spouse, CPA, lender, or family member abroad. Or send a read-only link anyone can open without signing up. No app download required.</div>
+      </div>
+      <div class="feat reveal" style="transition-delay:.3s;border-top:3px solid rgba(200,148,42,0.25);position:relative;overflow:hidden">
+        <div style="position:absolute;top:14px;right:16px;font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);background:rgba(200,148,42,0.1);border:1px solid rgba(200,148,42,0.25);padding:3px 9px;border-radius:2px">Coming soon</div>
+        <div class="feat-eye" style="margin-top:4px">On the roadmap</div>
+        <div class="feat-name">What's next</div>
+        <div class="feat-desc" style="margin-bottom:14px">Up next on the build list.</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:flex-start;gap:10px;font-size:12.5px;color:var(--muted)"><span style="color:var(--gold);font-weight:600;flex-shrink:0">→</span><span><strong style="color:var(--ink);font-weight:500">Lanvivo GPT:</strong> conversational AI for immigrant real estate questions, in 6 languages</span></div>
+          <div style="display:flex;align-items:flex-start;gap:10px;font-size:12.5px;color:var(--muted)"><span style="color:var(--gold);font-weight:600;flex-shrink:0">→</span><span><strong style="color:var(--ink);font-weight:500">Vetted agent marketplace:</strong> agents screened for visa-holder and ITIN buyer experience</span></div>
+          <div style="display:flex;align-items:flex-start;gap:10px;font-size:12.5px;color:var(--muted)"><span style="color:var(--gold);font-weight:600;flex-shrink:0">→</span><span><strong style="color:var(--ink);font-weight:500">Lender directory:</strong> DSCR, ITIN, and foreign-national lenders with real rate data</span></div>
+        </div>
       </div>
     </div>
     <!-- Live-now strip: tells visitors what they can actually use today -->
@@ -428,13 +436,125 @@ html.reveal-ready .reveal.visible { opacity: 1; transform: none; }
         <div class="feat-live-items">
           <span class="feat-live-pill live">✓ Cash Flow Analyzer</span>
           <span class="feat-live-pill live">✓ Mortgage Eligibility Engine</span>
+          <span class="feat-live-pill live">✓ Market Research</span>
+          <span class="feat-live-pill live">✓ ROI Explorer</span>
           <span class="feat-live-pill live">✓ Property Reports &amp; Compare</span>
           <span class="feat-live-pill soon">Soon · Lanvivo GPT</span>
-          <span class="feat-live-pill soon">Soon · ROI Explorer</span>
         </div>
       </div>
       <a href="portal.html?tab=signup" class="btn-gold">Try it free →</a>
     </div>
+  </div>
+</section>
+
+<!-- PRODUCT PREVIEW -->
+<section style="padding:96px 5vw;background:#F7F4EE;overflow:hidden">
+  <div style="max-width:1100px;margin:0 auto">
+    <div class="section-eyebrow reveal" style="color:var(--gold)">See it in action</div>
+    <h2 class="section-title reveal" style="color:var(--ink)">What you get when you<br><em style="color:var(--deep)">run a zip code.</em></h2>
+    <p class="section-body reveal">This is a real output from the ROI Explorer. Enter any US zip code, a purchase price, and your down payment. The portal pulls HUD rent data and Census signals in seconds.</p>
+
+    <div class="preview-grid reveal" style="display:grid;grid-template-columns:1fr 1.55fr;gap:40px;align-items:start;max-width:1100px;transition-delay:.1s">
+
+      <!-- Left: input form mockup -->
+      <div style="background:#fff;border:1px solid #E8E0CC;border-radius:4px;padding:28px 24px;font-family:'DM Sans',sans-serif">
+        <div style="font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#8A5E0A;margin-bottom:18px">ROI Explorer</div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div>
+            <div style="font-size:11px;color:#6B6C7E;margin-bottom:5px">Zip code</div>
+            <div style="background:#F7F4EE;border:1px solid #E8E0CC;border-radius:3px;padding:10px 14px;font-size:14px;color:#1A1C2A;font-weight:500">77494</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div>
+              <div style="font-size:11px;color:#6B6C7E;margin-bottom:5px">Purchase price</div>
+              <div style="background:#F7F4EE;border:1px solid #E8E0CC;border-radius:3px;padding:10px 14px;font-size:13px;color:#1A1C2A">$320,000</div>
+            </div>
+            <div>
+              <div style="font-size:11px;color:#6B6C7E;margin-bottom:5px">Down payment</div>
+              <div style="background:#F7F4EE;border:1px solid #E8E0CC;border-radius:3px;padding:10px 14px;font-size:13px;color:#1A1C2A">20%</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div>
+              <div style="font-size:11px;color:#6B6C7E;margin-bottom:5px">Mortgage rate</div>
+              <div style="background:#F7F4EE;border:1px solid #E8E0CC;border-radius:3px;padding:10px 14px;font-size:13px;color:#1A1C2A">7.0%</div>
+            </div>
+            <div>
+              <div style="font-size:11px;color:#6B6C7E;margin-bottom:5px">Bedrooms</div>
+              <div style="background:#F7F4EE;border:1px solid #E8E0CC;border-radius:3px;padding:10px 14px;font-size:13px;color:#1A1C2A">2 BR</div>
+            </div>
+          </div>
+          <div style="background:#2C2B2B;border-radius:3px;padding:12px 16px;font-size:13px;color:#F7F4EE;font-weight:500;text-align:center;margin-top:4px">Estimate returns →</div>
+        </div>
+      </div>
+
+      <!-- Right: results mockup -->
+      <div style="background:#fff;border:1px solid #E8E0CC;border-radius:4px;overflow:hidden;font-family:'DM Sans',sans-serif;font-size:13px;color:#1A1C2A">
+
+        <!-- Verdict banner -->
+        <div style="padding:18px 22px 16px;border-bottom:1px solid #E8E0CC">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
+            <div style="display:inline-flex;align-items:center;font-size:10px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:#fff;border-radius:3px;padding:4px 10px;background:#8A5E0A">⚡ Moderate signal</div>
+            <div style="text-align:right"><div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.8rem;font-weight:700;color:#8A5E0A;line-height:1">B</div><div style="font-size:10px;color:#9B9CAD">67 / 100</div></div>
+          </div>
+          <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.2rem;font-weight:600;line-height:1.25;margin-bottom:5px">Strong market, thin cash flow at today's rates</div>
+          <div style="font-size:11.5px;color:#6B6C7E;line-height:1.5">6.5% gross yield clears the 5% floor. Texas landlord laws, job growth, and population inflow support a long hold. Cash flow is thin at 7% financing.</div>
+          <div style="font-size:11px;color:#9B9CAD;margin-top:6px">Texas · 77494 · $320,000 · 20% down · Rent: <strong style="color:#1A1C2A">$1,733/mo</strong> <span style="opacity:0.6">(HUD FMR)</span></div>
+        </div>
+
+        <!-- 3-col metric bars -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid #E8E0CC">
+          <div style="padding:14px 16px;border-right:1px solid #E8E0CC">
+            <div style="font-size:9px;letter-spacing:1.1px;text-transform:uppercase;color:#9B9CAD;margin-bottom:5px">Gross yield</div>
+            <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.6rem;font-weight:700;color:#8A5E0A;line-height:1;margin-bottom:6px">6.5%</div>
+            <div style="height:4px;background:#E8E0CC;border-radius:2px"><div style="width:65%;height:4px;background:#8A5E0A;border-radius:2px"></div></div>
+            <div style="font-size:9px;color:#9B9CAD;margin-top:4px">target 7%</div>
+          </div>
+          <div style="padding:14px 16px;border-right:1px solid #E8E0CC">
+            <div style="font-size:9px;letter-spacing:1.1px;text-transform:uppercase;color:#9B9CAD;margin-bottom:5px">Cap rate</div>
+            <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.6rem;font-weight:700;color:#8A5E0A;line-height:1;margin-bottom:6px">4.9%</div>
+            <div style="height:4px;background:#E8E0CC;border-radius:2px"><div style="width:49%;height:4px;background:#8A5E0A;border-radius:2px"></div></div>
+            <div style="font-size:9px;color:#9B9CAD;margin-top:4px">target 5%</div>
+          </div>
+          <div style="padding:14px 16px">
+            <div style="font-size:9px;letter-spacing:1.1px;text-transform:uppercase;color:#9B9CAD;margin-bottom:5px">Cash-on-cash</div>
+            <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.6rem;font-weight:700;color:#C62828;line-height:1;margin-bottom:6px">2.3%</div>
+            <div style="height:4px;background:#E8E0CC;border-radius:2px"><div style="width:23%;height:4px;background:#C62828;border-radius:2px"></div></div>
+            <div style="font-size:9px;color:#9B9CAD;margin-top:4px">target 6%</div>
+          </div>
+        </div>
+
+        <!-- Cash flow + DSCR row -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 22px;border-bottom:1px solid #E8E0CC;background:rgba(46,125,82,0.03)">
+          <div>
+            <div style="font-size:11px;color:#6B6C7E">Monthly cash flow</div>
+            <div style="font-size:10px;color:#9B9CAD;margin-top:1px">after $1,712/mo mortgage</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.2rem;font-weight:600;color:#8A5E0A">+$156</span>
+            <span style="font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;background:#8A5E0A;color:#fff">1.06x DSCR</span>
+          </div>
+        </div>
+
+        <!-- Market dims strip -->
+        <div style="padding:12px 22px;border-bottom:1px solid #E8E0CC">
+          <div style="font-size:9px;letter-spacing:1.1px;text-transform:uppercase;color:#9B9CAD;margin-bottom:8px">Market quality</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 16px">
+            <div style="display:flex;justify-content:space-between;font-size:11px;padding:3px 0;border-bottom:1px solid #F0EAE0"><span style="color:#6B6C7E">Vacancy</span><span style="font-weight:600;font-size:10px;color:#2E7D52">low</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:11px;padding:3px 0;border-bottom:1px solid #F0EAE0"><span style="color:#6B6C7E">Crime</span><span style="font-weight:600;font-size:10px;color:#8A5E0A">moderate</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:11px;padding:3px 0;border-bottom:1px solid #F0EAE0"><span style="color:#6B6C7E">Jobs</span><span style="font-weight:600;font-size:10px;color:#2E7D52">strong</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:11px;padding:3px 0;border-bottom:1px solid #F0EAE0"><span style="color:#6B6C7E">Landlord laws</span><span style="font-weight:600;font-size:10px;color:#2E7D52">strong</span></div>
+          </div>
+        </div>
+
+        <!-- CTA -->
+        <div style="padding:12px 22px">
+          <div style="background:#2C2B2B;border-radius:3px;padding:11px 14px;font-size:12px;color:#F7F4EE;cursor:pointer">Open Cash Flow Analyzer for 77494 →</div>
+        </div>
+      </div>
+    </div>
+
+    <p style="font-size:11px;color:#9B9CAD;margin-top:16px" class="reveal">Data from HUD Fair Market Rents, Census ACS, and FBI UCR. Results are illustrative, not financial advice.</p>
   </div>
 </section>
 
@@ -471,43 +591,51 @@ html.reveal-ready .reveal.visible { opacity: 1; transform: none; }
 <section class="journey" id="journey">
   <div style="max-width:1100px;margin:0 auto;position:relative;z-index:1">
     <div class="section-eyebrow reveal" style="color:var(--gold)">How it works today</div>
-    <h2 class="section-title light reveal">Three steps that<br><em>work right now.</em></h2>
-    <p class="section-body light reveal">The Lanvivo portal does these three things today. We're building toward the full vision below, but we're not going to claim things work that don't.</p>
-    <div class="journey-grid journey-grid-3">
+    <h2 class="section-title light reveal">Four steps that<br><em>work right now.</em></h2>
+    <p class="section-body light reveal">The Lanvivo portal does these four things today. We're building toward the full vision below, but we're not going to claim things work that don't.</p>
+    <div class="journey-grid" style="grid-template-columns:repeat(4,1fr)">
       <div class="step reveal">
         <div class="step-head">
           <div class="step-n">1</div>
           <span class="step-status step-status-live">Live</span>
         </div>
-        <div class="step-title">Check what loans you qualify for</div>
-        <div class="step-desc">Enter your visa status, income, credit score, and down payment. The Mortgage Eligibility Engine shows you exactly which loan products (DSCR, ITIN, conventional, FHA) actually work for your situation.</div>
+        <div class="step-title">Score any rental market</div>
+        <div class="step-desc">Enter a zip code. Market Research scores it across 8 dimensions (vacancy, crime, jobs, schools, landlord laws, and more) and grades it A to D with a plain-English verdict.</div>
       </div>
-      <div class="step reveal" style="transition-delay:.08s">
+      <div class="step reveal" style="transition-delay:.06s">
         <div class="step-head">
           <div class="step-n">2</div>
           <span class="step-status step-status-live">Live</span>
         </div>
-        <div class="step-title">Analyze any property</div>
-        <div class="step-desc">Plug in a price, rent, taxes, and expenses. See monthly cash flow, cap rate, DSCR, and 15-year return. Save deals to your account and compare up to four side-by-side.</div>
+        <div class="step-title">Estimate ROI before you search</div>
+        <div class="step-desc">Enter a zip code and purchase price. The ROI Explorer shows gross yield, cap rate, cash-on-cash return, and a 5-year projection using real HUD rent data. No address needed.</div>
       </div>
-      <div class="step reveal" style="transition-delay:.16s">
+      <div class="step reveal" style="transition-delay:.12s">
         <div class="step-head">
           <div class="step-n">3</div>
           <span class="step-status step-status-live">Live</span>
         </div>
+        <div class="step-title">Check loans &amp; analyze deals</div>
+        <div class="step-desc">The Mortgage Engine shows which DSCR, ITIN, and conventional products fit your visa and income. The Cash Flow Analyzer runs the full numbers on any specific property.</div>
+      </div>
+      <div class="step reveal" style="transition-delay:.18s">
+        <div class="step-head">
+          <div class="step-n">4</div>
+          <span class="step-status step-status-live">Live</span>
+        </div>
         <div class="step-title">Share the numbers</div>
-        <div class="step-desc">Generate clean PDF reports for your spouse, parents, CPA, or lender. Or send a link that anyone can open without signing up. Built for sharing across borders and time zones.</div>
+        <div class="step-desc">Generate clean PDF reports for your spouse, parents, CPA, or lender. Or send a link anyone can open without signing up. Built for sharing across borders and time zones.</div>
       </div>
     </div>
     <!-- Roadmap note: honest about what isn't done yet -->
     <div class="journey-roadmap reveal" style="transition-delay:.24s">
       <div class="journey-roadmap-label">Roadmap · rolling out through 2026</div>
       <div class="journey-roadmap-items">
-        <span class="roadmap-pill">Lanvivo GPT: AI guide</span>
-        <span class="roadmap-pill">ROI Explorer: 40K zip codes ranked</span>
+        <span class="roadmap-pill">Lanvivo GPT: AI real estate guide</span>
         <span class="roadmap-pill">Vetted agent marketplace</span>
         <span class="roadmap-pill">Vetted lender directory</span>
         <span class="roadmap-pill">Portfolio tracker &amp; BRRR tools</span>
+        <span class="roadmap-pill">Multi-zip comparison</span>
       </div>
     </div>
   </div>
@@ -547,7 +675,7 @@ html.reveal-ready .reveal.visible { opacity: 1; transform: none; }
   <div class="waitlist-inner">
     <div class="section-eyebrow reveal" style="text-align:center;margin-bottom:14px">Stay in the loop</div>
     <h2 class="w-title reveal">Land that lives<br><em>for you.</em></h2>
-    <p class="w-sub reveal">The portal is open now. The full Lanvivo platform, including vetted agent network, lender directory, and ROI explorer, rolls out through 2026. Join the waitlist and we'll let you know as each piece goes live.</p>
+    <p class="w-sub reveal">The portal is free and open now. Market Research, ROI Explorer, Mortgage Engine, and Cash Flow Analyzer are all live. We're still building the vetted agent network, lender directory, and Lanvivo GPT. Join the waitlist and we'll let you know as each piece ships.</p>
     <form class="w-form reveal" onsubmit="handleForm(event,this)">
       <input type="email" name="email" placeholder="Your email address" required>
       <input type="hidden" name="source" value="waitlist">
@@ -584,10 +712,11 @@ html.reveal-ready .reveal.visible { opacity: 1; transform: none; }
       <div class="footer-col">
         <h4>Platform</h4>
         <a href="portal.html?tab=signup">Open portal</a>
+        <a href="portal.html?tab=signup">Market Research</a>
+        <a href="portal.html?tab=signup">ROI Explorer</a>
         <a href="portal.html?tab=signup">Cash Flow Analyzer</a>
         <a href="portal.html?tab=signup">Mortgage Engine</a>
         <a href="portal.html?tab=signup">Property Reports</a>
-        <a href="portal.html?tab=signup">Lanvivo GPT</a>
       </div>
       <div class="footer-col">
         <h4>Who we serve</h4>
