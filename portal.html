@@ -1391,7 +1391,7 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
       <div class="page active" id="page-dashboard">
         <div class="dashboard-welcome">
           <h2 id="welcome-msg">Welcome back, <em>Babatunji.</em></h2>
-          <p id="dashboard-subtitle">Your immigrant real estate command center.</p>
+          <p id="dashboard-subtitle" data-i18n="dash_subtitle">Your immigrant real estate command center.</p>
         </div>
 
         <!-- Onboarding checklist (shown to new users, dismissed per-user in localStorage) -->
@@ -1495,8 +1495,8 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
       <div class="page" id="page-mortgage" style="padding:0;margin:-28px">
         <div class="tool-layout">
           <div class="tool-form">
-            <h3>Mortgage Eligibility Engine</h3>
-            <p>Enter your details and we will surface every loan product you qualify for right now.</p>
+            <h3 data-i18n="m_title">Mortgage Eligibility Engine</h3>
+            <p data-i18n="m_desc">Enter your details and we will surface every loan product you qualify for right now.</p>
             <div class="form-field">
               <label>Visa / immigration status <i class="info-tip">?<span class="tip-text">Lenders offer different loan programs depending on your status. H-1B holders have the most options; foreign nationals need specialist lenders.</span></i></label>
               <select id="m-visa">
@@ -1560,12 +1560,12 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
                 <option value="25">25% or more</option>
               </select>
             </div>
-            <button class="btn-analyze" onclick="runMortgageAnalysis()">Check my eligibility →</button>
+            <button class="btn-analyze" data-i18n="analyze" onclick="runMortgageAnalysis()">Check my eligibility →</button>
           </div>
           <div class="tool-results" id="mortgage-results">
             <div class="results-placeholder">
               <div class="icon">🏦</div>
-              <p>Fill in your details and click Check eligibility to see which loan products you qualify for right now.</p>
+              <p data-i18n="m_placeholder">Fill in your details and click Check eligibility to see which loan products you qualify for right now.</p>
             </div>
           </div>
         </div>
@@ -1575,8 +1575,8 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
       <div class="page" id="page-cashflow" style="padding:0;margin:-28px">
         <div class="analyzer-grid">
           <div class="tool-form">
-            <h3>Property Cash Flow Analyzer</h3>
-            <p>Enter a property's numbers to instantly see projected income, expenses, and return on investment.</p>
+            <h3 data-i18n="cf_title">Property Cash Flow Analyzer</h3>
+            <p data-i18n="cf_desc">Enter a property's numbers to instantly see projected income, expenses, and return on investment.</p>
             <div class="form-field">
               <label>Zipcode <i class="info-tip">?<span class="tip-text">Enter the property's zipcode to automatically score the rental market — vacancy rate, crime, jobs, school quality, landlord laws, and more. The market score appears in the results panel alongside your deal numbers.</span></i></label>
               <div style="display:flex;gap:8px">
@@ -1678,14 +1678,14 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
             </div>
             <div id="cf-edit-banner" style="display:none"></div>
             <div id="cf-save-buttons" style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
-              <button class="btn-analyze" style="flex:1;min-width:140px" onclick="saveCurrentProperty(event)">Save this property</button>
-              <button class="btn-analyze" style="flex:1;min-width:140px;background:transparent;color:var(--ink);border:1px solid var(--rule)" onclick="navigateTo('properties', null)">View saved →</button>
+              <button class="btn-analyze" style="flex:1;min-width:140px" data-i18n="cf_btn_save" onclick="saveCurrentProperty(event)">Save this property</button>
+              <button class="btn-analyze" style="flex:1;min-width:140px;background:transparent;color:var(--ink);border:1px solid var(--rule)" data-i18n="cf_btn_view" onclick="navigateTo('properties', null)">View saved →</button>
             </div>
           </div>
           <div class="tool-results" id="cashflow-results">
             <div class="results-placeholder">
               <div class="icon">📊</div>
-              <p>Enter a purchase price and monthly rent to see instant cash flow projections.</p>
+              <p data-i18n="cf_placeholder">Enter a purchase price and monthly rent to see instant cash flow projections.</p>
             </div>
           </div>
         </div>
@@ -1695,8 +1695,8 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
       <div class="page" id="page-market" style="padding:0;margin:-28px">
         <div class="tool-layout">
           <div class="tool-form">
-            <h3>Market Research</h3>
-            <p>Score any US rental market across 8 investor dimensions. No property needed — just a zipcode.</p>
+            <h3 data-i18n="mr_title">Market Research</h3>
+            <p data-i18n="mr_desc">Score any US rental market across 8 investor dimensions. No property needed — just a zipcode.</p>
             <div class="form-field">
               <label>Zipcode *</label>
               <input type="text" id="mr-zip" placeholder="e.g. 72712" maxlength="5" style="width:100%;letter-spacing:2px" oninput="onMrZipInput(this.value)" onkeydown="if(event.key==='Enter')fetchMarketScore()">
@@ -1724,7 +1724,7 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
                 <p style="font-size:10px;color:var(--muted);margin-top:3px;font-style:italic">Used for rent estimate only</p>
               </div>
             </div>
-            <button class="btn-analyze" id="mr-btn" onclick="fetchMarketScore()">Analyze market →</button>
+            <button class="btn-analyze" id="mr-btn" data-i18n="mr_btn" onclick="fetchMarketScore()">Analyze market →</button>
             <div style="border-top:1px solid var(--rule);margin:18px 0 14px"></div>
             <p style="font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:6px"><strong style="color:var(--ink);font-weight:500">Have a specific deal?</strong><br>Run cash flow, DSCR, and 1% rule in the analyzer. The deal score appears alongside this market score.</p>
             <button onclick="navigateTo('cashflow',null)" style="background:none;border:1px solid var(--rule);border-radius:3px;padding:9px 14px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink);cursor:pointer;width:100%;text-align:left">Open Cash Flow Analyzer →</button>
@@ -1732,7 +1732,7 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
           <div class="tool-results" id="market-results">
             <div class="results-placeholder">
               <div class="icon">📍</div>
-              <p>Enter a zipcode to score the rental market across 8 investor-specific dimensions.</p>
+              <p data-i18n="mr_placeholder">Enter a zipcode to score the rental market across 8 investor-specific dimensions.</p>
             </div>
           </div>
         </div>
@@ -1742,8 +1742,8 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
       <div class="page" id="page-roi" style="padding:0;margin:-28px">
         <div class="tool-layout">
           <div class="tool-form">
-            <h3>ROI Explorer</h3>
-            <p>Estimate returns for any US zip code before you find a property. Adjust assumptions to match your deal.</p>
+            <h3 data-i18n="roi_title">ROI Explorer</h3>
+            <p data-i18n="roi_desc">Estimate returns for any US zip code before you find a property. Adjust assumptions to match your deal.</p>
             <div class="form-field">
               <label>Zip code *</label>
               <input type="text" id="roi-zip" placeholder="e.g. 78701" maxlength="5" style="width:100%;letter-spacing:2px" onkeydown="if(event.key==='Enter')runROIAnalysis()">
@@ -1807,7 +1807,7 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
                 <option value="10">10 years</option>
               </select>
             </div>
-            <button class="btn-analyze" onclick="runROIAnalysis()">Estimate returns →</button>
+            <button class="btn-analyze" data-i18n="roi_btn" onclick="runROIAnalysis()">Estimate returns →</button>
             <div style="border-top:1px solid var(--rule);margin:18px 0 14px"></div>
             <p style="font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:6px"><strong style="color:var(--ink);font-weight:500">Have a specific deal?</strong><br>Run full DSCR and 1% rule analysis with your exact numbers.</p>
             <button onclick="navigateTo('cashflow',null)" style="background:none;border:1px solid var(--rule);border-radius:3px;padding:9px 14px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink);cursor:pointer;width:100%;text-align:left">Open Cash Flow Analyzer →</button>
@@ -1815,7 +1815,7 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
           <div class="tool-results" id="roi-results">
             <div class="results-placeholder">
               <div class="icon">📈</div>
-              <p>Enter a zip code and purchase price to estimate returns.</p>
+              <p data-i18n="roi_placeholder">Enter a zip code and purchase price to estimate returns.</p>
             </div>
           </div>
         </div>
@@ -1826,8 +1826,8 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
         <div class="properties-page">
           <div class="properties-header">
             <div>
-              <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.7rem;font-weight:600;color:var(--ink);margin-bottom:4px">My Properties</h2>
-              <p style="font-size:13px;color:var(--muted);line-height:1.5">Properties you've saved from the Cash Flow Analyzer. Select two to compare side-by-side.</p>
+              <h2 data-i18n="props_title" style="font-family:'Cormorant Garamond',serif;font-size:1.7rem;font-weight:600;color:var(--ink);margin-bottom:4px">My Properties</h2>
+              <p data-i18n="props_desc" style="font-size:13px;color:var(--muted);line-height:1.5">Properties you've saved from the Cash Flow Analyzer. Select two to compare side-by-side.</p>
             </div>
             <div class="properties-actions">
               <button class="btn-analyze" id="compare-btn" style="opacity:0.5;cursor:not-allowed" onclick="goToCompare()">Compare selected (0 of 2–4)</button>
@@ -4224,7 +4224,7 @@ async function runROIAnalysis() {
         + '<div><div style="font-size:10px;color:var(--muted,#9B9CAD)">Eviction timeline</div><div style="font-size:12px;font-weight:500;color:var(--ink,#1A1C2A);margin-top:2px">' + ll.eviction + '</div></div>'
         + '<div><div style="font-size:10px;color:var(--muted,#9B9CAD)">Rent control</div><div style="font-size:12px;font-weight:500;color:var(--ink,#1A1C2A);margin-top:2px">' + ll.rentControl + '</div></div>'
         + '<div><div style="font-size:10px;color:var(--muted,#9B9CAD)">Security deposit</div><div style="font-size:12px;font-weight:500;color:var(--ink,#1A1C2A);margin-top:2px">' + ll.deposit + '</div></div>'
-        + '<div><div style="font-size:10px;color:var(--muted,#9B9CAD)">Overall rating</div><div style="font-size:12px;font-weight:500;margin-top:2px;color:' + (ll.rating==='Friendly'?'#2E7D52':ll.rating==='Restrictive'?'#C62828':'#8A5E0A') + '">' + ll.rating + '</div></div>'
+        + '<div><div style="font-size:10px;color:var(--muted,#9B9CAD)">Overall rating</div><div style="font-size:12px;font-weight:500;margin-top:2px;color:' + (ll.rating==='Friendly'?'#2E7D52':ll.rating==='Restrictive'?'#C62828':'var(--ink,#1A1C2A)') + '">' + ll.rating + '</div></div>'
         + '</div></div>' : ''}
 
       <!-- Assumptions accordion -->
@@ -6380,76 +6380,192 @@ function toggleTheme() {
 // ── Language system ───────────────────────────────────────────────────────────
 const TRANSLATIONS = {
   en: {
+    // Nav
     dashboard:'Dashboard', gpt:'Lanvivo GPT', mortgage:'Mortgage Engine',
-    cashflow:'Cash Flow Analyzer', market:'Market Research', upgrade:'Plans & Pricing',
+    cashflow:'Cash Flow Analyzer', market:'Market Research', roi:'ROI Explorer',
+    properties:'My Properties', account:'My Account',
     welcome:'Welcome back,', signout:'Sign out',
     nav_main:'Main', nav_tools:'Tools', nav_account:'Account',
+    // GPT
     chat_placeholder:'Ask about buying property in the US on your visa...',
     chat_online:'Online', send:'→',
-    analyze:'Check my eligibility →',
-    calc_title:'Property Cash Flow Analyzer',
     free_limit:'free questions remaining today. Upgrade to Pro for unlimited access.',
     suggested:['Can I buy a home on an H-1B visa?','What is an ITIN loan?','Do I need a green card to get a mortgage?','What is a DSCR loan and who qualifies?','Can I buy as a foreign national living abroad?'],
+    // Dashboard
+    dash_subtitle:'Your immigrant real estate command center.',
+    // Mortgage Engine
+    m_title:'Mortgage Eligibility Engine',
+    m_desc:'Enter your details and we will surface every loan product you qualify for right now.',
+    analyze:'Check my eligibility →',
+    m_placeholder:'Fill in your details and click Check eligibility to see which loan products you qualify for right now.',
+    // Cash Flow Analyzer
+    cf_title:'Property Cash Flow Analyzer', calc_title:'Property Cash Flow Analyzer',
+    cf_desc:"Enter a property's numbers to instantly see projected income, expenses, and return on investment.",
+    cf_btn_save:'Save this property', cf_btn_view:'View saved →',
+    cf_placeholder:'Enter a purchase price and monthly rent to see instant cash flow projections.',
+    // Market Research
+    mr_title:'Market Research',
+    mr_desc:'Score any US rental market across 8 investor dimensions. No property needed — just a zipcode.',
+    mr_btn:'Analyze market →',
+    mr_placeholder:'Enter a zipcode to score the rental market across 8 investor-specific dimensions.',
+    // ROI Explorer
+    roi_title:'ROI Explorer',
+    roi_desc:'Estimate returns for any US zip code before you find a property. Adjust assumptions to match your deal.',
+    roi_btn:'Estimate returns →',
+    roi_placeholder:'Enter a zip code and purchase price to estimate returns.',
+    // My Properties
+    props_title:'My Properties',
+    props_desc:"Properties you've saved from the Cash Flow Analyzer. Select two to compare side-by-side.",
   },
   es: {
     dashboard:'Panel', gpt:'Lanvivo GPT', mortgage:'Motor Hipotecario',
-    cashflow:'Analizador de Flujo de Caja', market:'Investigación de Mercado', upgrade:'Planes y Precios',
+    cashflow:'Analizador de Flujo de Caja', market:'Investigación de Mercado', roi:'ROI Explorer',
+    properties:'Mis Propiedades', account:'Mi Cuenta',
     welcome:'Bienvenido,', signout:'Cerrar sesión',
     nav_main:'Principal', nav_tools:'Herramientas', nav_account:'Cuenta',
     chat_placeholder:'Pregunta sobre comprar una propiedad en EEUU con tu visa...',
     chat_online:'En línea', send:'→',
-    analyze:'Verificar mi elegibilidad →',
-    calc_title:'Analizador de Flujo de Caja',
     free_limit:'preguntas gratuitas restantes hoy. Actualiza a Pro para acceso ilimitado.',
     suggested:['¿Puedo comprar una casa con visa H-1B?','¿Qué es un préstamo ITIN?','¿Necesito una tarjeta verde para una hipoteca?','¿Qué es un préstamo DSCR y quién califica?','¿Puedo comprar como nacional extranjero?'],
+    dash_subtitle:'Tu centro de mando inmobiliario para inmigrantes.',
+    m_title:'Motor de Elegibilidad Hipotecaria',
+    m_desc:'Ingresa tus datos y te mostraremos todos los productos de préstamo para los que calificas ahora.',
+    analyze:'Verificar mi elegibilidad →',
+    m_placeholder:'Completa tus datos y haz clic en Verificar elegibilidad para ver los préstamos disponibles.',
+    cf_title:'Analizador de Flujo de Caja', calc_title:'Analizador de Flujo de Caja',
+    cf_desc:'Ingresa los números de una propiedad para ver proyecciones de ingresos, gastos y retorno.',
+    cf_btn_save:'Guardar esta propiedad', cf_btn_view:'Ver guardadas →',
+    cf_placeholder:'Ingresa precio de compra y renta mensual para ver proyecciones de flujo de caja.',
+    mr_title:'Investigación de Mercado',
+    mr_desc:'Evalúa cualquier mercado de alquiler en EE.UU. en 8 dimensiones. Solo necesitas un código postal.',
+    mr_btn:'Analizar mercado →',
+    mr_placeholder:'Ingresa un código postal para evaluar el mercado de alquiler en 8 dimensiones.',
+    roi_title:'Explorador de ROI',
+    roi_desc:'Estima retornos para cualquier código postal antes de encontrar una propiedad.',
+    roi_btn:'Estimar retornos →',
+    roi_placeholder:'Ingresa código postal y precio de compra para estimar retornos.',
+    props_title:'Mis Propiedades',
+    props_desc:'Propiedades guardadas desde el Analizador de Flujo de Caja. Selecciona dos para comparar.',
   },
   hi: {
     dashboard:'डैशबोर्ड', gpt:'Lanvivo GPT', mortgage:'मॉर्गेज इंजन',
-    cashflow:'कैश फ्लो विश्लेषक', market:'बाजार अनुसंधान', upgrade:'योजनाएं और मूल्य',
+    cashflow:'कैश फ्लो विश्लेषक', market:'बाजार अनुसंधान', roi:'ROI Explorer',
+    properties:'मेरी संपत्तियां', account:'मेरा खाता',
     welcome:'वापस स्वागत है,', signout:'साइन आउट',
     nav_main:'मुख्य', nav_tools:'उपकरण', nav_account:'खाता',
     chat_placeholder:'अपने वीजा पर अमेरिका में संपत्ति खरीदने के बारे में पूछें...',
     chat_online:'ऑनलाइन', send:'→',
-    analyze:'पात्रता जांचें →',
-    calc_title:'कैश फ्लो विश्लेषक',
     free_limit:'आज के मुफ्त प्रश्न शेष। असीमित के लिए Pro में अपग्रेड करें।',
     suggested:['क्या मैं H-1B वीजा पर घर खरीद सकता हूं?','ITIN लोन क्या है?','मॉर्गेज के लिए ग्रीन कार्ड चाहिए?','DSCR लोन क्या है?','विदेशी नागरिक के रूप में खरीद सकते हैं?'],
+    dash_subtitle:'आपका आप्रवासी रियल एस्टेट कमांड सेंटर।',
+    m_title:'मॉर्गेज पात्रता इंजन',
+    m_desc:'अपना विवरण दर्ज करें और हम आपके लिए उपलब्ध सभी लोन उत्पाद दिखाएंगे।',
+    analyze:'पात्रता जांचें →',
+    m_placeholder:'विवरण भरें और पात्रता जांचें पर क्लिक करें।',
+    cf_title:'कैश फ्लो विश्लेषक', calc_title:'कैश फ्लो विश्लेषक',
+    cf_desc:'किसी संपत्ति के नंबर दर्ज करें और आय, खर्च और रिटर्न का अनुमान देखें।',
+    cf_btn_save:'इस संपत्ति को सहेजें', cf_btn_view:'सहेजे गए देखें →',
+    cf_placeholder:'खरीद मूल्य और मासिक किराया दर्ज करें।',
+    mr_title:'बाजार अनुसंधान',
+    mr_desc:'किसी भी अमेरिकी किराया बाजार को 8 निवेशक आयामों में स्कोर करें।',
+    mr_btn:'बाजार विश्लेषण →',
+    mr_placeholder:'किराया बाजार को 8 आयामों में स्कोर करने के लिए पिनकोड दर्ज करें।',
+    roi_title:'ROI एक्सप्लोरर',
+    roi_desc:'संपत्ति खोजने से पहले किसी भी ज़िप कोड के लिए रिटर्न का अनुमान लगाएं।',
+    roi_btn:'रिटर्न अनुमान →',
+    roi_placeholder:'ज़िप कोड और खरीद मूल्य दर्ज करें।',
+    props_title:'मेरी संपत्तियां',
+    props_desc:'कैश फ्लो विश्लेषक से सहेजी गई संपत्तियां। तुलना के लिए दो चुनें।',
   },
   zh: {
     dashboard:'控制台', gpt:'Lanvivo GPT', mortgage:'抵押贷款引擎',
-    cashflow:'现金流分析器', market:'市场研究', upgrade:'方案和定价',
+    cashflow:'现金流分析器', market:'市场研究', roi:'ROI Explorer',
+    properties:'我的房产', account:'我的账户',
     welcome:'欢迎回来,', signout:'退出登录',
     nav_main:'主要', nav_tools:'工具', nav_account:'账户',
     chat_placeholder:'询问有关在美国购买房产的签证问题...',
     chat_online:'在线', send:'→',
-    analyze:'检查我的资格 →',
-    calc_title:'现金流分析器',
     free_limit:'今天剩余免费提问次数。升级到Pro获得无限次数。',
     suggested:['H-1B签证可以买房吗?','什么是ITIN贷款?','需要绿卡才能申请抵押贷款吗?','什么是DSCR贷款?','外国人可以在美国买房吗?'],
+    dash_subtitle:'您的移民房产指挥中心。',
+    m_title:'贷款资格引擎',
+    m_desc:'填写您的信息，我们将显示您目前符合条件的所有贷款产品。',
+    analyze:'检查我的资格 →',
+    m_placeholder:'填写详细信息并点击检查资格，查看您符合的贷款产品。',
+    cf_title:'现金流分析器', calc_title:'现金流分析器',
+    cf_desc:'输入房产数据，立即查看收入、支出和投资回报预测。',
+    cf_btn_save:'保存此房产', cf_btn_view:'查看已保存 →',
+    cf_placeholder:'输入购买价格和月租金以查看现金流预测。',
+    mr_title:'市场研究',
+    mr_desc:'从8个投资维度评估任何美国租赁市场，只需邮政编码。',
+    mr_btn:'分析市场 →',
+    mr_placeholder:'输入邮政编码，从8个维度评估租赁市场。',
+    roi_title:'投资回报探索器',
+    roi_desc:'在找到房产之前估算任何邮政编码的回报。',
+    roi_btn:'估算回报 →',
+    roi_placeholder:'输入邮政编码和购买价格以估算回报。',
+    props_title:'我的房产',
+    props_desc:'从现金流分析器保存的房产。选择两个进行对比。',
   },
   yo: {
     dashboard:'Pẹpẹ Iṣakoso', gpt:'Lanvivo GPT', mortgage:'Ẹrọ Ifowopamọ',
-    cashflow:'Atupale Owo', market:'Iwadi Oja', upgrade:'Awọn Eto ati Idiyele',
+    cashflow:'Atupale Owo', market:'Iwadi Oja', roi:'ROI Explorer',
+    properties:'Awọn Ohun Ini Mi', account:'Akọọlẹ Mi',
     welcome:'Kaabo pada,', signout:'Jade',
     nav_main:'Akọkọ', nav_tools:'Awọn Irinṣẹ', nav_account:'Akọọlẹ',
     chat_placeholder:'Beere nipa rira ohun ini ni Amẹrika pẹlu iwe iwọlu rẹ...',
     chat_online:'Lori ayelujara', send:'→',
-    analyze:'Ṣayẹwo ẹtọ mi →',
-    calc_title:'Atupale Owo',
     free_limit:'awọn ibeere ọfẹ ti o ku loni. Goke si Pro fun wiwọle ailopin.',
     suggested:['Ṣe Mo le ra ile pẹlu visa H-1B?','Kini awin ITIN?','Ṣe Mo nilo kaadi alawọ fun ifowopamọ?','Kini awin DSCR?','Ṣe okeere le ra ni Amẹrika?'],
+    dash_subtitle:'Ile-iṣẹ iṣakoso ohun ini fun awọn aṣikiri.',
+    m_title:'Ẹrọ Ẹtọ Ifowopamọ',
+    m_desc:'Tẹ alaye rẹ ki a le fihan gbogbo awọn ọja awin ti o yẹ fun.',
+    analyze:'Ṣayẹwo ẹtọ mi →',
+    m_placeholder:'Pari alaye rẹ ki o tẹ Ṣayẹwo ẹtọ lati ri awọn ọja awin ti o yẹ fun.',
+    cf_title:'Atupale Owo', calc_title:'Atupale Owo',
+    cf_desc:'Tẹ awọn nọmba ohun ini lati ri awọn asọtẹlẹ owo.',
+    cf_btn_save:'Fi ohun ini yi pamọ', cf_btn_view:'Wo awọn ti a fi pamọ →',
+    cf_placeholder:'Tẹ idiyele rira ati iyalo oṣooṣu lati ri asọtẹlẹ.',
+    mr_title:'Iwadi Oja',
+    mr_desc:'Ṣe iwọn oja iyalo ni Amẹrika ni awọn iwọn 8. Koodu ZIP nikan ni o nilo.',
+    mr_btn:'Ṣe itupalẹ oja →',
+    mr_placeholder:'Tẹ koodu ZIP lati ṣe iwọn oja iyalo ni awọn iwọn 8.',
+    roi_title:'ROI Explorer',
+    roi_desc:'Ṣe iṣiro ere fun eyikeyi koodu ZIP ṣaaju ki o to ri ohun ini.',
+    roi_btn:'Ṣe iṣiro ere →',
+    roi_placeholder:'Tẹ koodu ZIP ati idiyele rira lati ṣe iṣiro ere.',
+    props_title:'Awọn Ohun Ini Mi',
+    props_desc:'Awọn ohun ini ti o fi pamọ lati Atupale Owo. Yan meji lati fi wé wọn.',
   },
   pt: {
     dashboard:'Painel', gpt:'Lanvivo GPT', mortgage:'Motor Hipotecário',
-    cashflow:'Analisador de Fluxo de Caixa', market:'Pesquisa de Mercado', upgrade:'Planos e Preços',
+    cashflow:'Analisador de Fluxo de Caixa', market:'Pesquisa de Mercado', roi:'ROI Explorer',
+    properties:'Meus Imóveis', account:'Minha Conta',
     welcome:'Bem-vindo de volta,', signout:'Sair',
     nav_main:'Principal', nav_tools:'Ferramentas', nav_account:'Conta',
     chat_placeholder:'Pergunte sobre comprar imóveis nos EUA com seu visto...',
     chat_online:'Online', send:'→',
-    analyze:'Verificar minha elegibilidade →',
-    calc_title:'Analisador de Fluxo de Caixa',
     free_limit:'perguntas gratuitas restantes hoje. Atualize para Pro para acesso ilimitado.',
     suggested:['Posso comprar uma casa com visto H-1B?','O que é um empréstimo ITIN?','Preciso de green card para hipoteca?','O que é um empréstimo DSCR?','Posso comprar como estrangeiro?'],
+    dash_subtitle:'Seu centro de comando imobiliário para imigrantes.',
+    m_title:'Motor de Elegibilidade Hipotecária',
+    m_desc:'Insira seus dados e mostraremos todos os produtos de empréstimo para os quais você se qualifica agora.',
+    analyze:'Verificar minha elegibilidade →',
+    m_placeholder:'Preencha seus dados e clique em Verificar elegibilidade para ver os empréstimos disponíveis.',
+    cf_title:'Analisador de Fluxo de Caixa', calc_title:'Analisador de Fluxo de Caixa',
+    cf_desc:'Insira os números de um imóvel para ver projeções de renda, despesas e retorno.',
+    cf_btn_save:'Salvar este imóvel', cf_btn_view:'Ver salvos →',
+    cf_placeholder:'Insira preço de compra e aluguel mensal para ver projeções de fluxo de caixa.',
+    mr_title:'Pesquisa de Mercado',
+    mr_desc:'Avalie qualquer mercado de aluguel nos EUA em 8 dimensões. Só precisa de um CEP.',
+    mr_btn:'Analisar mercado →',
+    mr_placeholder:'Insira um CEP para avaliar o mercado de aluguel em 8 dimensões.',
+    roi_title:'Explorador de ROI',
+    roi_desc:'Estime retornos para qualquer CEP antes de encontrar um imóvel.',
+    roi_btn:'Estimar retornos →',
+    roi_placeholder:'Insira CEP e preço de compra para estimar retornos.',
+    props_title:'Meus Imóveis',
+    props_desc:'Imóveis salvos do Analisador de Fluxo de Caixa. Selecione dois para comparar.',
   }
 };
 
@@ -6470,8 +6586,8 @@ function applyHardcodedTranslations(lang) {
   if (navSectionLabels[1]) navSectionLabels[1].textContent = t.nav_tools;
   if (navSectionLabels[2]) navSectionLabels[2].textContent = t.nav_account;
 
-  // Nav item labels
-  const navKeys = ['dashboard','gpt','mortgage','cashflow','market','roi','properties','account'];
+  // Nav item labels — order must match the sidebar DOM order exactly
+  const navKeys = ['dashboard','cashflow','market','roi','properties','mortgage','gpt','account'];
   const navItemLabels = document.querySelectorAll('.nav-label');
   navItemLabels.forEach((lbl, i) => {
     if (navKeys[i] && t[navKeys[i]]) lbl.textContent = t[navKeys[i]];
@@ -6497,13 +6613,26 @@ function applyHardcodedTranslations(lang) {
       `${t.welcome} <em>${currentUser.name.split(' ')[0]}.</em>`;
   }
 
-  // Page title
-  const pageTitles = {dashboard:t.dashboard,gpt:t.gpt,mortgage:t.mortgage,cashflow:t.cashflow,upgrade:t.upgrade};
+  // Page title — derive from the active nav label (already updated above)
   const activePage = document.querySelector('.nav-item.active');
   if (activePage) {
     const label = activePage.querySelector('.nav-label');
     if (label) document.getElementById('page-title').textContent = label.textContent;
   }
+
+  // Generic data-i18n pass — applies to tool headings, descriptions, buttons, placeholders
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (!t[key]) return;
+    // For labels that contain tooltip <i> elements, only replace the leading text node
+    if (el.tagName === 'LABEL' && el.querySelector('.info-tip')) {
+      if (el.childNodes[0] && el.childNodes[0].nodeType === 3) {
+        el.childNodes[0].textContent = t[key] + ' ';
+      }
+    } else {
+      el.textContent = t[key];
+    }
+  });
 
   updateChatLimit();
 }
@@ -6535,7 +6664,7 @@ function collectPageStrings() {
 
 // ── AI translation of all page content ───────────────────────────────────────
 async function translatePageContent(lang) {
-  if (lang === 'en') return; // English is native, skip API call
+  if (lang === 'en') { restoreEnglish(); return; } // Restore original English text
   if (translationInProgress) return;
 
   const cacheKey = `${lang}_${document.querySelector('.page.active')?.id}`;
@@ -6598,7 +6727,16 @@ Return only valid JSON, no explanation, no markdown.`
 
 function applyTranslations(result) {
   Object.values(result).forEach(({ el, text }) => {
-    if (el && text) el.textContent = text;
+    if (!el || !text) return;
+    // Preserve original English text before first translation so we can restore it
+    if (!el.dataset.enText) el.dataset.enText = el.textContent;
+    el.textContent = text;
+  });
+}
+
+function restoreEnglish() {
+  document.querySelectorAll('[data-en-text]').forEach(el => {
+    if (el.dataset.enText) el.textContent = el.dataset.enText;
   });
 }
 
@@ -6841,7 +6979,7 @@ function buildMarketResultsHTML(d, beds) {
         <div style="font-size:10px;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted,#9B9CAD);margin-bottom:10px">Market signals</div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
           ${signalTiles.map(([lbl,val,sub]) => `
-          <div style="border:1px solid var(--rule,#E8E0CC);border-radius:3px;padding:10px 12px">
+          <div style="border:1px solid var(--rule,#E8E0CC);border-radius:3px;padding:10px 12px;background:var(--bg,#F7F4EE)">
             <div style="font-size:9px;color:var(--muted,#9B9CAD);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.8px">${lbl}</div>
             <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.25rem;font-weight:600;color:var(--ink,#1A1C2A);line-height:1">${val}</div>
             <div style="font-size:9px;color:var(--muted,#9B9CAD);margin-top:3px">${sub}</div>
@@ -6870,9 +7008,9 @@ function buildMarketResultsHTML(d, beds) {
         <div style="font-size:10px;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted,#9B9CAD);margin-bottom:10px">Landlord profile — ${escapeHTML(ll.label)}</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
           ${[['Eviction timeline',ll.eviction],['Rent control',ll.rentControl],['Security deposit',ll.deposit],['Overall rating',ll.rating]].map(([lbl,val]) => `
-          <div style="border:1px solid var(--rule,#E8E0CC);border-radius:3px;padding:10px 12px">
+          <div style="border:1px solid var(--rule,#E8E0CC);border-radius:3px;padding:10px 12px;background:var(--bg,#F7F4EE)">
             <div style="font-size:9px;color:var(--muted,#9B9CAD);margin-bottom:4px">${lbl}</div>
-            <div style="font-size:12px;font-weight:500;color:${val==='Friendly'?'#2E7D52':val==='Restrictive'?'#C62828':'#1A1C2A'}">${val}</div>
+            <div style="font-size:12px;font-weight:500;color:${val==='Friendly'?'#2E7D52':val==='Restrictive'?'#C62828':'var(--ink,#1A1C2A)'}">${val}</div>
           </div>`).join('')}
         </div>
       </div>` : ''}
