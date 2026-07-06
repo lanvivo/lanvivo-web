@@ -1259,11 +1259,11 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
         </button>
         <button class="mob-nav-item" data-mob-page="market">
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.3"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M7 4v6M4 7h6" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
-          Market Research
+          Zipcode Rater
         </button>
         <button class="mob-nav-item" data-mob-page="roi">
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 13L5 9l3 3 3-4 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="13" cy="5" r="1.5" stroke="currentColor" stroke-width="1.2"/></svg>
-          ROI Explorer
+          Zipcode ROI
         </button>
         <button class="mob-nav-item" data-mob-page="properties">
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 7l6-5 6 5v7H2V7z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 14V9h4v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1317,11 +1317,11 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
         </div>
         <div class="nav-item" id="nav-market" onclick="navigateTo('market',this)">
           <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.3"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M7 4v6M4 7h6" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
-          <span class="nav-label">Market Research</span>
+          <span class="nav-label">Zipcode Rater</span>
         </div>
         <div class="nav-item" id="nav-roi" onclick="navigateTo('roi',this)">
           <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M2 13L5 9l3 3 3-4 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="13" cy="5" r="1.5" stroke="currentColor" stroke-width="1.2"/></svg>
-          <span class="nav-label">ROI Explorer</span>
+          <span class="nav-label">Zipcode ROI</span>
         </div>
         <div class="nav-item" id="nav-properties" onclick="navigateTo('properties',this)">
           <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M2 7l6-5 6 5v7H2V7z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 14V9h4v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1514,7 +1514,7 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
               <label>Annual income (USD) <i class="info-tip">?<span class="tip-text">Your gross (before-tax) salary from employment. Lenders use this to calculate the maximum mortgage you can qualify for.</span></i></label>
               <div class="input-number">
                 <span class="input-prefix">$</span>
-                <input type="number" min="0" id="m-income" placeholder="120,000">
+                <input type="number" min="0" id="m-income" placeholder="120,000" onkeydown="if(event.key==='Enter')runMortgageAnalysis()">
               </div>
             </div>
             <div class="form-field">
@@ -1613,7 +1613,7 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
               <div class="input-number"><input type="number" min="0" max="100" step="0.5" id="cf-down" value="25" placeholder="25" oninput="calcCashFlow()" style="padding-right:32px"><span class="input-prefix" style="left:auto;right:12px">%</span></div>
             </div>
             <div class="form-field">
-              <label>Interest rate (annual) <i class="info-tip">?<span class="tip-text">Your mortgage interest rate per year. Check with your lender for a current quote — rates vary by loan type and your profile. 7–8% is a typical range in 2025.</span></i></label>
+              <label>Interest rate (annual) <i class="info-tip">?<span class="tip-text">Your mortgage interest rate per year. Check with your lender for a current quote — rates vary by loan type and your profile. 7–8% is a common range; check current rates with your lender as they vary by loan type and profile.</span></i></label>
               <div class="input-number"><input type="number" min="0" max="20" step="0.001" id="cf-rate" value="7.5" placeholder="7.5" oninput="calcCashFlow()" style="padding-right:32px"><span class="input-prefix" style="left:auto;right:12px">%</span></div>
             </div>
             <div class="form-field">
@@ -1695,7 +1695,7 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
       <div class="page" id="page-market" style="padding:0;margin:-28px">
         <div class="tool-layout">
           <div class="tool-form">
-            <h3 data-i18n="mr_title">Market Research</h3>
+            <h3 data-i18n="mr_title">Zipcode Rater</h3>
             <p data-i18n="mr_desc">Score any US rental market across 8 investor dimensions. No property needed — just a zipcode.</p>
             <div class="form-field">
               <label>Zipcode *</label>
@@ -1742,8 +1742,8 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
       <div class="page" id="page-roi" style="padding:0;margin:-28px">
         <div class="tool-layout">
           <div class="tool-form">
-            <h3 data-i18n="roi_title">ROI Explorer</h3>
-            <p data-i18n="roi_desc">Estimate returns for any US zip code before you find a property. Adjust assumptions to match your deal.</p>
+            <h3 data-i18n="roi_title">Zipcode ROI</h3>
+            <p data-i18n="roi_desc">Get a quick return estimate for any US zip code using market rent data. Enter a price — no detailed expenses needed.</p>
             <div class="form-field">
               <label>Zip code *</label>
               <input type="text" id="roi-zip" placeholder="e.g. 78701" maxlength="5" style="width:100%;letter-spacing:2px" onkeydown="if(event.key==='Enter')runROIAnalysis()">
@@ -1761,8 +1761,8 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
               </select>
             </div>
             <div class="form-field">
-              <label>Purchase price ($) *</label>
-              <div class="input-number"><span class="input-prefix">$</span><input type="number" id="roi-price" placeholder="350,000" min="0"></div>
+              <label>Purchase price *</label>
+              <div class="input-number"><span class="input-prefix">$</span><input type="number" id="roi-price" placeholder="350,000" min="0" onkeydown="if(event.key==='Enter')runROIAnalysis()"></div>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
               <div class="form-field">
@@ -1772,7 +1772,9 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
                   <option value="10">10%</option>
                   <option value="20" selected>20%</option>
                   <option value="25">25%</option>
-                  <option value="30">30%+</option>
+                  <option value="30">30%</option>
+                  <option value="35">35%</option>
+                  <option value="40">40%</option>
                 </select>
               </div>
               <div class="form-field">
@@ -1785,17 +1787,17 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
               </div>
             </div>
             <div class="form-field">
-              <label>Mortgage rate (%) <i class="info-tip">?<span class="tip-text">Use 5–10% for most markets; higher in slower rental areas.</span></i></label>
-              <input type="number" id="roi-rate" value="7.0" step="0.1" min="0" max="20">
+              <label>Mortgage rate <i class="info-tip">?<span class="tip-text">Your expected interest rate on the loan. Current 30-yr fixed rates are roughly 6.5–7.5%. Foreign national loans typically run 1–2% higher.</span></i></label>
+              <div class="input-number"><input type="number" id="roi-rate" value="7.0" step="0.1" min="0" max="20" style="padding-right:32px"><span class="input-prefix" style="left:auto;right:10px;border-left:1px solid var(--rule);border-right:none;padding:0 8px">%</span></div>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
               <div class="form-field">
-                <label>Vacancy rate (%) <i class="info-tip">?<span class="tip-text">Pre-filled from Census data for this zip. Adjust if you have local knowledge.</span></i></label>
-                <input type="number" id="roi-vacancy" value="6.6" step="0.1" min="0" max="100">
+                <label>Vacancy rate <i class="info-tip">?<span class="tip-text">Percentage of the year the unit sits empty. Updated from Census data when you run the analysis. 6–8% is typical; raise it for slower markets.</span></i></label>
+                <div class="input-number"><input type="number" id="roi-vacancy" value="6.6" step="0.1" min="0" max="100" style="padding-right:32px"><span class="input-prefix" style="left:auto;right:10px;border-left:1px solid var(--rule);border-right:none;padding:0 8px">%</span></div>
               </div>
               <div class="form-field">
-                <label>Expense ratio (%) <i class="info-tip">?<span class="tip-text">Operating expenses as % of gross rent. Covers maintenance, insurance, property tax, and PM fees. 40% is a common rule of thumb.</span></i></label>
-                <input type="number" id="roi-expenses" value="40" step="1" min="0" max="100">
+                <label>Expense ratio <i class="info-tip">?<span class="tip-text">Operating expenses as % of gross rent. Covers maintenance, insurance, property tax, and PM fees. 40% is a common rule of thumb.</span></i></label>
+                <div class="input-number"><input type="number" id="roi-expenses" value="40" step="1" min="0" max="100" style="padding-right:32px"><span class="input-prefix" style="left:auto;right:10px;border-left:1px solid var(--rule);border-right:none;padding:0 8px">%</span></div>
               </div>
             </div>
             <div class="form-field">
@@ -1805,6 +1807,10 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
                 <option value="5" selected>5 years</option>
                 <option value="7">7 years</option>
                 <option value="10">10 years</option>
+                <option value="15">15 years</option>
+                <option value="20">20 years</option>
+                <option value="25">25 years</option>
+                <option value="30">30 years</option>
               </select>
             </div>
             <button class="btn-analyze" data-i18n="roi_btn" onclick="runROIAnalysis()">Estimate returns →</button>
@@ -1899,7 +1905,7 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
               <ul>
                 <li>Everything in Pro</li>
                 <li>Cash Flow Analyzer</li>
-                <li>Zip Code ROI Explorer</li>
+                <li>Zipcode ROI</li>
                 <li>Portfolio tracker</li>
                 <li>BRRR calculator</li>
               </ul>
@@ -1928,15 +1934,15 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
 
             <div class="acct-field">
               <label>Full name</label>
-              <input type="text" id="acct-name">
+              <input type="text" id="acct-name" onkeydown="if(event.key==='Enter')saveAccountChanges()">
             </div>
             <div class="acct-field">
               <label>Phone <span style="font-weight:300;color:var(--muted)">(optional)</span></label>
-              <input type="tel" id="acct-phone" placeholder="+1 555 123 4567">
+              <input type="tel" id="acct-phone" placeholder="+1 555 123 4567" onkeydown="if(event.key==='Enter')saveAccountChanges()">
             </div>
             <div class="acct-field">
               <label>Email</label>
-              <input type="email" id="acct-email">
+              <input type="email" id="acct-email" onkeydown="if(event.key==='Enter')saveAccountChanges()">
               <p class="acct-hint">Changing your email sends a confirmation link to the new address.</p>
             </div>
 
@@ -1951,7 +1957,7 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
             <div class="acct-card-label">Security</div>
             <div class="acct-field">
               <label>New password</label>
-              <input type="password" id="acct-pw-new" placeholder="At least 8 characters" autocomplete="new-password">
+              <input type="password" id="acct-pw-new" placeholder="At least 8 characters" autocomplete="new-password" onkeydown="if(event.key==='Enter')changePassword()">
             </div>
             <div class="acct-field">
               <label>Confirm new password</label>
@@ -3323,7 +3329,7 @@ function renderToolGrid() {
     { id:'gpt', icon:'✦', name:'Lanvivo GPT', desc:'An AI assistant trained on visa-status, loan-product, and immigrant-buyer questions. Currently in development. Join the waitlist to be notified.', comingSoon:true },
     { id:'mortgage', icon:'🏦', name:'Mortgage Eligibility Engine', desc:'Enter your visa status and income. See exactly which loan products you qualify for right now.' },
     { id:'cashflow', icon:'📊', name:'Cash Flow Analyzer', desc:'Model any property\'s rental income, expenses, cap rate, and return on investment instantly.' },
-    { id:'market', icon:'🔍', name:'Market Research', desc:'Score any US zipcode across 8 investor dimensions — vacancy, crime, jobs, schools, landlord laws, and more.' },
+    { id:'market', icon:'🔍', name:'Zipcode Rater', desc:'Score any US zipcode across 8 investor dimensions — vacancy, crime, jobs, schools, landlord laws, and more.' },
     { id:'properties', icon:'🏠', name:'My Properties', desc:'Save analyses, compare up to 4 properties side-by-side, and generate shareable PDF reports.' },
   ];
   document.getElementById('tool-grid').innerHTML = tools.map(t => `
@@ -3438,7 +3444,7 @@ function dismissOnboarding() {
 }
 
 // ── Navigation ────────────────────────────────────────────────────────────────
-const PAGE_TITLES = {dashboard:'Dashboard',gpt:'Lanvivo GPT',mortgage:'Mortgage Eligibility Engine',cashflow:'Cash Flow Analyzer',market:'Market Research',roi:'ROI Explorer',properties:'My Properties',compare:'Compare Properties',report:'Property Report',account:'My Account',performance:'Performance Tracker'};
+const PAGE_TITLES = {dashboard:'Dashboard',gpt:'Lanvivo GPT',mortgage:'Mortgage Eligibility Engine',cashflow:'Cash Flow Analyzer',market:'Zipcode Rater',roi:'Zipcode ROI',properties:'My Properties',compare:'Compare Properties',report:'Property Report',account:'My Account',performance:'Performance Tracker'};
 
 // ── Mobile navigation ────────────────────────────────────────────────────────
 function toggleMobNav() {
@@ -3475,6 +3481,17 @@ function navigateTo(page, navEl) {
   // user records ('free' / 'pro' / 'investor') are preserved for back-compat with existing accounts
   // and may be reintroduced if pricing is added later.
   if (page==='market') renderMarketPage();
+  // Carry zip across the market research ↔ returns estimator pair
+  if (page==='roi') {
+    const mrZip = document.getElementById('mr-zip')?.value?.trim();
+    const roiZip = document.getElementById('roi-zip');
+    if (mrZip && roiZip && !roiZip.value) roiZip.value = mrZip;
+  }
+  if (page==='market') {
+    const roiZip = document.getElementById('roi-zip')?.value?.trim();
+    const mrZip = document.getElementById('mr-zip');
+    if (roiZip && mrZip && !mrZip.value) mrZip.value = roiZip;
+  }
   if (page==='properties') renderPropertiesList();
   if (page==='compare') renderComparePage();
   if (page==='cashflow') { updateSaveButtonsForMode(); localStorage.setItem(`lv_visited_cashflow_${currentUser?.id||'anon'}`,'1'); }
@@ -4048,7 +4065,7 @@ function addTyping() {
   return div;
 }
 
-// ── ROI Explorer ──────────────────────────────────────────────────────────────
+// ── Zipcode ROI ──────────────────────────────────────────────────────────────
 async function runROIAnalysis() {
   const zip      = (document.getElementById('roi-zip')?.value || '').trim();
   const beds     = document.getElementById('roi-beds')?.value ?? '2';
@@ -6415,7 +6432,7 @@ const TRANSLATIONS = {
   en: {
     // Nav
     dashboard:'Dashboard', gpt:'Lanvivo GPT', mortgage:'Mortgage Engine',
-    cashflow:'Cash Flow Analyzer', market:'Market Research', roi:'ROI Explorer',
+    cashflow:'Cash Flow Analyzer', market:'Zipcode Rater', roi:'Zipcode ROI',
     properties:'My Properties', account:'My Account',
     welcome:'Welcome back,', signout:'Sign out',
     nav_main:'Main', nav_tools:'Tools', nav_account:'Account',
@@ -6436,14 +6453,14 @@ const TRANSLATIONS = {
     cf_desc:"Enter a property's numbers to instantly see projected income, expenses, and return on investment.",
     cf_btn_save:'Save this property', cf_btn_view:'View saved →',
     cf_placeholder:'Enter a purchase price and monthly rent to see instant cash flow projections.',
-    // Market Research
-    mr_title:'Market Research',
+    // Zipcode Rater
+    mr_title:'Zipcode Rater',
     mr_desc:'Score any US rental market across 8 investor dimensions. No property needed — just a zipcode.',
     mr_btn:'Analyze market →',
     mr_placeholder:'Enter a zipcode to score the rental market across 8 investor-specific dimensions.',
-    // ROI Explorer
-    roi_title:'ROI Explorer',
-    roi_desc:'Estimate returns for any US zip code before you find a property. Adjust assumptions to match your deal.',
+    // Zipcode ROI
+    roi_title:'Zipcode ROI',
+    roi_desc:'Get a quick return estimate for any US zip code using market rent data. Enter a price — no detailed expenses needed.',
     roi_btn:'Estimate returns →',
     roi_placeholder:'Enter a zip code and purchase price to estimate returns.',
     // My Properties
@@ -6452,7 +6469,7 @@ const TRANSLATIONS = {
   },
   es: {
     dashboard:'Panel', gpt:'Lanvivo GPT', mortgage:'Motor Hipotecario',
-    cashflow:'Analizador de Flujo de Caja', market:'Investigación de Mercado', roi:'ROI Explorer',
+    cashflow:'Analizador de Flujo de Caja', market:'Zipcode Rater', roi:'Zipcode ROI',
     properties:'Mis Propiedades', account:'Mi Cuenta',
     welcome:'Bienvenido,', signout:'Cerrar sesión',
     nav_main:'Principal', nav_tools:'Herramientas', nav_account:'Cuenta',
@@ -6469,11 +6486,11 @@ const TRANSLATIONS = {
     cf_desc:'Ingresa los números de una propiedad para ver proyecciones de ingresos, gastos y retorno.',
     cf_btn_save:'Guardar esta propiedad', cf_btn_view:'Ver guardadas →',
     cf_placeholder:'Ingresa precio de compra y renta mensual para ver proyecciones de flujo de caja.',
-    mr_title:'Investigación de Mercado',
+    mr_title:'Zipcode Rater',
     mr_desc:'Evalúa cualquier mercado de alquiler en EE.UU. en 8 dimensiones. Solo necesitas un código postal.',
     mr_btn:'Analizar mercado →',
     mr_placeholder:'Ingresa un código postal para evaluar el mercado de alquiler en 8 dimensiones.',
-    roi_title:'Explorador de ROI',
+    roi_title:'Zipcode ROI',
     roi_desc:'Estima retornos para cualquier código postal antes de encontrar una propiedad.',
     roi_btn:'Estimar retornos →',
     roi_placeholder:'Ingresa código postal y precio de compra para estimar retornos.',
@@ -6482,7 +6499,7 @@ const TRANSLATIONS = {
   },
   hi: {
     dashboard:'डैशबोर्ड', gpt:'Lanvivo GPT', mortgage:'मॉर्गेज इंजन',
-    cashflow:'कैश फ्लो विश्लेषक', market:'बाजार अनुसंधान', roi:'ROI Explorer',
+    cashflow:'कैश फ्लो विश्लेषक', market:'Zipcode Rater', roi:'Zipcode ROI',
     properties:'मेरी संपत्तियां', account:'मेरा खाता',
     welcome:'वापस स्वागत है,', signout:'साइन आउट',
     nav_main:'मुख्य', nav_tools:'उपकरण', nav_account:'खाता',
@@ -6499,11 +6516,11 @@ const TRANSLATIONS = {
     cf_desc:'किसी संपत्ति के नंबर दर्ज करें और आय, खर्च और रिटर्न का अनुमान देखें।',
     cf_btn_save:'इस संपत्ति को सहेजें', cf_btn_view:'सहेजे गए देखें →',
     cf_placeholder:'खरीद मूल्य और मासिक किराया दर्ज करें।',
-    mr_title:'बाजार अनुसंधान',
+    mr_title:'Zipcode Rater',
     mr_desc:'किसी भी अमेरिकी किराया बाजार को 8 निवेशक आयामों में स्कोर करें।',
     mr_btn:'बाजार विश्लेषण →',
     mr_placeholder:'किराया बाजार को 8 आयामों में स्कोर करने के लिए पिनकोड दर्ज करें।',
-    roi_title:'ROI एक्सप्लोरर',
+    roi_title:'Zipcode ROI',
     roi_desc:'संपत्ति खोजने से पहले किसी भी ज़िप कोड के लिए रिटर्न का अनुमान लगाएं।',
     roi_btn:'रिटर्न अनुमान →',
     roi_placeholder:'ज़िप कोड और खरीद मूल्य दर्ज करें।',
@@ -6512,7 +6529,7 @@ const TRANSLATIONS = {
   },
   zh: {
     dashboard:'控制台', gpt:'Lanvivo GPT', mortgage:'抵押贷款引擎',
-    cashflow:'现金流分析器', market:'市场研究', roi:'ROI Explorer',
+    cashflow:'现金流分析器', market:'Zipcode Rater', roi:'Zipcode ROI',
     properties:'我的房产', account:'我的账户',
     welcome:'欢迎回来,', signout:'退出登录',
     nav_main:'主要', nav_tools:'工具', nav_account:'账户',
@@ -6529,11 +6546,11 @@ const TRANSLATIONS = {
     cf_desc:'输入房产数据，立即查看收入、支出和投资回报预测。',
     cf_btn_save:'保存此房产', cf_btn_view:'查看已保存 →',
     cf_placeholder:'输入购买价格和月租金以查看现金流预测。',
-    mr_title:'市场研究',
+    mr_title:'Zipcode Rater',
     mr_desc:'从8个投资维度评估任何美国租赁市场，只需邮政编码。',
     mr_btn:'分析市场 →',
     mr_placeholder:'输入邮政编码，从8个维度评估租赁市场。',
-    roi_title:'投资回报探索器',
+    roi_title:'Zipcode ROI',
     roi_desc:'在找到房产之前估算任何邮政编码的回报。',
     roi_btn:'估算回报 →',
     roi_placeholder:'输入邮政编码和购买价格以估算回报。',
@@ -6542,7 +6559,7 @@ const TRANSLATIONS = {
   },
   yo: {
     dashboard:'Pẹpẹ Iṣakoso', gpt:'Lanvivo GPT', mortgage:'Ẹrọ Ifowopamọ',
-    cashflow:'Atupale Owo', market:'Iwadi Oja', roi:'ROI Explorer',
+    cashflow:'Atupale Owo', market:'Zipcode Rater', roi:'Zipcode ROI',
     properties:'Awọn Ohun Ini Mi', account:'Akọọlẹ Mi',
     welcome:'Kaabo pada,', signout:'Jade',
     nav_main:'Akọkọ', nav_tools:'Awọn Irinṣẹ', nav_account:'Akọọlẹ',
@@ -6559,11 +6576,11 @@ const TRANSLATIONS = {
     cf_desc:'Tẹ awọn nọmba ohun ini lati ri awọn asọtẹlẹ owo.',
     cf_btn_save:'Fi ohun ini yi pamọ', cf_btn_view:'Wo awọn ti a fi pamọ →',
     cf_placeholder:'Tẹ idiyele rira ati iyalo oṣooṣu lati ri asọtẹlẹ.',
-    mr_title:'Iwadi Oja',
+    mr_title:'Zipcode Rater',
     mr_desc:'Ṣe iwọn oja iyalo ni Amẹrika ni awọn iwọn 8. Koodu ZIP nikan ni o nilo.',
     mr_btn:'Ṣe itupalẹ oja →',
     mr_placeholder:'Tẹ koodu ZIP lati ṣe iwọn oja iyalo ni awọn iwọn 8.',
-    roi_title:'ROI Explorer',
+    roi_title:'Zipcode ROI',
     roi_desc:'Ṣe iṣiro ere fun eyikeyi koodu ZIP ṣaaju ki o to ri ohun ini.',
     roi_btn:'Ṣe iṣiro ere →',
     roi_placeholder:'Tẹ koodu ZIP ati idiyele rira lati ṣe iṣiro ere.',
@@ -6572,7 +6589,7 @@ const TRANSLATIONS = {
   },
   pt: {
     dashboard:'Painel', gpt:'Lanvivo GPT', mortgage:'Motor Hipotecário',
-    cashflow:'Analisador de Fluxo de Caixa', market:'Pesquisa de Mercado', roi:'ROI Explorer',
+    cashflow:'Analisador de Fluxo de Caixa', market:'Zipcode Rater', roi:'Zipcode ROI',
     properties:'Meus Imóveis', account:'Minha Conta',
     welcome:'Bem-vindo de volta,', signout:'Sair',
     nav_main:'Principal', nav_tools:'Ferramentas', nav_account:'Conta',
@@ -6589,11 +6606,11 @@ const TRANSLATIONS = {
     cf_desc:'Insira os números de um imóvel para ver projeções de renda, despesas e retorno.',
     cf_btn_save:'Salvar este imóvel', cf_btn_view:'Ver salvos →',
     cf_placeholder:'Insira preço de compra e aluguel mensal para ver projeções de fluxo de caixa.',
-    mr_title:'Pesquisa de Mercado',
+    mr_title:'Zipcode Rater',
     mr_desc:'Avalie qualquer mercado de aluguel nos EUA em 8 dimensões. Só precisa de um CEP.',
     mr_btn:'Analisar mercado →',
     mr_placeholder:'Insira um CEP para avaliar o mercado de aluguel em 8 dimensões.',
-    roi_title:'Explorador de ROI',
+    roi_title:'Zipcode ROI',
     roi_desc:'Estime retornos para qualquer CEP antes de encontrar um imóvel.',
     roi_btn:'Estimar retornos →',
     roi_placeholder:'Insira CEP e preço de compra para estimar retornos.',
@@ -6799,8 +6816,8 @@ async function setLang(lang) {
 
 // Translation hook removed from override, handled inside navigateTo directly
 
-// ── Market Research ───────────────────────────────────────────────────────────
-// Called when the Market Research page loads — resets to placeholder state.
+// ── Zipcode Rater ───────────────────────────────────────────────────────────
+// Called when the Zipcode Rater page loads — resets to placeholder state.
 function renderMarketPage() {
   const el = document.getElementById('market-results');
   if (!el) return;
@@ -6841,7 +6858,7 @@ async function callMarketScore(zip, beds, baths) {
   return data;
 }
 
-// Full Market Research page render
+// Full Zipcode Rater page render
 async function fetchMarketScore() {
   const zip   = document.getElementById('mr-zip')?.value?.trim();
   const beds  = document.getElementById('mr-beds')?.value  ?? '2';
@@ -6898,7 +6915,7 @@ async function fetchCfMarketScore() {
   }
 }
 
-// Build the full results HTML for the Market Research page
+// Build the full results HTML for the Zipcode Rater page
 function buildMarketResultsHTML(d, beds) {
   const ll   = d.landlord;
   const c    = d.census;
