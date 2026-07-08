@@ -1761,6 +1761,11 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
               </select>
             </div>
             <div class="form-field">
+              <label>Monthly rent <span style="font-weight:300;color:var(--muted)">(optional — overrides benchmark)</span> <i class="info-tip">?<span class="tip-text">Leave blank to auto-fetch the HUD Fair Market Rent for this zip and bedroom count. Enter your own figure if you know what the property will rent for — this gives more accurate results than the government benchmark.</span></i></label>
+              <div class="input-number"><span class="input-prefix">$</span><input type="number" id="roi-rent-override" placeholder="Auto-fetched from HUD" min="0" onkeydown="if(event.key==='Enter')runROIAnalysis()"></div>
+              <p id="roi-rent-hint" style="font-size:10px;margin-top:4px;line-height:1.4;display:none"></p>
+            </div>
+            <div class="form-field">
               <label>Purchase price *</label>
               <div class="input-number"><span class="input-prefix">$</span><input type="number" id="roi-price" placeholder="350,000" min="0" onkeydown="if(event.key==='Enter')runROIAnalysis()"></div>
             </div>
@@ -4067,16 +4072,17 @@ function addTyping() {
 
 // ── Zipcode ROI ──────────────────────────────────────────────────────────────
 async function runROIAnalysis() {
-  const zip      = (document.getElementById('roi-zip')?.value || '').trim();
-  const beds     = document.getElementById('roi-beds')?.value ?? '2';
-  const price    = parseFloat(document.getElementById('roi-price')?.value) || 0;
-  const downPct  = parseFloat(document.getElementById('roi-down')?.value) || 20;
-  const term     = parseInt(document.getElementById('roi-term')?.value) || 30;
-  const ratePct  = parseFloat(document.getElementById('roi-rate')?.value) || 7;
-  const vacPct   = parseFloat(document.getElementById('roi-vacancy')?.value) ?? 6.6;
-  const expPct   = parseFloat(document.getElementById('roi-expenses')?.value) || 40;
-  const hold     = parseInt(document.getElementById('roi-hold')?.value) || 5;
-  const el       = document.getElementById('roi-results');
+  const zip          = (document.getElementById('roi-zip')?.value || '').trim();
+  const beds         = document.getElementById('roi-beds')?.value ?? '2';
+  const price        = parseFloat(document.getElementById('roi-price')?.value) || 0;
+  const downPct      = parseFloat(document.getElementById('roi-down')?.value) || 20;
+  const term         = parseInt(document.getElementById('roi-term')?.value) || 30;
+  const ratePct      = parseFloat(document.getElementById('roi-rate')?.value) || 7;
+  const vacPct       = parseFloat(document.getElementById('roi-vacancy')?.value) ?? 6.6;
+  const expPct       = parseFloat(document.getElementById('roi-expenses')?.value) || 40;
+  const hold         = parseInt(document.getElementById('roi-hold')?.value) || 5;
+  const rentOverride = parseFloat(document.getElementById('roi-rent-override')?.value) || 0;
+  const el           = document.getElementById('roi-results');
   if (!el) return;
 
   if (!zip || !/^\d{5}$/.test(zip)) {
@@ -4103,9 +4109,50 @@ async function runROIAnalysis() {
     return;
   }
 
-  // ── Rent ──
-  const rentSource = d.hud?.fmr ? 'HUD FMR' : d.census?.medGrossRent ? 'Census ACS' : null;
-  const monthlyRent = d.hud?.fmr || d.census?.medGrossRent || 0;
+  // ── Rent resolution: override → HUD FMR → Census ACS (with warning) → block ──
+  let monthlyRent, rentSource, rentIsEstimated = false;
+  const bedsLabel = beds === '0' ? 'Studio' : beds + 'BR';
+  if (rentOverride > 0) {
+    monthlyRent     = rentOverride;
+    rentSource      = 'you entered';
+    rentIsEstimated = false;
+  } else if (d.hud?.fmr) {
+    monthlyRent     = d.hud.fmr;
+    rentSource      = 'HUD FMR';
+    rentIsEstimated = false;
+  } else if (d.census?.medGrossRent) {
+    monthlyRent     = d.census.medGrossRent;
+    rentSource      = 'Census ACS';
+    rentIsEstimated = true; // NOT bedroom-specific — may understate 3BR rent
+  } else {
+    monthlyRent     = 0;
+    rentSource      = null;
+    rentIsEstimated = true;
+  }
+
+  // Update hint below the rent override field
+  const hintEl = document.getElementById('roi-rent-hint');
+  if (hintEl) {
+    if (rentOverride > 0) {
+      hintEl.textContent  = `Using your entered rent of $${rentOverride.toLocaleString()}/mo.`;
+      hintEl.style.color  = 'var(--muted)';
+    } else if (d.hud?.fmr) {
+      hintEl.textContent  = `HUD FMR for ${bedsLabel} in this zip: $${d.hud.fmr.toLocaleString()}/mo. Enter an override above if your deal differs.`;
+      hintEl.style.color  = 'var(--muted)';
+    } else if (d.census?.medGrossRent) {
+      hintEl.innerHTML    = `⚠ No HUD bedroom-level rent found for this zip — falling back to Census ACS median ($${d.census.medGrossRent.toLocaleString()}/mo across <em>all unit sizes</em>). This likely understates ${bedsLabel} rent. <strong>Enter your expected rent above for accurate results.</strong>`;
+      hintEl.style.color  = '#C62828';
+    } else {
+      hintEl.textContent  = '⚠ No rent data found for this zip. Enter your expected monthly rent above.';
+      hintEl.style.color  = '#C62828';
+    }
+    hintEl.style.display = 'block';
+  }
+
+  if (!monthlyRent) {
+    el.innerHTML = `<div class="results-placeholder"><div class="icon">⚠️</div><p>No rent data found for zip ${zip}. Enter your expected monthly rent in the field above and run again.</p></div>`;
+    return;
+  }
 
   // ── Core calculations ──
   const annualRent       = monthlyRent * 12;
@@ -4194,10 +4241,18 @@ async function runROIAnalysis() {
         <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.45rem;font-weight:600;color:var(--ink,#1A1C2A);line-height:1.25;margin-bottom:6px">${verdictHeadline}</div>
         <div style="font-size:12px;color:var(--muted,#6B6C7E);line-height:1.5">${verdictSub}</div>
         <div style="font-size:11px;color:var(--muted,#9B9CAD);margin-top:6px">
-          ${d.stateName ? d.stateName + ' · ' : ''}${zip}${rentSource ? ' &nbsp;·&nbsp; Rent: <strong style="color:var(--ink,#1A1C2A)">' + fmt(monthlyRent) + '/mo</strong> <span style="opacity:0.6">(' + rentSource + ')</span>' : ' &nbsp;·&nbsp; <span style="color:#C62828">⚠ No rent data</span>'}
+          ${d.stateName ? d.stateName + ' · ' : ''}${zip}${rentSource ? ' &nbsp;·&nbsp; Rent: <strong style="color:var(--ink,#1A1C2A)">' + fmt(monthlyRent) + '/mo</strong> <span style="opacity:0.6">(' + rentSource + ')</span> <button onclick="document.getElementById(\'roi-rent-override\').focus()" style="background:none;border:none;font-size:10px;color:var(--gold,#B8821E);cursor:pointer;padding:0;font-family:inherit;text-decoration:underline">adjust →</button>' : ' &nbsp;·&nbsp; <span style="color:#C62828">⚠ No rent data</span>'}
           &nbsp;·&nbsp; ${downPct}% down
         </div>
       </div>
+
+      <!-- Census ACS warning banner (shown when rent is not bedroom-specific) -->
+      ${rentIsEstimated ? '<div style="padding:10px 24px;background:rgba(198,40,40,0.05);border-bottom:2px solid rgba(198,40,40,0.2);display:flex;gap:10px;align-items:flex-start">'
+        + '<span style="color:#C62828;font-size:14px;flex-shrink:0;margin-top:1px">⚠</span>'
+        + '<div style="font-size:11.5px;color:#C62828;line-height:1.5">'
+        + '<strong>Rent figure may be inaccurate.</strong> No HUD Fair Market Rent was found for ' + bedsLabel + ' in this zip — the calculation is using the Census ACS median across <em>all unit sizes</em>. This typically understates ' + bedsLabel + ' rent and can make deals look worse than they are. '
+        + '<button onclick="document.getElementById(\'roi-rent-override\').focus()" style="background:none;border:none;font-size:11.5px;color:#C62828;cursor:pointer;padding:0;font-family:inherit;font-weight:600;text-decoration:underline">Enter your expected rent above ↑</button> for a reliable estimate.'
+        + '</div></div>' : ''}
 
       <!-- 3-column metric bars -->
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid var(--rule,#E8E0CC)">
@@ -4299,10 +4354,17 @@ async function runROIAnalysis() {
         </details>
       </div>
 
-      <!-- CTA -->
+      <!-- Contextual CTA -->
       <div style="padding:14px 24px 0">
+        ${rentIsEstimated || cashOnCash < 2 || dscr < 1.0 ? '<div style="padding:12px 16px;background:rgba(184,130,30,0.07);border:1px solid rgba(184,130,30,0.25);border-radius:3px;font-size:12px;color:var(--ink,#1A1C2A);line-height:1.5;margin-bottom:10px">'
+          + (rentIsEstimated
+              ? '💡 <strong>This zip had no HUD bedroom-level rent data</strong> — the result above used the Census ACS all-unit median, which often understates ' + bedsLabel + ' rent. Enter your expected rent in the field above and re-run. If you already have a specific deal, put your real numbers into the Cash Flow Analyzer below for a definitive answer.'
+              : cashOnCash < 2 || dscr < 1.0
+                ? '💡 <strong>Borderline on benchmark rent.</strong> These numbers use HUD Fair Market Rent (the 40th percentile of actual rents). If your specific property rents above that — which is common in tighter markets — the deal may look very different. Run your actual numbers in the Cash Flow Analyzer.'
+                : '')
+          + '</div>' : ''}
         <div onclick="navigateTo('cashflow',null)" style="width:100%;background:#2C2B2B;border:none;border-radius:3px;padding:12px 16px;font-family:'DM Sans',system-ui,sans-serif;font-size:12px;color:#F7F4EE;cursor:pointer;text-align:left;display:block;box-sizing:border-box">
-          Open Cash Flow Analyzer with a specific property →
+          Run a full deal analysis with your actual numbers in Cash Flow Analyzer →
         </div>
         <p style="font-size:10px;color:var(--muted,#9B9CAD);margin-top:10px;line-height:1.5;margin-bottom:0">Estimates use HUD Fair Market Rents, Census ACS, and 3.5% p.a. appreciation. Results are illustrative only — not financial advice.</p>
       </div>
