@@ -1168,11 +1168,11 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
         <div id="signup-success" class="auth-success"></div>
         <div class="field">
           <label>Full name</label>
-          <input type="text" id="signup-name" placeholder="Your name">
+          <input type="text" id="signup-name" placeholder="Your name" onkeydown="if(event.key==='Enter')document.getElementById('signup-email').focus()">
         </div>
         <div class="field">
           <label>Email address</label>
-          <input type="email" id="signup-email" placeholder="you@email.com">
+          <input type="email" id="signup-email" placeholder="you@email.com" onkeydown="if(event.key==='Enter')document.getElementById('signup-password').focus()">
         </div>
         <div class="field">
           <label>Password</label>
@@ -1882,6 +1882,7 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
           <div class="locked-icon">✦</div>
           <h2>Unlock the full <em>platform.</em></h2>
           <p>Choose the plan that matches where you are in your property journey.</p>
+          <div style="display:inline-block;background:rgba(46,125,82,0.1);border:1px solid rgba(46,125,82,0.3);border-radius:3px;padding:8px 16px;font-size:12px;color:#2E7D52;margin-bottom:20px">✓ All features are <strong>free during beta</strong> — pricing below reflects planned tiers after launch.</div>
           <div class="plan-compare">
             <div class="plan-col">
               <h4>Free</h4>
@@ -3331,11 +3332,12 @@ function renderToolGrid() {
   // Plan consolidation: every tool is unlocked. Badges removed in favor of a clean dashboard.
   // GPT shows as "Coming Soon" since the live chat is paused pending API/proxy build-out.
   const tools = [
-    { id:'gpt', icon:'✦', name:'Lanvivo GPT', desc:'An AI assistant trained on visa-status, loan-product, and immigrant-buyer questions. Currently in development. Join the waitlist to be notified.', comingSoon:true },
     { id:'mortgage', icon:'🏦', name:'Mortgage Eligibility Engine', desc:'Enter your visa status and income. See exactly which loan products you qualify for right now.' },
     { id:'cashflow', icon:'📊', name:'Cash Flow Analyzer', desc:'Model any property\'s rental income, expenses, cap rate, and return on investment instantly.' },
     { id:'market', icon:'🔍', name:'Zipcode Rater', desc:'Score any US zipcode across 8 investor dimensions — vacancy, crime, jobs, schools, landlord laws, and more.' },
+    { id:'roi', icon:'📈', name:'Zipcode ROI', desc:'Enter a zip code and purchase price. Get gross yield, cap rate, cash-on-cash, and a 30-year projection using HUD rent data.' },
     { id:'properties', icon:'🏠', name:'My Properties', desc:'Save analyses, compare up to 4 properties side-by-side, and generate shareable PDF reports.' },
+    { id:'gpt', icon:'✦', name:'Lanvivo GPT', desc:'An AI assistant trained on visa-status, loan-product, and immigrant-buyer questions. Currently in development. Join the waitlist to be notified.', comingSoon:true },
   ];
   document.getElementById('tool-grid').innerHTML = tools.map(t => `
     <div class="tool-card" onclick="navigateTo('${t.id}',null)">
@@ -4386,7 +4388,8 @@ function runMortgageAnalysis() {
   const credit  = creditRaw === 'none' ? 0 : (parseInt(creditRaw) || 0);
   const purpose = document.getElementById('m-purpose').value;
   const down    = parseInt(document.getElementById('m-down').value) || 0;
-  if (!visa) { alert('Please select your visa status.'); return; }
+  if (!visa) { showToast('Please select your visa / immigration status.', 'error'); return; }
+  if (!income || income <= 0) { showToast('Please enter your annual income to see eligible loan products.', 'error'); document.getElementById('m-income').focus(); return; }
 
   const loans = [];
   let overallStatus = 'yes';
