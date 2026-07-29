@@ -6,6 +6,7 @@
 <title>Lanvivo Portal</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -1099,6 +1100,71 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
 .plan-col ul{color:#4A5070}
 .breakdown-table td{color:#4A5070}
 
+
+/* ══ PROPERTY ANALYSIS ═════════════════════════════════════════════ */
+.pa-layout{display:grid;grid-template-columns:320px 1fr;gap:20px;height:calc(100vh - 56px - 56px)}
+.pa-form{background:var(--surface);border:1px solid var(--rule);padding:24px;overflow-y:auto;box-shadow:0 1px 3px rgba(26,42,94,0.06)}
+.pa-form h3{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:600;color:var(--ink);margin-bottom:4px}
+.pa-form > p{font-size:12px;color:var(--muted);margin-bottom:20px;line-height:1.6}
+.pa-results{background:var(--surface);border:1px solid var(--rule);overflow-y:auto;box-shadow:0 1px 3px rgba(26,42,94,0.06);display:flex;flex-direction:column}
+.pa-placeholder{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--muted);padding:40px}
+.pa-placeholder .icon{font-size:3rem;margin-bottom:12px;opacity:.3}
+.pa-placeholder p{font-size:14px;line-height:1.6;max-width:280px}
+.pa-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:14px;padding:40px}
+.pa-loading-spinner{width:36px;height:36px;border:3px solid var(--rule);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite}
+.pa-loading p{font-size:13px;color:var(--muted)}
+/* Metrics strip inside results */
+.pa-metrics{display:grid;grid-template-columns:repeat(4,1fr);background:#1A2A5E;border-bottom:2px solid var(--gold);flex-shrink:0}
+.pa-metric{padding:14px 12px;text-align:center;border-right:1px solid rgba(200,148,42,0.18)}
+.pa-metric:last-child{border-right:none}
+.pa-metric-label{font-size:8.5px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:#9BA8C8;margin-bottom:5px}
+.pa-metric-value{font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:600;color:#F0D080;line-height:1.2}
+/* Results body */
+.pa-body{padding:20px 22px;flex:1}
+.pa-section{margin-bottom:22px}
+.pa-section-title{display:flex;align-items:baseline;gap:8px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--rule)}
+.pa-section-num{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);background:rgba(184,130,30,0.1);padding:2px 7px;border-radius:10px}
+.pa-section-title h4{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:600;color:var(--ink)}
+.pa-table{width:100%;border-collapse:collapse;font-size:11.5px;margin-bottom:12px}
+.pa-table thead tr{background:#1A2A5E}
+.pa-table thead th{color:#fff;font-weight:500;padding:8px 10px;text-align:left;letter-spacing:.5px;font-size:10.5px}
+.pa-table thead th:not(:first-child){text-align:center}
+.pa-table tbody tr:nth-child(odd){background:var(--bg)}
+.pa-table tbody tr:nth-child(even){background:var(--surface)}
+.pa-table td{padding:8px 10px;color:var(--ink);border-bottom:1px solid var(--rule)}
+.pa-table td:not(:first-child){text-align:center;color:var(--body)}
+.pa-verdict{padding:12px 16px;border-radius:3px;margin-top:10px;border-left:3px solid var(--gold);background:rgba(184,130,30,0.06);font-size:12.5px;color:var(--body);line-height:1.6}
+.pa-verdict strong{color:var(--gold);font-weight:500}
+.pa-pull{background:linear-gradient(135deg,rgba(26,42,94,0.05) 0%,rgba(184,130,30,0.07) 100%);border:1px solid rgba(184,130,30,0.2);border-left:3px solid var(--gold);padding:14px 18px;margin:12px 0;border-radius:3px;font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-style:italic;color:var(--deep);line-height:1.5}
+.pa-rec{display:flex;gap:0;margin-bottom:10px;border:1px solid var(--rule);overflow:hidden;border-radius:3px}
+.pa-rec-bar{width:4px;background:var(--gold);flex-shrink:0}
+.pa-rec-body{padding:10px 14px;flex:1}
+.pa-rec-title{font-size:12.5px;font-weight:600;color:var(--ink);margin-bottom:3px}
+.pa-rec-title span{color:var(--gold);margin-right:6px;font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:600}
+.pa-rec-detail{font-size:12px;color:var(--muted);line-height:1.55}
+.pa-stat-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.pa-stat{background:var(--bg);border:1px solid var(--rule);padding:12px 14px}
+.pa-stat-label{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.pa-stat-value{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:600;color:var(--deep)}
+.pa-mortgage-note{background:rgba(26,42,94,0.04);border:1px solid rgba(26,42,94,0.1);border-left:3px solid var(--deep);padding:12px 16px;font-size:12px;color:var(--body);line-height:1.6;border-radius:3px;margin-top:10px}
+.pa-actions{display:flex;gap:8px;padding:16px 22px;border-top:1px solid var(--rule);flex-shrink:0;background:var(--surface)}
+.pa-actions .btn-pdf{background:var(--deep);color:#fff;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:500;padding:10px 20px;border:none;border-radius:3px;cursor:pointer;transition:opacity .2s}
+.pa-actions .btn-pdf:hover{opacity:.88}
+.pa-actions .btn-new{background:transparent;color:var(--ink);font-family:'DM Sans',sans-serif;font-size:12px;padding:10px 16px;border:1px solid var(--rule);border-radius:3px;cursor:pointer;transition:all .15s}
+.pa-actions .btn-new:hover{border-color:var(--gold)}
+.pa-key-field{margin-top:16px;padding-top:16px;border-top:1px solid var(--rule)}
+.pa-key-toggle{font-size:11px;color:var(--gold);cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;padding:0;text-decoration:underline}
+.pa-sub-label{font-size:11px;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;margin-top:10px}
+.pa-qr-table{width:100%;border-collapse:collapse;font-size:11.5px}
+.pa-qr-table thead tr{background:#1A2A5E}
+.pa-qr-table thead th{color:#fff;padding:8px 10px;font-size:10.5px;font-weight:500;text-align:left}
+.pa-qr-table tbody tr:nth-child(odd){background:var(--bg)}
+.pa-qr-table tbody tr:nth-child(even){background:var(--surface)}
+.pa-qr-table td{padding:8px 10px;font-size:11.5px;color:var(--body);border-bottom:1px solid var(--rule);vertical-align:top;line-height:1.5}
+.pa-qr-table td:first-child{color:var(--ink);font-weight:500;white-space:nowrap;width:22%}
+.pa-qr-table td:nth-child(2){width:32%}
+@media(max-width:900px){.pa-layout{grid-template-columns:1fr;height:auto}}
+
 </style>
 </head>
 <body>
@@ -1332,6 +1398,10 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
           <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M8 1L2 5v9h4V9h4v5h4V5L8 1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
           <span class="nav-label">Mortgage Engine</span>
           <span class="nav-lock" id="mortgage-lock">Pro</span>
+        </div>
+        <div class="nav-item" id="nav-propanalysis" onclick="navigateTo('propanalysis',this)">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M2 7l6-5 6 5v7H2V7z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 14V9h4v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M10 5.5L12.5 3 14 4.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="nav-label">Property Analysis</span>
         </div>
         <div class="nav-item" id="nav-gpt" onclick="navigateTo('gpt',this)">
           <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h8M2 12h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
@@ -1877,6 +1947,68 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
       </div>
 
       <!-- UPGRADE -->
+      <!-- PROPERTY ANALYSIS -->
+      <div class="page" id="page-propanalysis" style="padding:0;margin:-28px">
+        <div class="pa-layout">
+
+          <!-- Left: Form -->
+          <div class="pa-form">
+            <h3>Property Analysis Report</h3>
+            <p>Enter an address to pull comp data, rental rates, days to sell, and get a branded PDF report.</p>
+
+            <div class="form-field">
+              <label>Property Address *</label>
+              <input type="text" id="pa-address" placeholder="3030 Plateau Dr, Conway, AR 72032" style="width:100%">
+            </div>
+            <div class="form-field">
+              <label>Current List Price *</label>
+              <div class="input-number"><span class="input-prefix">$</span><input type="number" id="pa-price" placeholder="342,500" min="0"></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div class="form-field">
+                <label>Bedrooms</label>
+                <input type="number" id="pa-beds" placeholder="3" min="0" max="10">
+              </div>
+              <div class="form-field">
+                <label>Bathrooms</label>
+                <input type="number" id="pa-baths" placeholder="2" min="0" max="10" step="0.5">
+              </div>
+            </div>
+            <div class="form-field">
+              <label>Sq Ft (optional)</label>
+              <input type="number" id="pa-sqft" placeholder="1,820" min="0">
+            </div>
+            <div class="form-field">
+              <label>Monthly PITI <i class="info-tip">?<span class="tip-text">Principal, interest, taxes, insurance. Used to generate a mortgage-aware rental strategy clause.</span></i></label>
+              <div class="input-number"><span class="input-prefix">$</span><input type="number" id="pa-piti" placeholder="1,750 (optional)" min="0"></div>
+            </div>
+
+            <div class="pa-key-field" style="background:rgba(26,42,94,0.04);border:1px solid rgba(26,42,94,0.1);border-left:3px solid var(--deep);padding:10px 13px;border-radius:3px">
+              <div style="font-size:10.5px;font-weight:500;color:var(--deep);margin-bottom:2px">🔒 Secure data connection</div>
+              <div style="font-size:10.5px;color:var(--muted);line-height:1.5">Market data is fetched server-side. Your API key is never exposed to the browser.</div>
+            </div>
+
+            <button class="btn-analyze" id="pa-run-btn" onclick="runPropertyAnalysis()" style="margin-top:16px">
+              Analyze property →
+            </button>
+            <button class="btn-analyze" id="pa-demo-btn" onclick="runPropertyAnalysis(true)" style="margin-top:8px;background:transparent;color:var(--ink);border:1px solid var(--rule)">
+              Run with demo data
+            </button>
+
+            <p style="font-size:10.5px;color:var(--muted);line-height:1.5;margin-top:14px">RentCast · US Census ACS · Secured via Lanvivo server</p>
+          </div>
+
+          <!-- Right: Results -->
+          <div class="pa-results" id="pa-results">
+            <div class="pa-placeholder" id="pa-placeholder">
+              <div class="icon">🏡</div>
+              <p>Enter an address and list price, then click <strong>Analyze property</strong> to pull comps and generate your report.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
       <div class="page" id="page-upgrade">
         <div class="locked-page" style="height:auto;padding:0">
           <div class="locked-icon">✦</div>
@@ -3451,7 +3583,7 @@ function dismissOnboarding() {
 }
 
 // ── Navigation ────────────────────────────────────────────────────────────────
-const PAGE_TITLES = {dashboard:'Dashboard',gpt:'Lanvivo GPT',mortgage:'Mortgage Eligibility Engine',cashflow:'Cash Flow Analyzer',market:'Zipcode Rater',roi:'Zipcode ROI',properties:'My Properties',compare:'Compare Properties',report:'Property Report',account:'My Account',performance:'Performance Tracker'};
+const PAGE_TITLES = {dashboard:'Dashboard',gpt:'Lanvivo GPT',mortgage:'Mortgage Eligibility Engine',cashflow:'Cash Flow Analyzer',market:'Zipcode Rater',roi:'Zipcode ROI',properties:'My Properties',compare:'Compare Properties',report:'Property Report',account:'My Account',performance:'Performance Tracker',propanalysis:'Property Analysis Report'};
 
 // ── Mobile navigation ────────────────────────────────────────────────────────
 function toggleMobNav() {
@@ -7321,6 +7453,659 @@ function updateChatLimit() {
     </div>
   </div>
 </div>
+
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════════
+//  PROPERTY ANALYSIS REPORT  (API proxied via Supabase Edge Function)
+//  Key lives in Supabase secrets — never sent to the browser.
+// ══════════════════════════════════════════════════════════════════════════════
+
+let _paData = null;  // last analysis result, for PDF generation
+
+const PA_EDGE_URL = 'https://fumqbfxvtusnslkvacdz.supabase.co/functions/v1/analyze-property';
+
+// ── Mock data (demo mode) ─────────────────────────────────────────────────────
+const PA_MOCK = {
+  prop: { formattedAddress:'3030 Plateau Dr, Conway, AR 72032', bedrooms:3, bathrooms:2, squareFootage:1820, yearBuilt:2005, lotSize:0.23 },
+  active: { listPrice:342500, daysOnMarket:118, listingAgent:'Lanvivo Realty' },
+  rentalAvm: { rent:2100, rentRangeLow:1950, rentRangeHigh:2250 },
+  saleComps: [
+    { formattedAddress:'2918 Plateau Dr, Conway, AR', bedrooms:3, bathrooms:2, squareFootage:1780, price:319000, removedDate:'2024-04-10' },
+    { formattedAddress:'3105 Ridgeline Rd, Conway, AR', bedrooms:3, bathrooms:2, squareFootage:1900, price:334900, removedDate:'2024-05-18' },
+    { formattedAddress:'2801 Crestwood Blvd, Conway, AR', bedrooms:4, bathrooms:2, squareFootage:2050, price:351000, removedDate:'2024-06-02' },
+    { formattedAddress:'3020 Hillcrest Ave, Conway, AR', bedrooms:3, bathrooms:2.5, squareFootage:1965, price:338000, removedDate:'2024-06-22' },
+    { formattedAddress:'3218 Summit Dr, Conway, AR', bedrooms:3, bathrooms:2, squareFootage:1840, price:325000, removedDate:'2024-07-01' },
+  ],
+  rentalComps: [
+    { formattedAddress:'3112 Plateau Dr, Conway, AR', bedrooms:3, bathrooms:2, squareFootage:1795, price:1995, daysOnMarket:12, status:'Active' },
+    { formattedAddress:'2940 Ridgeline Rd, Conway, AR', bedrooms:3, bathrooms:2, squareFootage:1860, price:2150, daysOnMarket:5, status:'Active' },
+    { formattedAddress:'3008 Crestwood Blvd, Conway, AR', bedrooms:4, bathrooms:2, squareFootage:2010, price:2250, daysOnMarket:21, status:'Active' },
+    { formattedAddress:'2985 Summit Dr, Conway, AR', bedrooms:3, bathrooms:2, squareFootage:1720, price:1950, daysOnMarket:8, status:'Active' },
+  ],
+  market: { saleData:{ averageDaysOnMarket:45, medianListingPrice:310000 }, rentalData:{ medianRent:1850, rentalVacancyRate:4.1 } },
+  census: { B25064_001E:'1740', B25003_001E:'18200', B25003_003E:'6800' },
+};
+
+// ── Secure fetch via Edge Function (JWT from current Supabase session) ────────
+async function _fetchViaEdge(address, beds, baths, sqft, zipCode) {
+  // Get the logged-in user's JWT from Supabase
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error('You must be logged in to run a live analysis.');
+
+  const res = await fetch(PA_EDGE_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify({
+      address,
+      ...(beds  && { beds }),
+      ...(baths && { baths }),
+      ...(sqft  && { sqft }),
+      zipCode,
+    }),
+  });
+
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error || `Edge Function error (${res.status})`);
+  return json;  // { prop, rentalAvm, saleComps, rentalComps, market, census }
+}
+// ══════════════════════════════════════════════════════════════════════════════
+
+let _paData = null;  // last analysis result, for PDF generation
+
+
+
+// ── Mock data (demo mode) ─────────────────────────────────────────────────────
+const PA_MOCK = {
+  prop: { formattedAddress:'3030 Plateau Dr, Conway, AR 72032', bedrooms:3, bathrooms:2, squareFootage:1820, yearBuilt:2005, lotSize:0.23 },
+  active: { listPrice:342500, daysOnMarket:118, listingAgent:'Lanvivo Realty' },
+  rentalAvm: { rent:2100, rentRangeLow:1950, rentRangeHigh:2250 },
+  saleComps: [
+    { formattedAddress:'2918 Plateau Dr, Conway, AR', bedrooms:3, bathrooms:2, squareFootage:1780, price:319000, removedDate:'2024-04-10' },
+    { formattedAddress:'3105 Ridgeline Rd, Conway, AR', bedrooms:3, bathrooms:2, squareFootage:1900, price:334900, removedDate:'2024-05-18' },
+    { formattedAddress:'2801 Crestwood Blvd, Conway, AR', bedrooms:4, bathrooms:2, squareFootage:2050, price:351000, removedDate:'2024-06-02' },
+    { formattedAddress:'3020 Hillcrest Ave, Conway, AR', bedrooms:3, bathrooms:2.5, squareFootage:1965, price:338000, removedDate:'2024-06-22' },
+    { formattedAddress:'3218 Summit Dr, Conway, AR', bedrooms:3, bathrooms:2, squareFootage:1840, price:325000, removedDate:'2024-07-01' },
+  ],
+  rentalComps: [
+    { formattedAddress:'3112 Plateau Dr, Conway, AR', bedrooms:3, bathrooms:2, squareFootage:1795, price:1995, daysOnMarket:12, status:'Active' },
+    { formattedAddress:'2940 Ridgeline Rd, Conway, AR', bedrooms:3, bathrooms:2, squareFootage:1860, price:2150, daysOnMarket:5, status:'Active' },
+    { formattedAddress:'3008 Crestwood Blvd, Conway, AR', bedrooms:4, bathrooms:2, squareFootage:2010, price:2250, daysOnMarket:21, status:'Active' },
+    { formattedAddress:'2985 Summit Dr, Conway, AR', bedrooms:3, bathrooms:2, squareFootage:1720, price:1950, daysOnMarket:8, status:'Active' },
+  ],
+  market: { saleData:{ averageDaysOnMarket:45, medianListingPrice:310000 }, rentalData:{ medianRent:1850, rentalVacancyRate:4.1 } },
+  census: { B25064_001E:'1740', B25003_001E:'18200', B25003_003E:'6800' },
+};
+
+
+// ── Analysis logic (JS port of analyze.py) ───────────────────────────────────
+function _fmtPrice(n) {
+  if (!n) return 'N/A';
+  return '$' + Math.round(n).toLocaleString();
+}
+
+function _analyzeComps(listPrice, comps, propSqft) {
+  const priced = comps.filter(c => c.price > 0);
+  if (!priced.length) return { sweetLow:0, sweetHigh:0, avgPrice:0, ppsf_low:0, ppsf_high:0, verdict:'Not enough comparable sales to compute a price range.' };
+  const prices = priced.map(c => c.price).sort((a,b) => a-b);
+  const avg = prices.reduce((s,v)=>s+v,0) / prices.length;
+  const sweetLow  = Math.round(avg * 0.95 / 1000) * 1000;
+  const sweetHigh = Math.round(avg * 1.02 / 1000) * 1000;
+  const ppsfArr = priced.map(c => c.squareFootage ? c.price / c.squareFootage : 0).filter(v=>v>0);
+  const ppsf_low  = ppsfArr.length ? Math.round(Math.min(...ppsfArr)) : 0;
+  const ppsf_high = ppsfArr.length ? Math.round(Math.max(...ppsfArr)) : 0;
+  const myPpsf    = propSqft ? listPrice / propSqft : 0;
+  let verdict;
+  if (!myPpsf) {
+    verdict = `Comparable sales average $${Math.round(avg).toLocaleString()}. The competitive sweet spot is ${_fmtPrice(sweetLow)} to ${_fmtPrice(sweetHigh)}.`;
+  } else if (myPpsf > ppsf_high * 1.05) {
+    verdict = `At $${Math.round(myPpsf)}/sqft the home is priced above every comparable sale. This is the primary drag on days on market. A reduction to the ${_fmtPrice(sweetLow)}–${_fmtPrice(sweetHigh)} range would align with comp data.`;
+  } else if (myPpsf > ppsf_high) {
+    verdict = `At $${Math.round(myPpsf)}/sqft the home is at the top of the comp range ($${ppsf_low}–$${ppsf_high}/sqft). A modest price trim would move it into the competitive sweet spot.`;
+  } else if (myPpsf >= ppsf_low) {
+    verdict = `Pricing is within the comp range ($${ppsf_low}–$${ppsf_high}/sqft). The issue may be presentation, not price.`;
+  } else {
+    verdict = `Home is priced below the comp range — a rare case. Verify that comparable homes match on condition and location.`;
+  }
+  return { sweetLow, sweetHigh, avgPrice:Math.round(avg), ppsf_low, ppsf_high, verdict };
+}
+
+function _analyzeRental(rentalAvm, market, census, piti) {
+  const rentEst = rentalAvm?.rent || 2000;
+  const rentLow = rentalAvm?.rentRangeLow  || Math.round(rentEst * 0.93);
+  const rentHigh= rentalAvm?.rentRangeHigh || Math.round(rentEst * 1.07);
+  const marketRent = market?.rentalData?.medianRent || rentEst;
+  const vacancy    = market?.rentalData?.rentalVacancyRate || 5;
+  const avgDomSale = market?.saleData?.averageDaysOnMarket || 45;
+  const censusRent = parseInt(census?.B25064_001E || 0);
+  const marketTemp = vacancy < 4 ? 'Hot' : vacancy < 7 ? 'Balanced' : 'Soft';
+  const daysToRent = marketTemp === 'Hot' ? 14 : marketTemp === 'Balanced' ? 28 : 45;
+
+  let mortgageClause = '';
+  if (piti) {
+    if (piti <= rentLow) {
+      mortgageClause = `At a PITI of ${_fmtPrice(piti)}/mo, rental income at ${_fmtPrice(rentLow)}–${_fmtPrice(rentHigh)}/mo covers carrying costs immediately and the property cash-flows neutral or positive from day one.`;
+    } else if (piti <= rentHigh) {
+      mortgageClause = `Your PITI of ${_fmtPrice(piti)}/mo sits within the rental range. At the top of the rent band ($${rentHigh.toLocaleString()}/mo) the property is self-sustaining; at the low end you would carry a small shortfall of ${_fmtPrice(piti - rentLow)}/mo.`;
+    } else {
+      const shortfall = piti - rentHigh;
+      mortgageClause = `Your PITI of ${_fmtPrice(piti)}/mo exceeds the projected rent ceiling of ${_fmtPrice(rentHigh)}/mo. Rental income would not fully cover carrying costs — you would need to fund a shortfall of roughly ${_fmtPrice(shortfall)}/mo.`;
+    }
+  } else {
+    mortgageClause = `If held as a rental, this property is projected to generate ${_fmtPrice(rentLow)}–${_fmtPrice(rentHigh)}/mo. Provide your PITI to get a mortgage-aware rental strategy.`;
+  }
+  return { rentEst, rentLow, rentHigh, marketRent, marketTemp, daysToRent, avgDomSale, mortgageClause };
+}
+
+function _generateRecs(listPrice, compA, rentalA, dom, piti) {
+  const recs = [];
+  const add = (num, title, detail) => recs.push({ num, title, detail });
+  const avgDom = compA.avgDomSale || 45;
+
+  if (compA.sweetLow && listPrice > compA.sweetHigh * 1.03) {
+    add('01', 'Strategic Price Reduction', `Reduce to ${_fmtPrice(compA.sweetLow)}–${_fmtPrice(compA.sweetHigh)}. Comp data puts the fair market range here; every week above it compounds carrying costs.`);
+  } else if (compA.sweetLow && listPrice > compA.sweetHigh) {
+    add('01', 'Trim to the Competitive Sweet Spot', `A targeted reduction to ${_fmtPrice(compA.sweetLow)}–${_fmtPrice(compA.sweetHigh)} moves the home into offer territory without leaving money on the table.`);
+  } else {
+    add('01', 'Hold Price, Add Value Narrative', `The home is priced within comp range. The listing presentation and marketing are the primary levers to pull.`);
+  }
+
+  if (dom > avgDom * 1.5) {
+    add('02', 'Refresh the Listing', `After ${dom}+ days (market avg: ${avgDom}), algorithm fatigue suppresses impressions. Delist, re-list under a new MLS number, and push a new photo set within the same week.`);
+  } else {
+    add('02', 'Price Drop Visibility Play', `A small price reduction — even $1,000 below a round number — triggers Zillow and Realtor.com price-drop alerts to thousands of saved-search buyers.`);
+  }
+
+  add('03', 'Professional Photography', `High-quality listing photos increase days-to-offer by 30% on average. If current photos were shot on a phone, a $300–$500 shoot is the highest-ROI marketing spend available.`);
+  add('04', 'Hire a Stager for Key Rooms', `Living room, primary suite, and kitchen staged photos outperform unfurnished rooms on every major portal. A $500–$800 partial stage routinely yields multiple-offer situations.`);
+  add('05', 'Targeted Social Advertising', `Facebook and Instagram geo-targeted ads within a 15-mile radius, aimed at homebuyers aged 28–45, cost $150–$400/month and generate qualified leads not captured by MLS syndication.`);
+  add('06', 'Offer Buyer Agent Incentive', `A buyer agent bonus of $1,000–$2,000 payable at closing takes less than a week to circulate through local brokerage networks and drives immediate showings.`);
+  add('07', 'Address Curb Appeal', `First impression is set in the driveway. Power-wash the exterior, mulch beds, and ensure interior lights are on for every showing. Low cost, high-conversion lift.`);
+  add('08', 'Negotiate Seller Concessions', `Offering 2–3% toward buyer closing costs reduces the cash-to-close barrier without cutting the list price, preserving the appraisal baseline.`);
+  add('09', 'Rental Fallback Strategy', `If the home is still on market in 60 days, convert to a rental at ${_fmtPrice(rentalA.rentLow)}–${_fmtPrice(rentalA.rentHigh)}/mo. ${rentalA.mortgageClause} Estimated days to rent in this market: ${rentalA.daysToRent} days.`);
+
+  return recs;
+}
+
+function _buildQuickRef(listPrice, compA, rentalA, dom) {
+  return [
+    { cat:'List Price', finding:`${_fmtPrice(listPrice)} (${dom}+ DOM)`, action: compA.sweetLow && listPrice > compA.sweetHigh ? `Reduce to ${_fmtPrice(compA.sweetLow)}–${_fmtPrice(compA.sweetHigh)}` : 'Hold; focus on marketing' },
+    { cat:'Comp Range', finding:`${_fmtPrice(compA.sweetLow)} to ${_fmtPrice(compA.sweetHigh)}`, action:'Use as anchor in all negotiations' },
+    { cat:'$/Sqft vs. Comps', finding:`$${compA.ppsf_low}–$${compA.ppsf_high}/sqft comps`, action: compA.ppsf_high ? (listPrice / (compA.ppsf_low + compA.ppsf_high) * 2 > 1.05 ? 'Above range — price is a drag' : 'Within range') : 'See comp table' },
+    { cat:'Days on Market', finding:`${dom} days (avg: ${compA.avgDomSale || 45})`, action: dom > (compA.avgDomSale || 45) * 1.2 ? 'Relist + refresh photos' : 'Monitor closely' },
+    { cat:'Rental Estimate', finding:`${_fmtPrice(rentalA.rentLow)}–${_fmtPrice(rentalA.rentHigh)}/mo`, action:`Est. ${rentalA.daysToRent} days to rent (${rentalA.marketTemp} market)` },
+    { cat:'Market Temp', finding:`${rentalA.marketTemp} rental market`, action:`Vacancy ~${rentalA.marketTemp === 'Hot' ? '<4%' : rentalA.marketTemp === 'Balanced' ? '4–7%' : '>7%'}` },
+    { cat:'Priority #1', finding:'Pricing and presentation', action:'Photography + price realignment' },
+    { cat:'Fallback', finding:'Rental conversion', action:`List at ${_fmtPrice(rentalA.rentLow)}–${_fmtPrice(rentalA.rentHigh)}/mo if unsold at 90 days` },
+  ];
+}
+
+// ── Main entry point ──────────────────────────────────────────────────────────
+async function runPropertyAnalysis(demo = false) {
+  const address  = document.getElementById('pa-address').value.trim();
+  const price    = parseFloat(document.getElementById('pa-price').value);
+  const piti     = parseFloat(document.getElementById('pa-piti').value) || null;
+  const beds     = parseInt(document.getElementById('pa-beds').value) || null;
+  const baths    = parseFloat(document.getElementById('pa-baths').value) || null;
+  const sqft     = parseInt(document.getElementById('pa-sqft').value) || null;
+
+
+  if (!demo) {
+    if (!address) { showToast('Enter a property address.', 'error'); return; }
+    if (!price || isNaN(price)) { showToast('Enter the current list price.', 'error'); return; }
+
+  }
+
+  // Show loading state
+  document.getElementById('pa-results').innerHTML = `
+    <div class="pa-loading">
+      <div class="pa-loading-spinner"></div>
+      <p>${demo ? 'Loading demo data...' : 'Fetching comps and market data...'}</p>
+    </div>`;
+
+  try {
+    let raw;
+    if (demo) {
+      await new Promise(r => setTimeout(r, 600));
+      raw = PA_MOCK;
+    } else {
+      const zipMatch = address.match(/\b(\d{5})\b/);
+      const zipCode  = zipMatch ? zipMatch[1] : '72032';
+      raw = await _fetchViaEdge(address, beds, baths, sqft, zipCode);
+    }
+
+    const usedAddress  = demo ? '3030 Plateau Dr, Conway, AR 72032' : address;
+    const usedPrice    = demo ? 342500 : price;
+    const usedBeds     = beds  || raw.prop?.bedrooms  || null;
+    const usedBaths    = baths || raw.prop?.bathrooms || null;
+    const usedSqft     = sqft  || raw.prop?.squareFootage || null;
+    const dom          = raw.active?.daysOnMarket || raw.prop?.daysOnMarket || (demo ? 118 : 0);
+    const agent        = raw.active?.listingAgent || 'N/A';
+    const yearBuilt    = raw.prop?.yearBuilt || null;
+    const lotSize      = raw.prop?.lotSize || null;
+
+    const compA  = _analyzeComps(usedPrice, raw.saleComps || [], usedSqft);
+    compA.avgDomSale = raw.market?.saleData?.averageDaysOnMarket || 45;
+    const rentalA = _analyzeRental(raw.rentalAvm, raw.market, raw.census, piti || (demo ? 1750 : null));
+    const recs   = _generateRecs(usedPrice, compA, rentalA, dom, piti);
+    const qr     = _buildQuickRef(usedPrice, compA, rentalA, dom);
+
+    _paData = {
+      address: usedAddress, price: usedPrice, dom, agent,
+      beds: usedBeds, baths: usedBaths, sqft: usedSqft, yearBuilt, lotSize,
+      comp: compA, rental: rentalA, recs, qr,
+      saleComps: raw.saleComps || [], rentalComps: raw.rentalComps || [],
+      date: new Date().toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'})
+    };
+
+    renderPaResults(_paData);
+  } catch(err) {
+    document.getElementById('pa-results').innerHTML = `
+      <div class="pa-placeholder">
+        <div class="icon">⚠️</div>
+        <p><strong>Error:</strong> ${err.message}<br><br>Check your API key, or use demo data to test the UI.</p>
+      </div>`;
+  }
+}
+
+// ── Render results ────────────────────────────────────────────────────────────
+function renderPaResults(d) {
+  const c = d.comp, r = d.rental;
+  const ppsf = d.sqft ? Math.round(d.price / d.sqft) : null;
+
+  const compRows = (d.saleComps || []).slice(0,6).map(sc => {
+    const sp    = sc.squareFootage ? Math.round(sc.price / sc.squareFootage) : 0;
+    const short = (sc.formattedAddress || sc.address || '').split(',')[0];
+    const dt    = (sc.removedDate || sc.listedDate || '').slice(0,7);
+    return `<tr><td>${short}</td><td>${sc.bedrooms||'?'} BD/${sc.bathrooms||'?'} BA</td><td>${sc.squareFootage ? sc.squareFootage.toLocaleString() : 'N/A'}</td><td>${_fmtPrice(sc.price)}</td><td>${sp ? '$'+sp : 'N/A'}</td><td>${dt}</td></tr>`;
+  }).join('');
+
+  const rentalRows = (d.rentalComps || []).slice(0,5).map(rc => {
+    const short = (rc.formattedAddress || rc.address || '').split(',')[0];
+    const note  = rc.daysOnMarket ? `Listed ${rc.daysOnMarket}d ago` : (rc.status || 'Active');
+    return `<tr><td>${short}</td><td>${rc.bedrooms||'?'} BD/${rc.bathrooms||'?'} BA</td><td>${rc.squareFootage ? rc.squareFootage.toLocaleString() : 'N/A'}</td><td>${_fmtPrice(rc.price)}/mo</td><td>${note}</td></tr>`;
+  }).join('');
+
+  const recHTML = d.recs.map(rec => `
+    <div class="pa-rec">
+      <div class="pa-rec-bar"></div>
+      <div class="pa-rec-body">
+        <div class="pa-rec-title"><span>${rec.num}</span>${rec.title}</div>
+        <div class="pa-rec-detail">${rec.detail}</div>
+      </div>
+    </div>`).join('');
+
+  const qrRows = d.qr.map(q => `<tr><td>${q.cat}</td><td>${q.finding}</td><td>${q.action}</td></tr>`).join('');
+
+  document.getElementById('pa-results').innerHTML = `
+    <!-- Metrics strip -->
+    <div class="pa-metrics">
+      <div class="pa-metric"><div class="pa-metric-label">List Price</div><div class="pa-metric-value">${_fmtPrice(d.price)}</div></div>
+      <div class="pa-metric"><div class="pa-metric-label">Days on Market</div><div class="pa-metric-value">${d.dom}+ days</div></div>
+      <div class="pa-metric"><div class="pa-metric-label">Comp Sweet Spot</div><div class="pa-metric-value">${_fmtPrice(c.sweetLow)}–${_fmtPrice(c.sweetHigh)}</div></div>
+      <div class="pa-metric"><div class="pa-metric-label">Est. Monthly Rent</div><div class="pa-metric-value">${_fmtPrice(r.rentLow)}–${_fmtPrice(r.rentHigh)}/mo</div></div>
+    </div>
+
+    <div class="pa-body" id="pa-body-content">
+
+      <!-- 01 Subject property -->
+      <div class="pa-section">
+        <div class="pa-section-title"><span class="pa-section-num">01</span><h4>Subject Property</h4></div>
+        <div class="pa-stat-row">
+          <div class="pa-stat"><div class="pa-stat-label">Address</div><div class="pa-stat-value" style="font-size:0.9rem">${d.address}</div></div>
+          <div class="pa-stat"><div class="pa-stat-label">Listing Agent</div><div class="pa-stat-value" style="font-size:0.9rem">${d.agent}</div></div>
+          ${d.beds ? `<div class="pa-stat"><div class="pa-stat-label">Beds / Baths</div><div class="pa-stat-value">${d.beds} BD / ${d.baths} BA</div></div>` : ''}
+          ${d.sqft ? `<div class="pa-stat"><div class="pa-stat-label">Sq Ft</div><div class="pa-stat-value">${d.sqft.toLocaleString()}</div></div>` : ''}
+          ${ppsf ? `<div class="pa-stat"><div class="pa-stat-label">Price / Sqft</div><div class="pa-stat-value">$${ppsf}</div></div>` : ''}
+          ${d.yearBuilt ? `<div class="pa-stat"><div class="pa-stat-label">Year Built</div><div class="pa-stat-value">${d.yearBuilt}</div></div>` : ''}
+        </div>
+      </div>
+
+      <!-- 02 Comparable Sales -->
+      <div class="pa-section">
+        <div class="pa-section-title"><span class="pa-section-num">02</span><h4>Comparable Sales</h4></div>
+        ${compRows ? `<table class="pa-table"><thead><tr><th>Address</th><th>Beds/BA</th><th>Sqft</th><th>Sold Price</th><th>$/Sqft</th><th>Date</th></tr></thead><tbody>${compRows}</tbody></table>` : '<p style="font-size:12px;color:var(--muted)">No recent comparable sales found.</p>'}
+        <div class="pa-verdict">${c.verdict}</div>
+        <div class="pa-pull">Competitive sweet spot: ${_fmtPrice(c.sweetLow)} to ${_fmtPrice(c.sweetHigh)}</div>
+      </div>
+
+      <!-- 03 Rental Market -->
+      <div class="pa-section">
+        <div class="pa-section-title"><span class="pa-section-num">03</span><h4>Rental Market &amp; Days to Rent</h4></div>
+        ${rentalRows ? `<table class="pa-table"><thead><tr><th>Address</th><th>Beds/BA</th><th>Sqft</th><th>Monthly Rent</th><th>Status</th></tr></thead><tbody>${rentalRows}</tbody></table>` : '<p style="font-size:12px;color:var(--muted)">No active rental listings found nearby.</p>'}
+        <div class="pa-stat-row" style="margin-top:10px">
+          <div class="pa-stat"><div class="pa-stat-label">Estimated Rent Range</div><div class="pa-stat-value">${_fmtPrice(r.rentLow)}–${_fmtPrice(r.rentHigh)}/mo</div></div>
+          <div class="pa-stat"><div class="pa-stat-label">Market Temp</div><div class="pa-stat-value">${r.marketTemp}</div></div>
+          <div class="pa-stat"><div class="pa-stat-label">Days to Rent</div><div class="pa-stat-value">~${r.daysToRent} days</div></div>
+          <div class="pa-stat"><div class="pa-stat-label">Market Median Rent</div><div class="pa-stat-value">${_fmtPrice(r.marketRent)}/mo</div></div>
+        </div>
+        <div class="pa-mortgage-note">${r.mortgageClause}</div>
+      </div>
+
+      <!-- 04 Recommendations -->
+      <div class="pa-section">
+        <div class="pa-section-title"><span class="pa-section-num">04</span><h4>Recommendations to Improve the Sale</h4></div>
+        ${recHTML}
+      </div>
+
+      <!-- 05 Quick Reference -->
+      <div class="pa-section">
+        <div class="pa-section-title"><span class="pa-section-num">05</span><h4>Quick-Reference Summary</h4></div>
+        <table class="pa-qr-table"><thead><tr><th>Category</th><th>Finding</th><th>Recommended Action</th></tr></thead><tbody>${qrRows}</tbody></table>
+      </div>
+
+      <p style="font-size:10.5px;color:var(--muted);line-height:1.5;margin-top:16px">Data sources: RentCast API (sale &amp; rental comps), US Census ACS 5-year estimates. For informational purposes only.</p>
+    </div>
+
+    <!-- Actions bar -->
+    <div class="pa-actions">
+      <button class="btn-pdf" onclick="downloadPaReport()">⬇ Download PDF Report</button>
+      <button class="btn-new" onclick="resetPaForm()">← New analysis</button>
+    </div>`;
+}
+
+function resetPaForm() {
+  _paData = null;
+  document.getElementById('pa-results').innerHTML = `
+    <div class="pa-placeholder" id="pa-placeholder">
+      <div class="icon">🏡</div>
+      <p>Enter an address and list price, then click <strong>Analyze property</strong> to pull comps and generate your report.</p>
+    </div>`;
+}
+
+// ── jsPDF Report Generator ────────────────────────────────────────────────────
+async function downloadPaReport() {
+  if (!_paData) return;
+  const { jsPDF } = window.jspdf;
+  const d = _paData;
+  const c = d.comp, r = d.rental;
+  const PW = 210, PH = 297; // A4 mm
+  const LM = 14, RM = PW - 14, BW = PW - LM * 2;
+  const GOLD = [200, 148, 42], DEEP = [26, 42, 94], MIDNIGHT = [10, 14, 26];
+  const CREAM = [245, 240, 228], SLATE = [155, 168, 200], WHITE = [255,255,255];
+  const RULE = [220, 216, 204];
+
+  const doc = new jsPDF({ unit:'mm', format:'a4' });
+  let page = 1;
+
+  function addPage() {
+    doc.addPage();
+    page++;
+    drawFooter();
+  }
+
+  function checkY(needed) {
+    if (y + needed > PH - 18) { addPage(); y = 30; }
+  }
+
+  // ── Draw coin seal ──
+  function drawSeal(cx, cy, r) {
+    doc.setDrawColor(...GOLD); doc.setLineWidth(0.7);
+    doc.circle(cx, cy, r, 'S');
+    doc.setDrawColor(...GOLD); doc.setLineWidth(0.3); doc.setGState(doc.GState({opacity:0.3}));
+    doc.circle(cx, cy, r * 0.78, 'S');
+    doc.setGState(doc.GState({opacity:1}));
+    doc.setFillColor(...GOLD);
+    [[cx, cy-r],[cx+r, cy],[cx, cy+r],[cx-r, cy]].forEach(([dx,dy]) => doc.circle(dx, dy, Math.max(0.5, r*0.09), 'F'));
+    doc.setFont('helvetica','bolditalic');
+    doc.setFontSize(r * 4.5);
+    doc.setTextColor(...GOLD);
+    doc.text('L', cx, cy + r*1.5, {align:'center', baseline:'middle'});
+  }
+
+  // ── Header (page 1) ──
+  function drawHeader() {
+    doc.setFillColor(...MIDNIGHT);
+    doc.rect(0, 0, PW, 52, 'F');
+    doc.setDrawColor(...GOLD); doc.setLineWidth(0.8);
+    doc.line(0, 0.4, PW, 0.4);
+    doc.line(0, 52, PW, 52);
+    drawSeal(LM + 7, 13, 7);
+    // wordmark
+    doc.setFont('helvetica','bold'); doc.setFontSize(18);
+    doc.setTextColor(...WHITE); doc.text('lan', LM + 18, 14);
+    doc.setTextColor(...GOLD);   doc.text('vivo', LM + 18 + doc.getTextWidth('lan'), 14);
+    doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
+    doc.setTextColor(...SLATE);  doc.text('LAND THAT LIVES FOR YOU', LM + 18, 19);
+    doc.setDrawColor(...DEEP); doc.setLineWidth(0.3);
+    doc.line(LM, 24, RM, 24);
+    doc.setFont('helvetica','bolditalic'); doc.setFontSize(15);
+    doc.setTextColor(...GOLD);  doc.text('Real Estate Analysis Report', LM, 33);
+    doc.setFont('helvetica','normal'); doc.setFontSize(9);
+    doc.setTextColor(...CREAM); doc.text(d.address, LM, 40);
+    doc.setFontSize(7);
+    doc.setTextColor(...SLATE);
+    doc.text(`Prepared by Lanvivo Analytics  ·  ${d.date}`, LM, 46);
+  }
+
+  // ── Metrics strip ──
+  function drawMetrics() {
+    doc.setFillColor(...DEEP); doc.rect(0, 52, PW, 18, 'F');
+    const cols = [
+      ['LIST PRICE', _fmtPrice(d.price)],
+      ['DAYS ON MARKET', d.dom + '+ days'],
+      ['COMP SWEET SPOT', `${_fmtPrice(c.sweetLow)}–${_fmtPrice(c.sweetHigh)}`],
+      ['EST. MONTHLY RENT', `${_fmtPrice(r.rentLow)}–${_fmtPrice(r.rentHigh)}/mo`],
+    ];
+    const cw = PW / 4;
+    cols.forEach(([label, val], i) => {
+      const cx = i * cw + cw / 2;
+      if (i > 0) { doc.setDrawColor(...DEEP); doc.setLineWidth(0.2); doc.line(i*cw, 54, i*cw, 68); }
+      doc.setFont('helvetica','normal'); doc.setFontSize(5.5);
+      doc.setTextColor(...SLATE); doc.text(label, cx, 57, {align:'center'});
+      doc.setFont('helvetica','bold'); doc.setFontSize(8);
+      doc.setTextColor(240, 208, 128);
+      // Handle long values
+      if (doc.getTextWidth(val) > cw - 4) {
+        const parts = val.split('–');
+        if (parts.length === 2) {
+          doc.text(parts[0]+'–', cx, 61, {align:'center'});
+          doc.text(parts[1], cx, 65.5, {align:'center'});
+        } else { doc.text(val, cx, 63, {align:'center'}); }
+      } else { doc.text(val, cx, 63, {align:'center'}); }
+    });
+  }
+
+  // ── Footer ──
+  function drawFooter() {
+    doc.setDrawColor(...GOLD); doc.setLineWidth(0.4);
+    doc.line(LM, PH - 8, RM, PH - 8);
+    drawSeal(LM + 3.5, PH - 5, 3.5);
+    doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+    doc.setTextColor(...MIDNIGHT); doc.text('lan', LM + 9, PH - 4.5);
+    doc.setTextColor(...GOLD);     doc.text('vivo', LM + 9 + doc.getTextWidth('lan'), PH - 4.5);
+    doc.setFont('helvetica','normal'); doc.setFontSize(7);
+    doc.setTextColor(...SLATE);    doc.text(`  ·  lanvivo.com  ·  Page ${page}`, LM + 9 + doc.getTextWidth('lanvivo'), PH - 4.5);
+  }
+
+  // ── Section heading ──
+  function sectionHeading(num, title) {
+    checkY(14);
+    doc.setFillColor(...DEEP); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+    doc.setTextColor(...GOLD); doc.text(' ' + num + ' ', LM, y + 0.5);
+    const nw = doc.getTextWidth(' ' + num + ' ') + 1;
+    doc.setFont('helvetica','bold'); doc.setFontSize(12);
+    doc.setTextColor(...MIDNIGHT); doc.text(title.toUpperCase(), LM + nw, y + 0.5);
+    y += 4;
+    doc.setDrawColor(...GOLD); doc.setLineWidth(0.5);
+    doc.line(LM, y, RM, y); y += 5;
+  }
+
+  // ── Body text ──
+  function bodyText(txt, fontSize = 9.5, color = [42,46,66]) {
+    checkY(10);
+    doc.setFont('helvetica','normal'); doc.setFontSize(fontSize);
+    doc.setTextColor(...color);
+    const lines = doc.splitTextToSize(txt, BW);
+    lines.forEach(line => { checkY(5); doc.text(line, LM, y); y += 4.5; });
+    y += 1;
+  }
+
+  // ── Verdict box ──
+  function verdictBox(txt) {
+    const lines = doc.splitTextToSize(txt, BW - 8);
+    const bh = lines.length * 4.5 + 8;
+    checkY(bh + 4);
+    doc.setFillColor(252, 248, 240); doc.setDrawColor(...GOLD);
+    doc.setLineWidth(0.3);
+    doc.rect(LM, y, BW, bh, 'FD');
+    doc.setLineWidth(0.8); doc.setDrawColor(...GOLD);
+    doc.line(LM, y, LM, y + bh);
+    doc.setFont('helvetica','normal'); doc.setFontSize(9);
+    doc.setTextColor(...[42,46,66]);
+    lines.forEach((line, i) => doc.text(line, LM + 5, y + 5.5 + i * 4.5));
+    y += bh + 4;
+  }
+
+  // ── Pull quote ──
+  function pullQuote(txt) {
+    const lines = doc.splitTextToSize(txt, BW - 12);
+    const bh = lines.length * 5 + 10;
+    checkY(bh + 4);
+    doc.setFillColor(240, 245, 255); doc.setDrawColor(...DEEP);
+    doc.rect(LM, y, BW, bh, 'FD');
+    doc.setLineWidth(1); doc.setDrawColor(...GOLD); doc.line(LM, y, LM, y+bh);
+    doc.setFont('helvetica','bolditalic'); doc.setFontSize(10);
+    doc.setTextColor(...DEEP);
+    lines.forEach((line, i) => doc.text(line, LM + 6, y + 7 + i * 5));
+    y += bh + 5;
+  }
+
+  // ── Simple table ──
+  function simpleTable(headers, rows, colW) {
+    const rh = 6.5, hh = 7.5;
+    const needed = hh + rows.length * rh + 4;
+    checkY(needed);
+    // Header
+    doc.setFillColor(...DEEP);
+    doc.rect(LM, y, BW, hh, 'F');
+    let xx = LM;
+    headers.forEach((h, i) => {
+      doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+      doc.setTextColor(...WHITE);
+      doc.text(h, xx + 2, y + 5);
+      xx += colW[i];
+    });
+    y += hh;
+    rows.forEach((row, ri) => {
+      if (y + rh > PH - 18) { addPage(); y = 30; }
+      doc.setFillColor(ri%2===0 ? 242 : 255, ri%2===0 ? 238 : 255, ri%2===0 ? 228 : 255);
+      doc.rect(LM, y, BW, rh, 'F');
+      doc.setDrawColor(...RULE); doc.setLineWidth(0.1);
+      doc.line(LM, y+rh, LM+BW, y+rh);
+      xx = LM;
+      row.forEach((cell, ci) => {
+        doc.setFont('helvetica','normal'); doc.setFontSize(8);
+        doc.setTextColor(...MIDNIGHT);
+        const txt = String(cell || '').substring(0, 30);
+        doc.text(txt, xx + 2, y + 4.5);
+        xx += colW[ci];
+      });
+      y += rh;
+    });
+    y += 4;
+  }
+
+  // ── Recommendation block ──
+  function recBlock(num, title, detail) {
+    const lines = doc.splitTextToSize(detail, BW - 12);
+    const bh = lines.length * 4 + 14;
+    checkY(bh + 3);
+    doc.setFillColor(255,255,255); doc.setDrawColor(...RULE); doc.setLineWidth(0.2);
+    doc.rect(LM, y, BW, bh, 'FD');
+    doc.setFillColor(...GOLD); doc.rect(LM, y, 1.5, bh, 'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(8.5);
+    doc.setTextColor(...GOLD); doc.text(num + '.', LM + 4, y + 6.5);
+    const nw = doc.getTextWidth(num + '.') + 1.5;
+    doc.setFont('helvetica','bold'); doc.setFontSize(9);
+    doc.setTextColor(...MIDNIGHT); doc.text(title, LM + 4 + nw, y + 6.5);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
+    doc.setTextColor(80,85,110);
+    lines.forEach((line, i) => doc.text(line, LM + 4, y + 12 + i * 4));
+    y += bh + 3;
+  }
+
+  // ══ BUILD PDF ══════════════════════════════════════════════════════════════
+  let y = 75;
+  drawHeader();
+  drawMetrics();
+  drawFooter();
+
+  // 01 Subject property
+  sectionHeading('01', 'Subject Property');
+  const propRows = [
+    ['Address', d.address], ['List Price', _fmtPrice(d.price)],
+    ['Days on Market', d.dom + '+ days (market avg: ' + (c.avgDomSale||45) + ')'],
+    d.beds ? ['Bedrooms / Baths', d.beds + ' BD / ' + d.baths + ' BA'] : null,
+    d.sqft ? ['Square Footage', d.sqft.toLocaleString() + ' sqft'] : null,
+    d.sqft ? ['Price Per Sqft', '$' + Math.round(d.price/d.sqft) + '/sqft'] : null,
+    d.yearBuilt ? ['Year Built', String(d.yearBuilt)] : null,
+    ['Listing Agent', d.agent],
+  ].filter(Boolean);
+  simpleTable(['Detail','Information'], propRows, [52, BW - 52]);
+
+  // 02 Comparable Sales
+  sectionHeading('02', 'Comparable Sales');
+  const scRows = (d.saleComps||[]).slice(0,6).map(sc => [
+    (sc.formattedAddress||'').split(',')[0].substring(0,25),
+    (sc.bedrooms||'?')+'BD/'+(sc.bathrooms||'?')+'BA',
+    sc.squareFootage ? sc.squareFootage.toLocaleString() : 'N/A',
+    _fmtPrice(sc.price),
+    sc.squareFootage ? '$'+Math.round(sc.price/sc.squareFootage) : 'N/A',
+    (sc.removedDate||sc.listedDate||'').slice(0,7),
+  ]);
+  if (scRows.length) {
+    simpleTable(['Address','Beds/BA','Sqft','Sold Price','$/Sqft','Date'], scRows, [48,20,18,22,18,BW-126]);
+  } else { bodyText('No recent comparable sales found within the search radius.', 9, [155,168,200]); }
+  verdictBox(c.verdict);
+  pullQuote('Competitive sweet spot: ' + _fmtPrice(c.sweetLow) + ' to ' + _fmtPrice(c.sweetHigh));
+
+  // 03 Rental Market
+  sectionHeading('03', 'Rental Market & Days to Rent');
+  const rcRows = (d.rentalComps||[]).slice(0,5).map(rc => [
+    (rc.formattedAddress||'').split(',')[0].substring(0,25),
+    (rc.bedrooms||'?')+'BD/'+(rc.bathrooms||'?')+'BA',
+    rc.squareFootage ? rc.squareFootage.toLocaleString() : 'N/A',
+    _fmtPrice(rc.price)+'/mo',
+    rc.daysOnMarket ? rc.daysOnMarket+'d ago' : (rc.status||'Active'),
+  ]);
+  if (rcRows.length) {
+    simpleTable(['Address','Beds/BA','Sqft','Monthly Rent','Status'], rcRows, [50,22,20,26,BW-118]);
+  } else { bodyText('No active rental listings found nearby.', 9, [155,168,200]); }
+  const mktRows = [
+    ['Estimated Rent Range', _fmtPrice(r.rentLow) + ' to ' + _fmtPrice(r.rentHigh) + '/mo'],
+    ['Market Temperature', r.marketTemp],
+    ['Est. Days to Rent', '~' + r.daysToRent + ' days'],
+    ['Market Median Rent', _fmtPrice(r.marketRent) + '/mo'],
+  ];
+  simpleTable(['Metric','Data'], mktRows, [58, BW-58]);
+  verdictBox(r.mortgageClause);
+
+  // 04 Recommendations
+  sectionHeading('04', 'Recommendations to Improve the Sale');
+  d.recs.forEach(rec => recBlock(rec.num, rec.title, rec.detail));
+
+  // 05 Quick Reference
+  sectionHeading('05', 'Quick-Reference Summary');
+  const qrPdfRows = d.qr.map(q => [q.cat, q.finding, q.action]);
+  simpleTable(['Category','Finding','Recommended Action'], qrPdfRows, [38, 55, BW-93]);
+
+  // Disclaimer
+  checkY(12);
+  y += 2;
+  doc.setFont('helvetica','normal'); doc.setFontSize(7);
+  doc.setTextColor(...SLATE);
+  const disc = 'Disclaimer: This analysis draws on publicly available data from RentCast and the US Census Bureau. For informational purposes only. Not professional real estate advice.';
+  doc.splitTextToSize(disc, BW).forEach(line => { doc.text(line, LM, y); y += 3.5; });
+
+  const slug = d.address.replace(/[^a-z0-9]+/gi,'_').substring(0,40);
+  doc.save(`${slug}_Lanvivo_Report.pdf`);
+  showToast('PDF downloaded successfully.', 'success');
+}
+</script>
 
 </body>
 </html>
