@@ -7679,7 +7679,8 @@ async function runPropertyAnalysis(demo = false) {
     const taxAnnual    = raw.prop?.propertyTaxes?.[0]?.total
                       || raw.prop?.taxAnnualAmount || null;
     const hoaFee       = raw.prop?.hoa?.fee || raw.prop?.hoaFee || null;
-    const priceHistory = (raw.prop?.history || raw.prop?.priceHistory || []).slice(0, 5);
+    const _phRaw = raw.prop?.history || raw.prop?.priceHistory || [];
+    const priceHistory = Array.isArray(_phRaw) ? _phRaw.slice(0, 5) : [];
     const zestimate    = raw.active?.zestimate || null;
 
     const compA  = _analyzeComps(usedPrice, raw.saleComps || [], usedSqft);
