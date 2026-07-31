@@ -7795,280 +7795,339 @@ async function downloadPaReport() {
   const { jsPDF } = window.jspdf;
   const d = _paData;
   const c = d.comp, r = d.rental;
-  const PW = 210, PH = 297; // A4 mm
-  const LM = 14, RM = PW - 14, BW = PW - LM * 2;
-  const GOLD = [200, 148, 42], DEEP = [26, 42, 94], MIDNIGHT = [10, 14, 26];
-  const CREAM = [245, 240, 228], SLATE = [155, 168, 200], WHITE = [255,255,255];
-  const RULE = [220, 216, 204];
+  const PW = 210, PH = 297;
+  const LM = 16, RM = PW - 16, BW = PW - LM * 2;
+  const GOLD    = [200, 148, 42];
+  const DEEP    = [20,  32,  78];
+  const CREAM   = [252, 248, 240];
+  const SLATE   = [120, 130, 160];
+  const WHITE   = [255, 255, 255];
+  const RULE    = [220, 216, 200];
+  const DARK    = [30,  35,  60];
+  const LIGHT   = [248, 246, 238];
 
   const doc = new jsPDF({ unit:'mm', format:'a4' });
-  let page = 1;
+  let page = 1, y = 0;
 
-  // Normalise address — title-case + ensure space before zip
+  // Normalise address
   d.address = d.address
-    .replace(/([a-zA-Z])(\d{5})/, '$1 $2')            // city72032 → city 72032
-    .replace(/\b([a-z])/g, ch => ch.toUpperCase());   // title-case
+    .replace(/([a-zA-Z])(\d{5})/, '$1 $2')
+    .replace(/\b([a-z])/g, ch => ch.toUpperCase());
 
   function addPage() {
-    doc.addPage();
-    page++;
-    drawFooter();
+    doc.addPage(); page++; drawFooter(); y = 28;
   }
-
   function checkY(needed) {
-    if (y + needed > PH - 18) { addPage(); y = 30; }
+    if (y + needed > PH - 22) addPage();
   }
 
-  // ── Draw coin seal ──
+  // ── Coin seal ──────────────────────────────────────────────────────────────
   function drawSeal(cx, cy, r) {
-    doc.setDrawColor(...GOLD); doc.setLineWidth(0.7);
+    doc.setDrawColor(...GOLD); doc.setLineWidth(r * 0.1);
     doc.circle(cx, cy, r, 'S');
-    doc.setDrawColor(...GOLD); doc.setLineWidth(0.3); doc.setGState(doc.GState({opacity:0.3}));
+    doc.setDrawColor(...GOLD); doc.setLineWidth(r * 0.04);
+    doc.setGState(doc.GState({ opacity: 0.35 }));
     doc.circle(cx, cy, r * 0.78, 'S');
-    doc.setGState(doc.GState({opacity:1}));
+    doc.setGState(doc.GState({ opacity: 1 }));
     doc.setFillColor(...GOLD);
-    [[cx, cy-r],[cx+r, cy],[cx, cy+r],[cx-r, cy]].forEach(([dx,dy]) => doc.circle(dx, dy, Math.max(0.5, r*0.09), 'F'));
-    doc.setFont('helvetica','bolditalic');
+    [[cx, cy - r],[cx + r, cy],[cx, cy + r],[cx - r, cy]]
+      .forEach(([dx, dy]) => doc.circle(dx, dy, Math.max(0.35, r * 0.08), 'F'));
+    doc.setFont('helvetica', 'bolditalic');
     doc.setFontSize(r * 3.6);
     doc.setTextColor(...GOLD);
-    doc.text('L', cx, cy + r * 0.35, {align:'center', baseline:'middle'});
+    doc.text('L', cx, cy + r * 0.35, { align:'center', baseline:'middle' });
   }
 
-  // ── Header (page 1) ──
+  // ── Header — white background ───────────────────────────────────────────────
   function drawHeader() {
-    doc.setFillColor(...MIDNIGHT);
-    doc.rect(0, 0, PW, 52, 'F');
+    // Gold top border
     doc.setDrawColor(...GOLD); doc.setLineWidth(0.8);
-    doc.line(0, 0.4, PW, 0.4);
-    doc.line(0, 52, PW, 52);
-    drawSeal(LM + 7, 13, 7);
-    // wordmark
-    doc.setFont('helvetica','bold'); doc.setFontSize(18);
-    doc.setTextColor(...WHITE); doc.text('lan', LM + 18, 14);
-    doc.setTextColor(...GOLD);   doc.text('vivo', LM + 18 + doc.getTextWidth('lan'), 14);
-    doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
-    doc.setTextColor(...SLATE);  doc.text('LAND THAT LIVES FOR YOU', LM + 18, 19);
-    doc.setDrawColor(...DEEP); doc.setLineWidth(0.3);
-    doc.line(LM, 24, RM, 24);
-    doc.setFont('helvetica','bolditalic'); doc.setFontSize(15);
-    doc.setTextColor(...GOLD);  doc.text('Real Estate Analysis Report', LM, 33);
-    doc.setFont('helvetica','normal'); doc.setFontSize(9);
-    doc.setTextColor(...CREAM); doc.text(d.address, LM, 40);
-    doc.setFontSize(7);
+    doc.line(LM, 7, RM, 7);
+
+    // Coin seal + wordmark
+    drawSeal(LM + 8, 19, 8.5);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(22);
+    doc.setTextColor(...DEEP);
+    doc.text('lan', LM + 22, 18);
+    doc.setTextColor(...GOLD);
+    doc.text('vivo', LM + 22 + doc.getTextWidth('lan'), 18);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7);
     doc.setTextColor(...SLATE);
-    doc.text(`Prepared by Lanvivo Analytics  ·  ${d.date}`, LM, 46);
+    doc.text('LAND THAT LIVES FOR YOU', LM + 22, 23.5);
+
+    // Gold separator
+    doc.setDrawColor(...GOLD); doc.setLineWidth(0.25);
+    doc.line(LM, 30, RM, 30);
+
+    // Report title
+    doc.setFont('helvetica', 'bolditalic'); doc.setFontSize(24);
+    doc.setTextColor(...GOLD);
+    doc.text('Real Estate Analysis Report', LM, 43);
+
+    // Address
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(13);
+    doc.setTextColor(...DEEP);
+    doc.text(d.address, LM, 53);
+
+    // Prepared by
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
+    doc.setTextColor(...SLATE);
+    doc.text('Prepared by lanvivo  ·  ' + d.date, LM, 60);
   }
 
-  // ── Metrics strip ──
+  // ── Metrics strip ──────────────────────────────────────────────────────────
   function drawMetrics() {
-    doc.setFillColor(...DEEP); doc.rect(0, 52, PW, 18, 'F');
+    const MY = 68, MH = 24;
+    doc.setFillColor(...DEEP);
+    doc.rect(0, MY, PW, MH, 'F');
     const cols = [
-      ['LIST PRICE', _fmtPrice(d.price)],
-      ['DAYS ON MARKET', d.dom + '+ days'],
-      ['COMP SWEET SPOT', `${_fmtPrice(c.sweetLow)}–${_fmtPrice(c.sweetHigh)}`],
-      ['EST. MONTHLY RENT', `${_fmtPrice(r.rentLow)}–${_fmtPrice(r.rentHigh)}/mo`],
+      ['CURRENT LIST PRICE',  _fmtPrice(d.price)],
+      ['DAYS ON MARKET',      d.dom + '+ (avg: ' + (c.avgDomSale || 45) + ' days)'],
+      ['COMP SWEET SPOT',     _fmtPrice(c.sweetLow) + '–' + _fmtPrice(c.sweetHigh)],
+      ['EST. MONTHLY RENTAL', _fmtPrice(r.rentLow) + '–' + _fmtPrice(r.rentHigh) + '/mo'],
     ];
     const cw = PW / 4;
     cols.forEach(([label, val], i) => {
       const cx = i * cw + cw / 2;
-      if (i > 0) { doc.setDrawColor(...DEEP); doc.setLineWidth(0.2); doc.line(i*cw, 54, i*cw, 68); }
-      doc.setFont('helvetica','normal'); doc.setFontSize(5.5);
-      doc.setTextColor(...SLATE); doc.text(label, cx, 57, {align:'center'});
-      doc.setFont('helvetica','bold'); doc.setFontSize(8);
-      doc.setTextColor(240, 208, 128);
-      // Handle long values
-      if (doc.getTextWidth(val) > cw - 4) {
-        const parts = val.split('–');
-        if (parts.length === 2) {
-          doc.text(parts[0]+'–', cx, 61, {align:'center'});
-          doc.text(parts[1], cx, 65.5, {align:'center'});
-        } else { doc.text(val, cx, 63, {align:'center'}); }
-      } else { doc.text(val, cx, 63, {align:'center'}); }
+      if (i > 0) {
+        doc.setDrawColor(40, 55, 110); doc.setLineWidth(0.15);
+        doc.line(i * cw, MY + 3, i * cw, MY + MH - 3);
+      }
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5);
+      doc.setTextColor(...SLATE);
+      doc.text(label, cx, MY + 7, { align:'center' });
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5);
+      doc.setTextColor(240, 210, 128);
+      const lines = doc.splitTextToSize(val, cw - 6);
+      lines.forEach((l, li) => doc.text(l, cx, MY + 14 + li * 5, { align:'center' }));
     });
+    y = MY + MH + 12;
   }
 
-  // ── Footer ──
+  // ── Footer ─────────────────────────────────────────────────────────────────
   function drawFooter() {
-    doc.setDrawColor(...GOLD); doc.setLineWidth(0.4);
-    doc.line(LM, PH - 8, RM, PH - 8);
-    drawSeal(LM + 3.5, PH - 5, 3.5);
-    doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
-    doc.setTextColor(...MIDNIGHT); doc.text('lan', LM + 9, PH - 4.5);
-    doc.setTextColor(...GOLD);     doc.text('vivo', LM + 9 + doc.getTextWidth('lan'), PH - 4.5);
-    doc.setFont('helvetica','normal'); doc.setFontSize(7);
-    doc.setTextColor(...SLATE);    doc.text(`  ·  lanvivo.com  ·  Page ${page}`, LM + 9 + doc.getTextWidth('lanvivo'), PH - 4.5);
-  }
-
-  // ── Section heading ──
-  function sectionHeading(num, title) {
-    checkY(14);
-    doc.setFillColor(...DEEP); doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
-    doc.setTextColor(...GOLD); doc.text(' ' + num + ' ', LM, y + 0.5);
-    const nw = doc.getTextWidth(' ' + num + ' ') + 1;
-    doc.setFont('helvetica','bold'); doc.setFontSize(12);
-    doc.setTextColor(...MIDNIGHT); doc.text(title.toUpperCase(), LM + nw, y + 0.5);
-    y += 4;
-    doc.setDrawColor(...GOLD); doc.setLineWidth(0.5);
-    doc.line(LM, y, RM, y); y += 5;
-  }
-
-  // ── Body text ──
-  function bodyText(txt, fontSize = 9.5, color = [42,46,66]) {
-    checkY(10);
-    doc.setFont('helvetica','normal'); doc.setFontSize(fontSize);
-    doc.setTextColor(...color);
-    const lines = doc.splitTextToSize(txt, BW);
-    lines.forEach(line => { checkY(5); doc.text(line, LM, y); y += 4.5; });
-    y += 1;
-  }
-
-  // ── Verdict box ──
-  function verdictBox(txt) {
-    const lines = doc.splitTextToSize(txt, BW - 8);
-    const bh = lines.length * 4.5 + 8;
-    checkY(bh + 4);
-    doc.setFillColor(252, 248, 240); doc.setDrawColor(...GOLD);
-    doc.setLineWidth(0.3);
-    doc.rect(LM, y, BW, bh, 'FD');
-    doc.setLineWidth(0.8); doc.setDrawColor(...GOLD);
-    doc.line(LM, y, LM, y + bh);
-    doc.setFont('helvetica','normal'); doc.setFontSize(9);
-    doc.setTextColor(...[42,46,66]);
-    lines.forEach((line, i) => doc.text(line, LM + 5, y + 5.5 + i * 4.5));
-    y += bh + 4;
-  }
-
-  // ── Pull quote ──
-  function pullQuote(txt) {
-    const lines = doc.splitTextToSize(txt, BW - 12);
-    const bh = lines.length * 5 + 10;
-    checkY(bh + 4);
-    doc.setFillColor(240, 245, 255); doc.setDrawColor(...DEEP);
-    doc.rect(LM, y, BW, bh, 'FD');
-    doc.setLineWidth(1); doc.setDrawColor(...GOLD); doc.line(LM, y, LM, y+bh);
-    doc.setFont('helvetica','bolditalic'); doc.setFontSize(10);
+    doc.setDrawColor(...GOLD); doc.setLineWidth(0.3);
+    doc.line(LM, PH - 11, RM, PH - 11);
+    drawSeal(LM + 4, PH - 6.5, 3.8);
+    const wx = LM + 11;
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
     doc.setTextColor(...DEEP);
-    lines.forEach((line, i) => doc.text(line, LM + 6, y + 7 + i * 5));
-    y += bh + 5;
+    doc.text('lan', wx, PH - 5.5);
+    doc.setTextColor(...GOLD);
+    doc.text('vivo', wx + doc.getTextWidth('lan'), PH - 5.5);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5);
+    doc.setTextColor(...SLATE);
+    doc.text('  ·  Land that lives for you.  ·  lanvivo.com', wx + doc.getTextWidth('lanvivo'), PH - 5.5);
+    doc.text('Page ' + page, RM, PH - 5.5, { align:'right' });
   }
 
-  // ── Simple table (with per-cell text wrapping) ──
-  function simpleTable(headers, rows, colW) {
-    const hh = 7.5, lineH = 4, cellPad = 4;
-    // Pre-wrap all cells
-    const wrappedRows = rows.map(row =>
+  // ── Section heading ────────────────────────────────────────────────────────
+  function sectionHeading(num, title) {
+    checkY(18);
+    const numW = LM;
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
+    doc.setTextColor(...GOLD);
+    doc.text(num, LM, y + 1);
+    const nw = doc.getTextWidth(num) + 2;
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
+    doc.setTextColor(...DEEP);
+    doc.text(title.toUpperCase(), LM + nw, y + 1);
+    y += 6;
+    doc.setDrawColor(...GOLD); doc.setLineWidth(0.4);
+    doc.line(LM, y, RM, y);
+    y += 8;
+  }
+
+  // ── Sub-heading ────────────────────────────────────────────────────────────
+  function subHeading(txt) {
+    checkY(12);
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
+    doc.setTextColor(...GOLD);
+    doc.text(txt, LM, y);
+    y += 7;
+  }
+
+  // ── Body text ──────────────────────────────────────────────────────────────
+  function bodyText(txt, size = 9.5, color = DARK) {
+    checkY(8);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(size);
+    doc.setTextColor(...color);
+    doc.splitTextToSize(txt, BW).forEach(line => {
+      checkY(5); doc.text(line, LM, y); y += 5;
+    });
+    y += 2;
+  }
+
+  // ── Verdict box ────────────────────────────────────────────────────────────
+  function verdictBox(txt, italic = true) {
+    doc.setFont('helvetica', italic ? 'italic' : 'normal'); doc.setFontSize(9.5);
+    const lines = doc.splitTextToSize(txt, BW - 10);
+    const bh = lines.length * 5 + 9;
+    checkY(bh + 5);
+    doc.setFillColor(...LIGHT); doc.setDrawColor(210, 200, 180); doc.setLineWidth(0.15);
+    doc.rect(LM, y, BW, bh, 'FD');
+    doc.setFillColor(...GOLD); doc.rect(LM, y, 2.2, bh, 'F');
+    doc.setFont('helvetica', italic ? 'italic' : 'normal'); doc.setFontSize(9.5);
+    doc.setTextColor(...DARK);
+    lines.forEach((line, i) => doc.text(line, LM + 7, y + 6 + i * 5));
+    y += bh + 6;
+  }
+
+  // ── Pull quote ─────────────────────────────────────────────────────────────
+  function pullQuote(txt) {
+    doc.setFont('helvetica', 'bolditalic'); doc.setFontSize(11);
+    const lines = doc.splitTextToSize(txt, BW - 14);
+    const bh = lines.length * 5.5 + 10;
+    checkY(bh + 5);
+    doc.setFillColor(238, 243, 255); doc.setDrawColor(...DEEP); doc.setLineWidth(0.15);
+    doc.rect(LM, y, BW, bh, 'FD');
+    doc.setFillColor(...GOLD); doc.rect(LM, y, 2.5, bh, 'F');
+    doc.setFont('helvetica', 'bolditalic'); doc.setFontSize(11);
+    doc.setTextColor(...DEEP);
+    lines.forEach((line, i) => doc.text(line, LM + 8, y + 7.5 + i * 5.5));
+    y += bh + 6;
+  }
+
+  // ── Table ──────────────────────────────────────────────────────────────────
+  // centerCols: array of column indices to center-align
+  function simpleTable(headers, rows, colW, centerCols = []) {
+    const hh = 8.5, lh = 4.5, pad = 4;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+    const wrapped = rows.map(row =>
       row.map((cell, ci) => {
-        doc.setFont('helvetica','normal'); doc.setFontSize(8);
-        return doc.splitTextToSize(String(cell || ''), colW[ci] - cellPad);
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+        return doc.splitTextToSize(String(cell || ''), colW[ci] - pad);
       })
     );
-    const rowHeights = wrappedRows.map(row =>
-      Math.max(1, Math.max(...row.map(c => c.length))) * lineH + 3
-    );
-    // Header
-    checkY(hh + rowHeights[0] + 4);
+    const rh = wrapped.map(row => Math.max(1, Math.max(...row.map(c => c.length))) * lh + 5);
+
+    checkY(hh + rh[0] + 4);
+
+    // Header row
     doc.setFillColor(...DEEP);
     doc.rect(LM, y, BW, hh, 'F');
     let xx = LM;
     headers.forEach((h, i) => {
-      doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5);
       doc.setTextColor(...WHITE);
-      doc.text(h, xx + 2, y + 5);
+      const center = centerCols.includes(i);
+      doc.text(h, center ? xx + colW[i] / 2 : xx + 2.5, y + 5.8,
+               { align: center ? 'center' : 'left' });
       xx += colW[i];
     });
     y += hh;
-    wrappedRows.forEach((row, ri) => {
-      const rh = rowHeights[ri];
-      if (y + rh > PH - 18) { addPage(); y = 30; }
-      doc.setFillColor(ri%2===0 ? 242 : 255, ri%2===0 ? 238 : 255, ri%2===0 ? 228 : 255);
-      doc.rect(LM, y, BW, rh, 'F');
+
+    wrapped.forEach((row, ri) => {
+      const rowH = rh[ri];
+      if (y + rowH > PH - 22) { addPage(); }
+      doc.setFillColor(...(ri % 2 === 0 ? LIGHT : WHITE));
+      doc.rect(LM, y, BW, rowH, 'F');
       doc.setDrawColor(...RULE); doc.setLineWidth(0.1);
-      doc.line(LM, y+rh, LM+BW, y+rh);
+      doc.line(LM, y + rowH, LM + BW, y + rowH);
       xx = LM;
       row.forEach((cellLines, ci) => {
-        doc.setFont('helvetica','normal'); doc.setFontSize(8);
-        doc.setTextColor(...MIDNIGHT);
-        cellLines.forEach((line, li) => doc.text(line, xx + 2, y + 4 + li * lineH));
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+        doc.setTextColor(...DARK);
+        const center = centerCols.includes(ci);
+        cellLines.forEach((line, li) =>
+          doc.text(line, center ? xx + colW[ci] / 2 : xx + 2.5, y + 4.5 + li * lh,
+                   { align: center ? 'center' : 'left' })
+        );
         xx += colW[ci];
       });
-      y += rh;
+      y += rowH;
     });
-    y += 4;
+    y += 6;
   }
 
-  // ── Recommendation block ──
+  // ── Rec block ──────────────────────────────────────────────────────────────
   function recBlock(num, title, detail) {
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5);
     const lines = doc.splitTextToSize(detail, BW - 12);
-    const bh = lines.length * 4 + 14;
-    checkY(bh + 3);
-    doc.setFillColor(255,255,255); doc.setDrawColor(...RULE); doc.setLineWidth(0.2);
+    const bh = lines.length * 5 + 16;
+    checkY(bh + 4);
+    doc.setFillColor(...WHITE); doc.setDrawColor(...RULE); doc.setLineWidth(0.15);
     doc.rect(LM, y, BW, bh, 'FD');
-    doc.setFillColor(...GOLD); doc.rect(LM, y, 1.5, bh, 'F');
-    doc.setFont('helvetica','bold'); doc.setFontSize(8.5);
-    doc.setTextColor(...GOLD); doc.text(num + '.', LM + 4, y + 6.5);
-    const nw = doc.getTextWidth(num + '.') + 1.5;
-    doc.setFont('helvetica','bold'); doc.setFontSize(9);
-    doc.setTextColor(...MIDNIGHT); doc.text(title, LM + 4 + nw, y + 6.5);
-    doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
-    doc.setTextColor(80,85,110);
-    lines.forEach((line, i) => doc.text(line, LM + 4, y + 12 + i * 4));
-    y += bh + 3;
+    doc.setFillColor(...GOLD); doc.rect(LM, y, 2.2, bh, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
+    doc.setTextColor(...GOLD);
+    doc.text(num + '.', LM + 5.5, y + 7);
+    const nw = doc.getTextWidth(num + '.') + 2;
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+    doc.setTextColor(...DEEP);
+    doc.text(title, LM + 5.5 + nw, y + 7);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5);
+    doc.setTextColor(75, 82, 110);
+    lines.forEach((line, i) => doc.text(line, LM + 5.5, y + 13.5 + i * 5));
+    y += bh + 4;
   }
 
-  // ══ BUILD PDF ══════════════════════════════════════════════════════════════
-  let y = 75;
+  // ══ BUILD ══════════════════════════════════════════════════════════════════
   drawHeader();
   drawMetrics();
   drawFooter();
 
   // 01 Subject property
-  sectionHeading('01', 'Subject Property');
+  sectionHeading('01', 'Subject Property: Listing Overview');
   const propRows = [
-    ['Address', d.address], ['List Price', _fmtPrice(d.price)],
-    ['Days on Market', d.dom + '+ days (market avg: ' + (c.avgDomSale||45) + ')'],
-    d.beds ? ['Bedrooms / Baths', d.beds + ' BD / ' + d.baths + ' BA'] : null,
-    d.sqft ? ['Square Footage', d.sqft.toLocaleString() + ' sqft'] : null,
-    d.sqft ? ['Price Per Sqft', '$' + Math.round(d.price/d.sqft) + '/sqft'] : null,
-    d.yearBuilt ? ['Year Built', String(d.yearBuilt)] : null,
-    ['Listing Agent', d.agent],
+    ['Address',            d.address],
+    ['List Price',         _fmtPrice(d.price)],
+    d.sqft      ? ['Price Per Sq Ft',   '~$' + Math.round(d.price / d.sqft) + ' per sqft'] : null,
+    d.beds      ? ['Bedrooms / Baths',  d.beds + ' BD / ' + d.baths + ' BA'] : null,
+    d.sqft      ? ['Square Footage',    d.sqft.toLocaleString() + ' sqft'] : null,
+    d.lotSize   ? ['Lot Size',          '~' + d.lotSize + ' Acres'] : null,
+    d.yearBuilt ? ['Year Built',        String(d.yearBuilt)] : null,
+    (d.agent && d.agent !== 'N/A') ? ['Listing Agent', d.agent] : null,
+    ['Days on Market',     d.dom + '+ days'],
+    ['Market Avg Days to Sell', (c.avgDomSale || 45) + ' days avg'],
   ].filter(Boolean);
-  simpleTable(['Detail','Information'], propRows, [52, BW - 52]);
+  simpleTable(['Detail', 'Information'], propRows, [62, BW - 62], [1]);
+  if (c.verdict) verdictBox(c.verdict, true);
 
-  // 02 Comparable Sales
+  // 02 Comparable sales
   sectionHeading('02', 'Comparable Sales');
-  const scRows = (d.saleComps||[]).slice(0,6).map(sc => [
-    (sc.formattedAddress||'').split(',')[0].substring(0,25),
-    (sc.bedrooms||'?')+'BD/'+(sc.bathrooms||'?')+'BA',
+  const scRows = (d.saleComps || []).slice(0, 6).map(sc => [
+    (sc.formattedAddress || '').replace(/, [A-Z]{2}.*/, '').substring(0, 30),
+    (sc.bedrooms || '?') + ' BD / ' + (sc.bathrooms || '?') + ' BA',
     sc.squareFootage ? sc.squareFootage.toLocaleString() : 'N/A',
     _fmtPrice(sc.price),
-    sc.squareFootage ? '$'+Math.round(sc.price/sc.squareFootage) : 'N/A',
-    (sc.removedDate||sc.listedDate||'').slice(0,7),
+    sc.squareFootage ? '$' + Math.round(sc.price / sc.squareFootage) : 'N/A',
+    (sc.removedDate || sc.listedDate || '').slice(0, 7),
   ]);
   if (scRows.length) {
-    simpleTable(['Address','Beds/BA','Sqft','Sold Price','$/Sqft','Date'], scRows, [48,20,18,22,18,BW-126]);
-  } else { bodyText('No recent comparable sales found within the search radius.', 9, [155,168,200]); }
-  verdictBox(c.verdict);
+    simpleTable(
+      ['Address', 'Beds/Baths', 'Sq Ft', 'Sold Price', '$/sqft', 'Sold Date'],
+      scRows, [54, 24, 16, 26, 16, BW - 136], [1, 2, 3, 4, 5]
+    );
+  } else {
+    bodyText('No recent comparable sales found within the search radius.', 9, SLATE);
+  }
   pullQuote('Competitive sweet spot: ' + _fmtPrice(c.sweetLow) + ' to ' + _fmtPrice(c.sweetHigh));
 
-  // 03 Rental Market
-  sectionHeading('03', 'Rental Market & Days to Rent');
-  const rcRows = (d.rentalComps||[]).slice(0,5).map(rc => [
-    (rc.formattedAddress||'').split(',')[0].substring(0,25),
-    (rc.bedrooms||'?')+'BD/'+(rc.bathrooms||'?')+'BA',
+  // 03 Rental market
+  sectionHeading('03', 'Rental Market Comps and Days to Rent');
+  const rcRows = (d.rentalComps || []).slice(0, 6).map(rc => [
+    (rc.formattedAddress || '').replace(/, [A-Z]{2}.*/, '').substring(0, 28),
+    (rc.bedrooms || '?') + ' BD / ' + (rc.bathrooms || '?') + ' BA',
     rc.squareFootage ? rc.squareFootage.toLocaleString() : 'N/A',
-    _fmtPrice(rc.price)+'/mo',
-    rc.daysOnMarket ? rc.daysOnMarket+'d ago' : (rc.status||'Active'),
+    _fmtPrice(rc.price) + '/mo',
+    rc.daysOnMarket ? 'Listed ' + rc.daysOnMarket + 'd ago' : (rc.status || 'Active'),
   ]);
   if (rcRows.length) {
-    simpleTable(['Address','Beds/BA','Sqft','Monthly Rent','Status'], rcRows, [50,22,20,26,BW-118]);
-  } else { bodyText('No active rental listings found nearby.', 9, [155,168,200]); }
+    simpleTable(
+      ['Address', 'Beds/Baths', 'Sq Ft', 'Monthly Rent', 'Status'],
+      rcRows, [54, 26, 18, 30, BW - 128], [1, 2, 3, 4]
+    );
+  } else {
+    bodyText('No active rental listings found nearby.', 9, SLATE);
+  }
   const mktRows = [
-    ['Estimated Rent Range', _fmtPrice(r.rentLow) + ' to ' + _fmtPrice(r.rentHigh) + '/mo'],
-    ['Market Temperature', r.marketTemp],
-    ['Est. Days to Rent', '~' + r.daysToRent + ' days'],
-    ['Market Median Rent', _fmtPrice(r.marketRent) + '/mo'],
+    ['Estimated Rent for Subject Home', _fmtPrice(r.rentLow) + ' to ' + _fmtPrice(r.rentHigh) + '/mo'],
+    ['Market Temperature',             r.marketTemp],
+    ['Estimated Days to Rent',         '~' + r.daysToRent + ' days'],
+    ['Market Median Rent',             _fmtPrice(r.marketRent) + '/mo'],
   ];
-  simpleTable(['Metric','Data'], mktRows, [58, BW-58]);
+  simpleTable(['Metric', 'Data'], mktRows, [72, BW - 72], [1]);
   verdictBox(r.mortgageClause);
 
   // 04 Recommendations
@@ -8077,19 +8136,22 @@ async function downloadPaReport() {
 
   // 05 Quick Reference
   sectionHeading('05', 'Quick-Reference Summary');
-  const qrPdfRows = d.qr.map(q => [q.cat, q.finding, q.action]);
-  simpleTable(['Category','Finding','Recommended Action'], qrPdfRows, [38, 55, BW-93]);
+  const qrRows = d.qr.map(q => [q.cat, q.finding, q.action]);
+  simpleTable(
+    ['Category', 'Finding', 'Recommended Action'],
+    qrRows, [42, 64, BW - 106], [1, 2]
+  );
 
   // Disclaimer
-  checkY(12);
-  y += 2;
-  doc.setFont('helvetica','normal'); doc.setFontSize(7);
+  checkY(14);
+  y += 3;
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5);
   doc.setTextColor(...SLATE);
-  const disc = 'Disclaimer: This analysis draws on publicly available data from RentCast and the US Census Bureau. For informational purposes only. Not professional real estate advice.';
-  doc.splitTextToSize(disc, BW).forEach(line => { doc.text(line, LM, y); y += 3.5; });
+  const disc = 'Disclaimer: This analysis draws on publicly available data from RentCast and the US Census Bureau. For informational purposes only. Not professional real estate or legal advice. Consult a licensed professional for binding valuations.';
+  doc.splitTextToSize(disc, BW).forEach(line => { doc.text(line, LM, y); y += 4; });
 
-  const slug = d.address.replace(/[^a-z0-9]+/gi,'_').substring(0,40);
-  doc.save(`${slug}_Lanvivo_Report.pdf`);
+  const slug = d.address.replace(/[^a-z0-9]+/gi, '_').substring(0, 40);
+  doc.save(slug + '_Lanvivo_Report.pdf');
   showToast('PDF downloaded successfully.', 'success');
 }
 </script>
