@@ -7512,33 +7512,6 @@ async function _fetchViaEdge(address, beds, baths, sqft, zipCode) {
   if (!res.ok) throw new Error(json.error || `Edge Function error (${res.status})`);
   return json;  // { prop, rentalAvm, saleComps, rentalComps, market, census }
 }
-// ══════════════════════════════════════════════════════════════════════════════
-
-let _paData = null;  // last analysis result, for PDF generation
-
-
-
-// ── Mock data (demo mode) ─────────────────────────────────────────────────────
-const PA_MOCK = {
-  prop: { formattedAddress:'3030 Plateau Dr, Conway, AR 72032', bedrooms:3, bathrooms:2, squareFootage:1820, yearBuilt:2005, lotSize:0.23 },
-  active: { listPrice:342500, daysOnMarket:118, listingAgent:'Lanvivo Realty' },
-  rentalAvm: { rent:2100, rentRangeLow:1950, rentRangeHigh:2250 },
-  saleComps: [
-    { formattedAddress:'2918 Plateau Dr, Conway, AR', bedrooms:3, bathrooms:2, squareFootage:1780, price:319000, removedDate:'2024-04-10' },
-    { formattedAddress:'3105 Ridgeline Rd, Conway, AR', bedrooms:3, bathrooms:2, squareFootage:1900, price:334900, removedDate:'2024-05-18' },
-    { formattedAddress:'2801 Crestwood Blvd, Conway, AR', bedrooms:4, bathrooms:2, squareFootage:2050, price:351000, removedDate:'2024-06-02' },
-    { formattedAddress:'3020 Hillcrest Ave, Conway, AR', bedrooms:3, bathrooms:2.5, squareFootage:1965, price:338000, removedDate:'2024-06-22' },
-    { formattedAddress:'3218 Summit Dr, Conway, AR', bedrooms:3, bathrooms:2, squareFootage:1840, price:325000, removedDate:'2024-07-01' },
-  ],
-  rentalComps: [
-    { formattedAddress:'3112 Plateau Dr, Conway, AR', bedrooms:3, bathrooms:2, squareFootage:1795, price:1995, daysOnMarket:12, status:'Active' },
-    { formattedAddress:'2940 Ridgeline Rd, Conway, AR', bedrooms:3, bathrooms:2, squareFootage:1860, price:2150, daysOnMarket:5, status:'Active' },
-    { formattedAddress:'3008 Crestwood Blvd, Conway, AR', bedrooms:4, bathrooms:2, squareFootage:2010, price:2250, daysOnMarket:21, status:'Active' },
-    { formattedAddress:'2985 Summit Dr, Conway, AR', bedrooms:3, bathrooms:2, squareFootage:1720, price:1950, daysOnMarket:8, status:'Active' },
-  ],
-  market: { saleData:{ averageDaysOnMarket:45, medianListingPrice:310000 }, rentalData:{ medianRent:1850, rentalVacancyRate:4.1 } },
-  census: { B25064_001E:'1740', B25003_001E:'18200', B25003_003E:'6800' },
-};
 
 
 // ── Analysis logic (JS port of analyze.py) ───────────────────────────────────
