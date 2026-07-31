@@ -905,6 +905,21 @@ body.dark .mob-nav-signout:hover{color:#C8D4E8}
   .plan-compare{grid-template-columns:1fr}
   .metrics-grid{grid-template-columns:1fr}
 }
+/* ── Touch-target & overflow hardening for phones ──────────────── */
+@media(max-width:900px){
+  /* Header controls were 27–31px tall; 44px is the minimum comfortable tap target */
+  .mob-menu-btn{width:44px;height:44px}
+  .toggle-btn{min-height:40px;padding:8px 14px;font-size:12px}
+  .lang-select{min-height:40px;padding:8px 30px 8px 12px;font-size:12px}
+  .header-controls{gap:8px}
+  .prop-action-btn{min-height:38px;padding:9px 12px;font-size:12px}
+  /* Momentum scrolling for the horizontally-scrollable tables */
+  [style*="overflow-x:auto"],.pa-table-wrap{-webkit-overflow-scrolling:touch}
+  /* Nothing should ever push the page sideways */
+  html,body{overflow-x:hidden;max-width:100%}
+  /* Prevent iOS zoom-on-focus across every form in the portal */
+  input,select,textarea{font-size:16px}
+}
 @media(max-width:480px){
   .stats-row{grid-template-columns:1fr}
   .perf-summary-row{grid-template-columns:1fr 1fr}
@@ -913,6 +928,12 @@ body.dark .mob-nav-signout:hover{color:#C8D4E8}
   .report-page{padding:16px 12px}
   .properties-page{padding:14px 12px}
   .gpt-soon-card{padding:28px 18px}
+  /* Three-across grids that had no small-screen rule */
+  .proj-summary,.gpt-soon-features{grid-template-columns:1fr}
+  .plan-compare{grid-template-columns:1fr}
+  /* Header can run out of room once the hamburger is in place */
+  .main-header h1{font-size:1rem}
+  #theme-label{display:none}
   .lead-modal{padding:22px 18px}
 }
 
@@ -1163,7 +1184,48 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
 .pa-qr-table td{padding:8px 10px;font-size:11.5px;color:var(--body);border-bottom:1px solid var(--rule);vertical-align:top;line-height:1.5}
 .pa-qr-table td:first-child{color:var(--ink);font-weight:500;white-space:nowrap;width:22%}
 .pa-qr-table td:nth-child(2){width:32%}
-@media(max-width:900px){.pa-layout{grid-template-columns:1fr;height:auto}}
+/* Horizontal scroll wrapper for wide data tables */
+.pa-table-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:12px}
+.pa-table-wrap .pa-table,.pa-table-wrap .pa-qr-table{margin-bottom:0}
+
+/* ── PA responsive ─────────────────────────────────────────────── */
+@media(max-width:900px){
+  .pa-layout{grid-template-columns:1fr;height:auto}
+  /* Kill nested scrolling — let the page scroll instead */
+  .pa-form,.pa-results{overflow-y:visible;height:auto}
+  .pa-results{min-height:auto}
+}
+@media(max-width:700px){
+  /* 4-across metric strip cannot hold currency ranges on a phone */
+  .pa-metrics{grid-template-columns:1fr 1fr}
+  .pa-metric{border-right:none;border-bottom:1px solid rgba(200,148,42,0.18);padding:12px 10px}
+  .pa-metric:nth-child(odd){border-right:1px solid rgba(200,148,42,0.18)}
+  .pa-metric:nth-last-child(-n+2){border-bottom:none}
+  .pa-metric-value{font-size:1rem}
+  .pa-body{padding:16px 14px}
+  .pa-form{padding:18px 16px}
+  /* Wide tables scroll sideways rather than overflowing the viewport */
+  .pa-table,.pa-qr-table{min-width:520px}
+  .pa-qr-table td:first-child{width:auto}
+  /* Buttons stack and go full width for thumb reach */
+  .pa-actions{flex-direction:column;padding:14px 16px}
+  .pa-actions .btn-pdf,.pa-actions .btn-new{width:100%;padding:13px 16px;font-size:13.5px}
+  .pa-section{margin-bottom:18px}
+  .pa-section-title h4{font-size:1rem}
+}
+@media(max-width:480px){
+  .pa-metrics{grid-template-columns:1fr}
+  .pa-metric{border-right:none !important;border-bottom:1px solid rgba(200,148,42,0.18)}
+  .pa-metric:last-child{border-bottom:none}
+  .pa-stat-row{grid-template-columns:1fr}
+  .pa-body{padding:14px 12px}
+  .pa-rec-detail,.pa-verdict,.pa-mortgage-note{font-size:12.5px}
+  .pa-pull{font-size:1rem;padding:12px 14px}
+}
+/* Prevent iOS zoom-on-focus: inputs must be >=16px */
+@media(max-width:900px){
+  .pa-form input,.pa-form select{font-size:16px}
+}
 
 </style>
 </head>
@@ -3590,12 +3652,42 @@ function dismissOnboarding() {
 const PAGE_TITLES = {dashboard:'Dashboard',gpt:'Lanvivo GPT',mortgage:'Mortgage Eligibility Engine',cashflow:'Cash Flow Analyzer',market:'Zipcode Rater',roi:'Zipcode ROI',properties:'My Properties',compare:'Compare Properties',report:'Property Report',account:'My Account',performance:'Performance Tracker',propanalysis:'Property Analysis Report'};
 
 // ── Mobile navigation ────────────────────────────────────────────────────────
+// Scroll lock — the app scrolls inside .main-content, not on <body>,
+// so both have to be pinned or the page slides behind the open drawer.
+let _mobNavScrollY = 0;
+function _lockBodyScroll() {
+  _mobNavScrollY = window.scrollY;
+  document.body.style.position = 'fixed';
+  document.body.style.top = `-${_mobNavScrollY}px`;
+  document.body.style.width = '100%';
+  const mc = document.querySelector('.main-content');
+  if (mc) mc.style.overflowY = 'hidden';
+}
+function _unlockBodyScroll() {
+  document.body.style.position = '';
+  document.body.style.top = '';
+  document.body.style.width = '';
+  const mc = document.querySelector('.main-content');
+  if (mc) mc.style.overflowY = '';
+  window.scrollTo(0, _mobNavScrollY);
+}
 function toggleMobNav() {
-  document.getElementById('mob-nav-overlay').classList.toggle('active');
+  const ov = document.getElementById('mob-nav-overlay');
+  const nowOpen = ov.classList.toggle('active');
+  ov.setAttribute('aria-hidden', nowOpen ? 'false' : 'true');
+  nowOpen ? _lockBodyScroll() : _unlockBodyScroll();
 }
 function closeMobNav() {
-  document.getElementById('mob-nav-overlay')?.classList.remove('active');
+  const ov = document.getElementById('mob-nav-overlay');
+  if (!ov || !ov.classList.contains('active')) return;
+  ov.classList.remove('active');
+  ov.setAttribute('aria-hidden', 'true');
+  _unlockBodyScroll();
 }
+// Escape closes the drawer
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeMobNav();
+});
 // Wire up mob-nav-item buttons (called once DOM is ready)
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.mob-nav-item[data-mob-page]').forEach(btn => {
@@ -3619,6 +3711,9 @@ function navigateTo(page, navEl) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById(`page-${page}`).classList.add('active');
   document.getElementById('page-title').textContent = PAGE_TITLES[page] || page;
+  // Land at the top of the new page rather than inheriting the previous scroll position
+  const _mc = document.querySelector('.main-content');
+  if (_mc) _mc.scrollTop = 0;
   // Plan consolidation: gating removed. All authenticated users have full access to every feature.
   // The Upgrade page still exists in the codebase but is not surfaced in the nav. Plan flags on
   // user records ('free' / 'pro' / 'investor') are preserved for back-compat with existing accounts
@@ -7630,13 +7725,25 @@ function _buildQuickRef(listPrice, compA, rentalA, dom, propSqft) {
   }
 
   return [
-    { cat:'List Price', finding:`${_fmtPrice(listPrice)}${dom > 0 ? ` (${dom} DOM)` : ' (just listed)'}`, action: compA.sweetLow && listPrice > compA.sweetHigh ? `Reduce to ${_fmtPrice(compA.sweetLow)}–${_fmtPrice(compA.sweetHigh)}` : 'Hold; focus on marketing' },
+    { cat:'List Price', finding:`${_fmtPrice(listPrice)}${dom > 0 ? ` (${dom} DOM)` : ' (just listed)'}`,
+      action: !compA.sweetLow ? 'Hold; focus on marketing'
+            : listPrice > compA.sweetHigh ? `Reduce to ${_fmtPrice(compA.sweetLow)}–${_fmtPrice(compA.sweetHigh)}`
+            : listPrice < compA.sweetLow * 0.9 ? 'Verify price — well below comps'
+            : 'Hold; focus on marketing' },
     { cat:'Comp Range', finding:`${_fmtPrice(compA.sweetLow)} to ${_fmtPrice(compA.sweetHigh)}`, action:'Use as anchor in all negotiations' },
     { cat:'$/Sqft vs. Comps', finding:`${myPpsf ? '$' + Math.round(myPpsf) + ' vs ' : ''}$${compA.ppsf_low}–$${compA.ppsf_high}/sqft comps`, action: ppsfAction },
     { cat:'Days on Market', finding:`${dom} days (avg: ${Math.round(compA.avgDomSale || 45)})`, action: dom > (compA.avgDomSale || 45) * 1.2 ? 'Relist + refresh photos' : 'Monitor closely' },
     { cat:'Rental Estimate', finding:`${_fmtPrice(rentalA.rentLow)}–${_fmtPrice(rentalA.rentHigh)}/mo`, action:`Est. ${rentalA.daysToRent} days to rent (${rentalA.marketTemp} market)` },
     { cat:'Market Temp', finding:`${rentalA.marketTemp} rental market`, action:`Vacancy ~${rentalA.marketTemp === 'Hot' ? '<4%' : rentalA.marketTemp === 'Balanced' ? '4–7%' : '>7%'}` },
-    { cat:'Priority #1', finding:'Pricing and presentation', action:'Photography + price realignment' },
+    { cat:'Priority #1',
+      finding: !compA.sweetLow ? 'Pricing and presentation'
+             : listPrice > compA.sweetHigh ? 'Price is the constraint'
+             : listPrice < compA.sweetLow * 0.9 ? 'Confirm list price is correct'
+             : 'Presentation, not price',
+      action:  !compA.sweetLow ? 'Photography + price realignment'
+             : listPrice > compA.sweetHigh ? `Realign to ${_fmtPrice(compA.sweetLow)}–${_fmtPrice(compA.sweetHigh)}`
+             : listPrice < compA.sweetLow * 0.9 ? 'Re-check entry before marketing spend'
+             : 'Photography + staging' },
     { cat:'Fallback', finding:'Rental conversion', action:`List at ${_fmtPrice(rentalA.rentLow)}–${_fmtPrice(rentalA.rentHigh)}/mo if unsold at 90 days` },
   ];
 }
@@ -7784,10 +7891,10 @@ function renderPaResults(d) {
         ${d.priceHistory && d.priceHistory.length ? `
         <div style="margin-top:12px">
           <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Price History</div>
-          <table class="pa-table" style="font-size:12px">
+          <div class="pa-table-wrap"><table class="pa-table" style="font-size:12px">
             <thead><tr><th>Date</th><th>Event</th><th>Price</th></tr></thead>
             <tbody>${d.priceHistory.map(h => `<tr><td>${(h.date||'').slice(0,10)}</td><td>${h.event||h.type||'—'}</td><td>${_fmtPrice(h.price||h.amount)}</td></tr>`).join('')}</tbody>
-          </table>
+          </table></div>
         </div>` : ''}
 
       </div>
@@ -7795,7 +7902,7 @@ function renderPaResults(d) {
       <!-- 02 Comparable Sales -->
       <div class="pa-section">
         <div class="pa-section-title"><span class="pa-section-num">02</span><h4>Comparable Sales</h4></div>
-        ${compRows ? `<table class="pa-table"><thead><tr><th>Address</th><th>Beds/BA</th><th>Sqft</th><th>Sold Price</th><th>$/Sqft</th><th>Date</th></tr></thead><tbody>${compRows}</tbody></table>` : '<p style="font-size:12px;color:var(--muted)">No recent comparable sales found.</p>'}
+        ${compRows ? `<div class="pa-table-wrap"><table class="pa-table"><thead><tr><th>Address</th><th>Beds/BA</th><th>Sqft</th><th>Sold Price</th><th>$/Sqft</th><th>Date</th></tr></thead><tbody>${compRows}</tbody></table></div>` : '<p style="font-size:12px;color:var(--muted)">No recent comparable sales found.</p>'}
         <div class="pa-verdict">${c.verdict}</div>
         <div class="pa-pull">Competitive sweet spot: ${_fmtPrice(c.sweetLow)} to ${_fmtPrice(c.sweetHigh)}</div>
       </div>
@@ -7804,7 +7911,7 @@ function renderPaResults(d) {
       <div class="pa-section">
         <div class="pa-section-title"><span class="pa-section-num">03</span><h4>Rental Market &amp; Days to Rent</h4></div>
         ${rentalRows
-          ? `<table class="pa-table"><thead><tr><th>Address</th><th>Beds/BA</th><th>Sqft</th><th>Monthly Rent</th><th>Status</th></tr></thead><tbody>${rentalRows}</tbody></table>`
+          ? `<div class="pa-table-wrap"><table class="pa-table"><thead><tr><th>Address</th><th>Beds/BA</th><th>Sqft</th><th>Monthly Rent</th><th>Status</th></tr></thead><tbody>${rentalRows}</tbody></table></div>`
           : `<div style="font-size:12px;color:var(--muted);padding:10px 12px;background:rgba(200,148,42,0.07);border-left:3px solid var(--gold);border-radius:2px;line-height:1.6">
                <strong style="color:var(--ink)">No active rental listings found within 2 miles.</strong><br>
                Rent estimates below are based on RentCast market-level AVM data for the zip code, not individual property comps. Confidence is moderate — treat as a range, not a point estimate.
@@ -7828,7 +7935,7 @@ function renderPaResults(d) {
       <!-- 05 Quick Reference -->
       <div class="pa-section">
         <div class="pa-section-title"><span class="pa-section-num">05</span><h4>Quick-Reference Summary</h4></div>
-        <table class="pa-qr-table"><thead><tr><th>Category</th><th>Finding</th><th>Recommended Action</th></tr></thead><tbody>${qrRows}</tbody></table>
+        <div class="pa-table-wrap"><table class="pa-qr-table"><thead><tr><th>Category</th><th>Finding</th><th>Recommended Action</th></tr></thead><tbody>${qrRows}</tbody></table></div>
       </div>
 
       <p style="font-size:10.5px;color:var(--muted);line-height:1.5;margin-top:16px">Data sources: RentCast API (sale &amp; rental comps), US Census ACS 5-year estimates. For informational purposes only.</p>
@@ -7908,29 +8015,29 @@ async function downloadPaReport() {
 
   // ── Page helpers ──────────────────────────────────────────────────────────
   function addPage() { doc.addPage(); page++; _drawFooter(); y = 26; }
-  function checkY(n) { if (y + n > PH - 22) addPage(); }
+  function checkY(n) { if (y + n > PH - 16) addPage(); }
 
   // ── Coin seal ─────────────────────────────────────────────────────────────
   function _seal(cx, cy, r) {
-    doc.setDrawColor(...GOLD); doc.setLineWidth(r * 0.10); doc.circle(cx, cy, r, 'S');
-    doc.setLineWidth(r * 0.04);
-    doc.setGState(doc.GState({opacity:0.35})); doc.circle(cx, cy, r * 0.78, 'S');
+    doc.setDrawColor(...GOLD); doc.setLineWidth(r * 0.075); doc.circle(cx, cy, r, 'S');
+    doc.setLineWidth(r * 0.028);
+    doc.setGState(doc.GState({opacity:0.3})); doc.circle(cx, cy, r * 0.84, 'S');
     doc.setGState(doc.GState({opacity:1}));
-    doc.setFillColor(...GOLD);
-    [[cx,cy-r],[cx+r,cy],[cx,cy+r],[cx-r,cy]]
-      .forEach(([dx,dy]) => doc.circle(dx, dy, Math.max(0.35, r*0.08), 'F'));
-    doc.setFont('helvetica','bolditalic'); doc.setFontSize(r * 3.5);
+    // Serif "L", optically centred — matches the serif wordmark beside it
+    doc.setFont(SERIF, 'normal');
+    doc.setFontSize(r * 2.5);
     doc.setTextColor(...GOLD);
-    doc.text('L', cx, cy + r * 0.32, {align:'center', baseline:'middle'});
+    doc.text('L', cx, cy + r * 0.04, { align:'center', baseline:'middle' });
   }
 
   // ── Header (coin seal + serif wordmark left · label right · navy rule) ────
   function _drawHeader() {
-    _seal(LM + 5.5, 12, 5.5);
+    // Seal centre sits on the wordmark's optical centre, not its baseline
+    _seal(LM + 5.2, 12.7, 5.2);
     // "Lanvivo" wordmark — serif, navy (matches cash-flow report)
     doc.setFont(SERIF, 'normal'); doc.setFontSize(21);
     doc.setTextColor(...DEEP);
-    doc.text('Lanvivo', LM + 14.5, 15);
+    doc.text('Lanvivo', LM + 14.2, 15.6);
 
     // Report label right-aligned
     doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5);
@@ -7946,17 +8053,28 @@ async function downloadPaReport() {
     y = 31;
   }
 
-  // ── Footer (matches cash-flow report wording + structure) ─────────────────
+  // ── Footer (slim — full disclaimer appears once at end of report) ─────────
   function _drawFooter() {
     doc.setDrawColor(...BORDER); doc.setLineWidth(0.2);
-    doc.line(LM, PH - 17, RM, PH - 17);
-    doc.setFont('helvetica','normal'); doc.setFontSize(6.2);
+    doc.line(LM, PH - 11, RM, PH - 11);
+    doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
     doc.setTextColor(...GRAY);
+    doc.text('Generated by Lanvivo · lanvivo.com · hello@lanvivo.com · ' + d.date, LM, PH - 6.5);
+    doc.text('Page ' + page, RM, PH - 6.5, {align:'right'});
+  }
+
+  // ── Full disclaimer block, rendered once at the very end ──────────────────
+  function _disclaimer() {
     const disc = 'For informational purposes only. Comparable sales, rental estimates, and days-on-market figures are drawn from RentCast and US Census Bureau data and reflect market conditions at time of generation. Actual sale price depends on condition, presentation, and buyer demand. Consult a licensed real estate professional before relying on these numbers for pricing decisions.';
+    doc.setFont('helvetica','normal'); doc.setFontSize(6.4);
     const dl = doc.splitTextToSize(disc, BW);
-    dl.forEach((l, i) => doc.text(l, LM, PH - 13.5 + i * 2.8));
-    doc.text('Generated by Lanvivo · lanvivo.com · hello@lanvivo.com · ' + d.date, LM, PH - 5);
-    doc.text('Page ' + page, RM, PH - 5, {align:'right'});
+    checkY(dl.length * 2.9 + 8);
+    y += 4;
+    doc.setDrawColor(...BORDER); doc.setLineWidth(0.2);
+    doc.line(LM, y, RM, y);
+    y += 4;
+    doc.setTextColor(...GRAY);
+    dl.forEach(l => { doc.text(l, LM, y); y += 2.9; });
   }
 
   // ── Large property headline (serif, matching reference) ───────────────────
@@ -8078,7 +8196,7 @@ async function downloadPaReport() {
 
     wrapped.forEach((row, ri) => {
       const rh = rowH[ri];
-      if (y + rh > PH - 22) addPage();
+      if (y + rh > PH - 16) addPage();
       doc.setFillColor(...(ri % 2 === 0 ? WHITE : LGRAY));
       doc.rect(LM, y, BW, rh, 'F');
       doc.setDrawColor(...BORDER); doc.setLineWidth(0.1);
@@ -8256,14 +8374,6 @@ async function downloadPaReport() {
   _section('Recommendations to Improve the Sale');
   d.recs.forEach(rec => _rec(rec.num, rec.title, rec.detail));
 
-  // ── 05 Quick Reference ──
-  _section('Quick-Reference Summary');
-  _table(
-    ['Category', 'Finding', 'Recommended Action'],
-    d.qr.map(q => [q.cat, q.finding, q.action]),
-    [42, 64, BW - 106]
-  );
-
   // ── What this means (plain-language summary, matches reference) ──
   _section('What this means');
   const _ppsf = d.sqft ? Math.round(d.price / d.sqft) : null;
@@ -8274,7 +8384,12 @@ async function downloadPaReport() {
     (Math.abs(_gap) > 5000
       ? `, which places the current asking price about ${_fmtPrice(Math.abs(_gap))} ${_gap > 0 ? 'above' : 'below'} the midpoint of what similar homes actually sold for.`
       : `, putting the asking price right in line with what similar homes actually sold for.`) +
-    ` If sold, expect roughly ${avgDom} days on market at this price point. ` +
+    (_gap > 0
+      ? ` Homes in this market take about ${avgDom} days to sell on average, and pricing above the comp midpoint typically extends that.`
+      : Math.abs(_gap) > c.sweetLow * 0.1
+        ? ` Priced this far below the comp range, the home would likely draw offers well inside the ${avgDom}-day market average — which is itself a reason to double-check the figure.`
+        : ` Homes in this market take about ${avgDom} days to sell on average.`) +
+    ` ` +
     `If held as a rental instead, the property should draw ${_fmtPrice(r.rentLow)}–${_fmtPrice(r.rentHigh)} per month and take about ${r.daysToRent} days to lease.`;
   doc.setFont('helvetica','normal'); doc.setFontSize(9.2);
   doc.setTextColor(...DARK);
@@ -8287,6 +8402,17 @@ async function downloadPaReport() {
   _arrow('Pricing.', c.verdict ? c.verdict.split('.')[0] + '.' : 'Review comp data before adjusting.');
   _arrow('Rental option.', r.mortgageClause.split('.')[0] + '.');
   _arrow('Next step.', 'Review these comps with your agent before making any listing changes.');
+
+  // ── Quick Reference (last, so it can break cleanly) ──
+  const qrRows = d.qr.map(q => [q.cat, q.finding, q.action]);
+  // Keep the whole table on one page when it fits — avoids orphaning one row
+  const qrEst = qrRows.length * 9 + 20;
+  if (y + qrEst > PH - 16 && qrEst < PH - 50) addPage();
+  _section('Quick-Reference Summary');
+  _table(['Category', 'Finding', 'Recommended Action'], qrRows, [42, 64, BW - 106]);
+
+  // ── Full disclaimer, once, at the very end ──
+  _disclaimer();
 
   const slug = d.address.replace(/[^a-z0-9]+/gi, '_').substring(0, 40);
   doc.save(slug + '_Lanvivo_Report.pdf');
