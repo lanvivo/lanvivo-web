@@ -1979,6 +1979,10 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
               <input type="number" id="pa-sqft" placeholder="1,820" min="0">
             </div>
             <div class="form-field">
+              <label>Days on Market <i class="info-tip">?<span class="tip-text">How many days has this property been listed? Check Zillow or the MLS. Leave blank if just listed.</span></i></label>
+              <input type="number" id="pa-dom" placeholder="0" min="0">
+            </div>
+            <div class="form-field">
               <label>Monthly PITI <i class="info-tip">?<span class="tip-text">Principal, interest, taxes, insurance. Used to generate a mortgage-aware rental strategy clause.</span></i></label>
               <div class="input-number"><span class="input-prefix">$</span><input type="number" id="pa-piti" placeholder="1,750 (optional)" min="0"></div>
             </div>
@@ -7521,7 +7525,13 @@ function _fmtPrice(n) {
 }
 
 function _analyzeComps(listPrice, comps, propSqft) {
-  const priced = comps.filter(c => c.price > 0);
+  let priced = comps.filter(c => c.price > 0);
+  // Sqft similarity filter: keep comps within ±55% of subject sqft when we have enough
+  if (propSqft && priced.length >= 4) {
+    const sqftMin = propSqft * 0.45, sqftMax = propSqft * 1.65;
+    const sqftFiltered = priced.filter(c => !c.squareFootage || (c.squareFootage >= sqftMin && c.squareFootage <= sqftMax));
+    if (sqftFiltered.length >= 3) priced = sqftFiltered; // only apply if we keep ≥3 comps
+  }
   if (!priced.length) return { sweetLow:0, sweetHigh:0, avgPrice:0, ppsf_low:0, ppsf_high:0, verdict:'Not enough comparable sales to compute a price range.' };
   const prices = priced.map(c => c.price).sort((a,b) => a-b);
   const avg = prices.reduce((s,v)=>s+v,0) / prices.length;
@@ -7624,6 +7634,7 @@ async function runPropertyAnalysis(demo = false) {
   const beds     = parseInt(document.getElementById('pa-beds').value) || null;
   const baths    = parseFloat(document.getElementById('pa-baths').value) || null;
   const sqft     = parseInt(document.getElementById('pa-sqft').value) || null;
+  const domInput = parseInt(document.getElementById('pa-dom')?.value) || null;
 
 
   if (!demo) {
@@ -7655,10 +7666,21 @@ async function runPropertyAnalysis(demo = false) {
     const usedBeds     = beds  || raw.prop?.bedrooms  || null;
     const usedBaths    = baths || raw.prop?.bathrooms || null;
     const usedSqft     = sqft  || raw.prop?.squareFootage || null;
-    const dom          = raw.active?.daysOnMarket || raw.prop?.daysOnMarket || (demo ? 118 : 0);
-    const agent        = raw.active?.listingAgent || 'N/A';
+    // DOM: user input takes priority, then API, then 0
+    const dom = domInput !== null ? domInput
+               : (raw.active?.daysOnMarket || raw.prop?.daysOnMarket || (demo ? 118 : 0));
+    const agent        = raw.active?.listingAgent || raw.prop?.listingAgent || 'N/A';
     const yearBuilt    = raw.prop?.yearBuilt || null;
     const lotSize      = raw.prop?.lotSize || null;
+    // New fields from edge function
+    const avm          = raw.saleAvm?.price || null;
+    const avmLow       = raw.saleAvm?.priceLow || null;
+    const avmHigh      = raw.saleAvm?.priceHigh || null;
+    const taxAnnual    = raw.prop?.propertyTaxes?.[0]?.total
+                      || raw.prop?.taxAnnualAmount || null;
+    const hoaFee       = raw.prop?.hoa?.fee || raw.prop?.hoaFee || null;
+    const priceHistory = (raw.prop?.history || raw.prop?.priceHistory || []).slice(0, 5);
+    const zestimate    = raw.active?.zestimate || null;
 
     const compA  = _analyzeComps(usedPrice, raw.saleComps || [], usedSqft);
     compA.avgDomSale = Math.round(raw.market?.saleData?.averageDaysOnMarket || 45);
@@ -7669,6 +7691,7 @@ async function runPropertyAnalysis(demo = false) {
     _paData = {
       address: usedAddress, price: usedPrice, dom, agent,
       beds: usedBeds, baths: usedBaths, sqft: usedSqft, yearBuilt, lotSize,
+      avm, avmLow, avmHigh, taxAnnual, hoaFee, priceHistory, zestimate,
       comp: compA, rental: rentalA, recs, qr,
       saleComps: raw.saleComps || [], rentalComps: raw.rentalComps || [],
       date: new Date().toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'})
@@ -7716,8 +7739,12 @@ function renderPaResults(d) {
   document.getElementById('pa-results').innerHTML = `
     <!-- Metrics strip -->
     <div class="pa-metrics">
-      <div class="pa-metric"><div class="pa-metric-label">List Price</div><div class="pa-metric-value">${_fmtPrice(d.price)}</div></div>
-      <div class="pa-metric"><div class="pa-metric-label">Days on Market</div><div class="pa-metric-value">${d.dom}+ days</div></div>
+      <div class="pa-metric">
+        <div class="pa-metric-label">List Price</div>
+        <div class="pa-metric-value">${_fmtPrice(d.price)}</div>
+        ${d.avm ? `<div style="font-size:10px;color:var(--muted);margin-top:2px">AVM: ${_fmtPrice(d.avm)}</div>` : ''}
+      </div>
+      <div class="pa-metric"><div class="pa-metric-label">Days on Market</div><div class="pa-metric-value">${d.dom > 0 ? d.dom + ' days' : 'Just listed'}</div></div>
       <div class="pa-metric"><div class="pa-metric-label">Comp Sweet Spot</div><div class="pa-metric-value">${_fmtPrice(c.sweetLow)}–${_fmtPrice(c.sweetHigh)}</div></div>
       <div class="pa-metric"><div class="pa-metric-label">Est. Monthly Rent</div><div class="pa-metric-value">${_fmtPrice(r.rentLow)}–${_fmtPrice(r.rentHigh)}/mo</div></div>
     </div>
@@ -7729,12 +7756,24 @@ function renderPaResults(d) {
         <div class="pa-section-title"><span class="pa-section-num">01</span><h4>Subject Property</h4></div>
         <div class="pa-stat-row">
           <div class="pa-stat"><div class="pa-stat-label">Address</div><div class="pa-stat-value" style="font-size:0.9rem">${d.address}</div></div>
-          <div class="pa-stat"><div class="pa-stat-label">Listing Agent</div><div class="pa-stat-value" style="font-size:0.9rem">${d.agent}</div></div>
+          ${d.agent && d.agent !== 'N/A' ? `<div class="pa-stat"><div class="pa-stat-label">Listing Agent</div><div class="pa-stat-value" style="font-size:0.9rem">${d.agent}</div></div>` : ''}
           ${d.beds ? `<div class="pa-stat"><div class="pa-stat-label">Beds / Baths</div><div class="pa-stat-value">${d.beds} BD / ${d.baths} BA</div></div>` : ''}
           ${d.sqft ? `<div class="pa-stat"><div class="pa-stat-label">Sq Ft</div><div class="pa-stat-value">${d.sqft.toLocaleString()}</div></div>` : ''}
           ${ppsf ? `<div class="pa-stat"><div class="pa-stat-label">Price / Sqft</div><div class="pa-stat-value">$${ppsf}</div></div>` : ''}
           ${d.yearBuilt ? `<div class="pa-stat"><div class="pa-stat-label">Year Built</div><div class="pa-stat-value">${d.yearBuilt}</div></div>` : ''}
+          ${d.taxAnnual ? `<div class="pa-stat"><div class="pa-stat-label">Annual Tax</div><div class="pa-stat-value">${_fmtPrice(d.taxAnnual)}/yr</div></div>` : ''}
+          ${d.hoaFee ? `<div class="pa-stat"><div class="pa-stat-label">HOA Fee</div><div class="pa-stat-value">${_fmtPrice(d.hoaFee)}/mo</div></div>` : ''}
+          ${d.avm ? `<div class="pa-stat"><div class="pa-stat-label">RentCast AVM</div><div class="pa-stat-value">${_fmtPrice(d.avm)}${d.avmLow ? ` <span style="font-size:11px;color:var(--muted)">(${_fmtPrice(d.avmLow)}–${_fmtPrice(d.avmHigh)})</span>` : ''}</div></div>` : ''}
         </div>
+        ${d.priceHistory && d.priceHistory.length ? `
+        <div style="margin-top:12px">
+          <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Price History</div>
+          <table class="pa-table" style="font-size:12px">
+            <thead><tr><th>Date</th><th>Event</th><th>Price</th></tr></thead>
+            <tbody>${d.priceHistory.map(h => `<tr><td>${(h.date||'').slice(0,10)}</td><td>${h.event||h.type||'—'}</td><td>${_fmtPrice(h.price||h.amount)}</td></tr>`).join('')}</tbody>
+          </table>
+        </div>` : ''}
+
       </div>
 
       <!-- 02 Comparable Sales -->
@@ -7748,7 +7787,13 @@ function renderPaResults(d) {
       <!-- 03 Rental Market -->
       <div class="pa-section">
         <div class="pa-section-title"><span class="pa-section-num">03</span><h4>Rental Market &amp; Days to Rent</h4></div>
-        ${rentalRows ? `<table class="pa-table"><thead><tr><th>Address</th><th>Beds/BA</th><th>Sqft</th><th>Monthly Rent</th><th>Status</th></tr></thead><tbody>${rentalRows}</tbody></table>` : '<p style="font-size:12px;color:var(--muted)">No active rental listings found nearby.</p>'}
+        ${rentalRows
+          ? `<table class="pa-table"><thead><tr><th>Address</th><th>Beds/BA</th><th>Sqft</th><th>Monthly Rent</th><th>Status</th></tr></thead><tbody>${rentalRows}</tbody></table>`
+          : `<div style="font-size:12px;color:var(--muted);padding:10px 12px;background:rgba(200,148,42,0.07);border-left:3px solid var(--gold);border-radius:2px;line-height:1.6">
+               <strong style="color:var(--ink)">No active rental listings found within 2 miles.</strong><br>
+               Rent estimates below are based on RentCast market-level AVM data for the zip code, not individual property comps. Confidence is moderate — treat as a range, not a point estimate.
+             </div>`
+        }
         <div class="pa-stat-row" style="margin-top:10px">
           <div class="pa-stat"><div class="pa-stat-label">Estimated Rent Range</div><div class="pa-stat-value">${_fmtPrice(r.rentLow)}–${_fmtPrice(r.rentHigh)}/mo</div></div>
           <div class="pa-stat"><div class="pa-stat-label">Market Temp</div><div class="pa-stat-value">${r.marketTemp}</div></div>
@@ -7808,7 +7853,7 @@ async function downloadPaReport() {
   const DARK   = [ 38,  42,  58];
 
   const doc = new jsPDF({ unit:'mm', format:'a4' });
-  let page = 1, y = 0;
+  let page = 1, y = 0, secNum = 0;
 
   // ── Address normalisation ─────────────────────────────────────────────────
   d.address = d.address
@@ -7828,14 +7873,18 @@ async function downloadPaReport() {
     d.address = d.address.replace(new RegExp('\\b' + full + '\\b', 'gi'), abbr);
   });
 
-  // ── Lot-size helper (RentCast returns sq ft; convert if > 200) ────────────
+  // ── Lot-size helper (RentCast returns sq ft; >200 = convert to acres) ─────
   function _lotSize(v) {
-    if (!v) return null;
-    if (v > 200) return (v / 43560).toFixed(2) + ' acres';
-    return v + ' acres';
+    if (!v || isNaN(v)) return null;
+    const n = parseFloat(v);
+    if (n <= 0) return null;
+    // RentCast often returns sq ft (large integers); anything over 200 is sq ft
+    if (n > 200) return (n / 43560).toFixed(2) + ' acres';
+    return n.toFixed(2) + ' acres';
   }
 
-  const avgDom = Math.round(c.avgDomSale || 45);
+  // Always round DOM average — API sometimes returns a float
+  const avgDom = Math.round(parseFloat(c.avgDomSale) || 45);
 
   // ── Page helpers ──────────────────────────────────────────────────────────
   function addPage() { doc.addPage(); page++; _drawFooter(); y = 26; }
@@ -7857,14 +7906,19 @@ async function downloadPaReport() {
 
   // ── Header (logo left · report label right · gold rule) ──────────────────
   function _drawHeader() {
+    // Coin seal
     _seal(LM + 5.5, 11, 5.5);
+    // "Lanvivo" wordmark — capital L, single navy color (matches reference)
+    const lx = LM + 14.5;
     doc.setFont('helvetica','bold'); doc.setFontSize(17);
     doc.setTextColor(...DEEP);
-    const lx = LM + 14.5;
-    doc.text('Lan', lx, 12.5);
-    doc.setTextColor(...GOLD);
-    doc.text('vivo', lx + doc.getTextWidth('Lan'), 12.5);
+    doc.text('Lanvivo', lx, 12);
+    // Tagline below wordmark
+    doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
+    doc.setTextColor(...GRAY);
+    doc.text('LAND THAT LIVES FOR YOU', lx, 16.5);
 
+    // Report label right-aligned
     doc.setFont('helvetica','bold'); doc.setFontSize(9);
     doc.setTextColor(...DEEP);
     doc.text('Real Estate Analysis Report', RM, 9, {align:'right'});
@@ -7872,9 +7926,10 @@ async function downloadPaReport() {
     doc.setTextColor(...GRAY);
     doc.text('Generated ' + d.date, RM, 14, {align:'right'});
 
+    // Gold rule
     doc.setDrawColor(...GOLD); doc.setLineWidth(0.4);
-    doc.line(LM, 19, RM, 19);
-    y = 28;
+    doc.line(LM, 20, RM, 20);
+    y = 29;
   }
 
   // ── Footer ────────────────────────────────────────────────────────────────
@@ -7948,12 +8003,14 @@ async function downloadPaReport() {
     y += ch + 9;
   }
 
-  // ── Section heading (small-caps style, gold underline) ────────────────────
+  // ── Section heading (numbered, gold underline) ────────────────────────────
   function _section(title) {
     checkY(16);
+    secNum++;
+    const prefix = String(secNum).padStart(2, '0') + '  ';
     doc.setFont('helvetica','bold'); doc.setFontSize(9.5);
     doc.setTextColor(...DEEP);
-    doc.text(title.toUpperCase(), LM, y);
+    doc.text(prefix + title.toUpperCase(), LM, y);
     y += 3.5;
     doc.setDrawColor(...GOLD); doc.setLineWidth(0.4);
     doc.line(LM, y, RM, y);
@@ -8057,19 +8114,22 @@ async function downloadPaReport() {
     y += bh + 4;
   }
 
-  // ── Arrow insight item ────────────────────────────────────────────────────
+  // ── Arrow insight item (drawn triangle — avoids jsPDF Unicode encoding bug) ─
   function _arrow(boldText, body) {
-    checkY(10);
-    const ax = LM, aw = 5;
-    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...GOLD);
-    doc.text('→', ax, y);
-    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...DEEP);
-    doc.text(boldText, ax + aw, y);
+    checkY(12);
+    const ax = LM;
+    // Draw gold right-pointing triangle (replaces → which jsPDF mangles)
+    const tw = 2.8, th = 3.5;
+    doc.setFillColor(...GOLD);
+    doc.lines([[tw, th / 2], [-tw, th / 2]], ax, y - th / 2 + 1.5, [1, 1], 'F', true);
+    const textStart = ax + tw + 2.5;
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...DEEP);
+    doc.text(boldText, textStart, y);
     const bw = doc.getTextWidth(boldText) + 1.5;
-    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...DARK);
-    const bl = doc.splitTextToSize(body, BW - aw - bw);
-    bl.forEach((l, li) => doc.text(l, ax + aw + bw, y + li * 4.8));
-    y += bl.length * 4.8 + 3;
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...DARK);
+    const bl = doc.splitTextToSize(body, BW - tw - 2.5 - bw);
+    bl.forEach((l, li) => doc.text(l, textStart + bw, y + li * 4.8));
+    y += bl.length * 4.8 + 4;
   }
 
   // ══ BUILD ══════════════════════════════════════════════════════════════════
@@ -8106,8 +8166,11 @@ async function downloadPaReport() {
     lotFmt      ? ['Lot Size',         lotFmt] : null,
     d.yearBuilt ? ['Year Built',       String(d.yearBuilt)] : null,
     (d.agent && d.agent !== 'N/A') ? ['Listing Agent', d.agent] : null,
-    ['Days on Market',     d.dom > 0 ? d.dom + ' days' : 'Just listed'],
-    ['Market Avg DOM',     avgDom + ' days'],
+    ['Days on Market',          d.dom > 0 ? d.dom + ' days' : 'Just listed'],
+    d.avm ? ['RentCast AVM', _fmtPrice(d.avm) + (d.avmLow ? ` (${_fmtPrice(d.avmLow)}–${_fmtPrice(d.avmHigh)})` : '')] : null,
+    d.taxAnnual ? ['Annual Tax', _fmtPrice(d.taxAnnual) + '/yr'] : null,
+    d.hoaFee    ? ['HOA Fee',    _fmtPrice(d.hoaFee) + '/mo']    : null,
+    ['Market Avg Days to Sell', avgDom + ' days avg'],
   ].filter(Boolean);
   _table(['Detail', 'Information'], propRows, [62, BW - 62]);
 
@@ -8165,8 +8228,7 @@ async function downloadPaReport() {
   );
 
   // ── Key takeaways (arrow style matching cash-flow PDF) ──
-  checkY(20);
-  y += 2;
+  y += 5;
   _arrow('Pricing:', c.verdict ? c.verdict.split('.')[0] + '.' : 'Review comp data before adjusting.');
   _arrow('Rental option:', r.mortgageClause.split('.')[0] + '.');
   _arrow('Next step:', 'Run a full property analysis with your agent before making any listing changes.');
