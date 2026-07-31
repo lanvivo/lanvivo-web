@@ -7804,6 +7804,11 @@ async function downloadPaReport() {
   const doc = new jsPDF({ unit:'mm', format:'a4' });
   let page = 1;
 
+  // Normalise address — title-case + ensure space before zip
+  d.address = d.address
+    .replace(/([a-zA-Z])(\d{5})/, '$1 $2')            // city72032 → city 72032
+    .replace(/\b([a-z])/g, ch => ch.toUpperCase());   // title-case
+
   function addPage() {
     doc.addPage();
     page++;
@@ -7824,9 +7829,9 @@ async function downloadPaReport() {
     doc.setFillColor(...GOLD);
     [[cx, cy-r],[cx+r, cy],[cx, cy+r],[cx-r, cy]].forEach(([dx,dy]) => doc.circle(dx, dy, Math.max(0.5, r*0.09), 'F'));
     doc.setFont('helvetica','bolditalic');
-    doc.setFontSize(r * 4.5);
+    doc.setFontSize(r * 3.6);
     doc.setTextColor(...GOLD);
-    doc.text('L', cx, cy + r*1.5, {align:'center', baseline:'middle'});
+    doc.text('L', cx, cy + r * 0.35, {align:'center', baseline:'middle'});
   }
 
   // ── Header (page 1) ──
@@ -7947,12 +7952,21 @@ async function downloadPaReport() {
     y += bh + 5;
   }
 
-  // ── Simple table ──
+  // ── Simple table (with per-cell text wrapping) ──
   function simpleTable(headers, rows, colW) {
-    const rh = 6.5, hh = 7.5;
-    const needed = hh + rows.length * rh + 4;
-    checkY(needed);
+    const hh = 7.5, lineH = 4, cellPad = 4;
+    // Pre-wrap all cells
+    const wrappedRows = rows.map(row =>
+      row.map((cell, ci) => {
+        doc.setFont('helvetica','normal'); doc.setFontSize(8);
+        return doc.splitTextToSize(String(cell || ''), colW[ci] - cellPad);
+      })
+    );
+    const rowHeights = wrappedRows.map(row =>
+      Math.max(1, Math.max(...row.map(c => c.length))) * lineH + 3
+    );
     // Header
+    checkY(hh + rowHeights[0] + 4);
     doc.setFillColor(...DEEP);
     doc.rect(LM, y, BW, hh, 'F');
     let xx = LM;
@@ -7963,18 +7977,18 @@ async function downloadPaReport() {
       xx += colW[i];
     });
     y += hh;
-    rows.forEach((row, ri) => {
+    wrappedRows.forEach((row, ri) => {
+      const rh = rowHeights[ri];
       if (y + rh > PH - 18) { addPage(); y = 30; }
       doc.setFillColor(ri%2===0 ? 242 : 255, ri%2===0 ? 238 : 255, ri%2===0 ? 228 : 255);
       doc.rect(LM, y, BW, rh, 'F');
       doc.setDrawColor(...RULE); doc.setLineWidth(0.1);
       doc.line(LM, y+rh, LM+BW, y+rh);
       xx = LM;
-      row.forEach((cell, ci) => {
+      row.forEach((cellLines, ci) => {
         doc.setFont('helvetica','normal'); doc.setFontSize(8);
         doc.setTextColor(...MIDNIGHT);
-        const txt = String(cell || '').substring(0, 30);
-        doc.text(txt, xx + 2, y + 4.5);
+        cellLines.forEach((line, li) => doc.text(line, xx + 2, y + 4 + li * lineH));
         xx += colW[ci];
       });
       y += rh;
