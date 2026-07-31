@@ -7608,7 +7608,7 @@ function _buildQuickRef(listPrice, compA, rentalA, dom) {
     { cat:'List Price', finding:`${_fmtPrice(listPrice)} (${dom}+ DOM)`, action: compA.sweetLow && listPrice > compA.sweetHigh ? `Reduce to ${_fmtPrice(compA.sweetLow)}–${_fmtPrice(compA.sweetHigh)}` : 'Hold; focus on marketing' },
     { cat:'Comp Range', finding:`${_fmtPrice(compA.sweetLow)} to ${_fmtPrice(compA.sweetHigh)}`, action:'Use as anchor in all negotiations' },
     { cat:'$/Sqft vs. Comps', finding:`$${compA.ppsf_low}–$${compA.ppsf_high}/sqft comps`, action: compA.ppsf_high ? (listPrice / (compA.ppsf_low + compA.ppsf_high) * 2 > 1.05 ? 'Above range — price is a drag' : 'Within range') : 'See comp table' },
-    { cat:'Days on Market', finding:`${dom} days (avg: ${compA.avgDomSale || 45})`, action: dom > (compA.avgDomSale || 45) * 1.2 ? 'Relist + refresh photos' : 'Monitor closely' },
+    { cat:'Days on Market', finding:`${dom} days (avg: ${Math.round(compA.avgDomSale || 45)})`, action: dom > (compA.avgDomSale || 45) * 1.2 ? 'Relist + refresh photos' : 'Monitor closely' },
     { cat:'Rental Estimate', finding:`${_fmtPrice(rentalA.rentLow)}–${_fmtPrice(rentalA.rentHigh)}/mo`, action:`Est. ${rentalA.daysToRent} days to rent (${rentalA.marketTemp} market)` },
     { cat:'Market Temp', finding:`${rentalA.marketTemp} rental market`, action:`Vacancy ~${rentalA.marketTemp === 'Hot' ? '<4%' : rentalA.marketTemp === 'Balanced' ? '4–7%' : '>7%'}` },
     { cat:'Priority #1', finding:'Pricing and presentation', action:'Photography + price realignment' },
@@ -7661,7 +7661,7 @@ async function runPropertyAnalysis(demo = false) {
     const lotSize      = raw.prop?.lotSize || null;
 
     const compA  = _analyzeComps(usedPrice, raw.saleComps || [], usedSqft);
-    compA.avgDomSale = raw.market?.saleData?.averageDaysOnMarket || 45;
+    compA.avgDomSale = Math.round(raw.market?.saleData?.averageDaysOnMarket || 45);
     const rentalA = _analyzeRental(raw.rentalAvm, raw.market, raw.census, piti || (demo ? 1750 : null));
     const recs   = _generateRecs(usedPrice, compA, rentalA, dom, piti);
     const qr     = _buildQuickRef(usedPrice, compA, rentalA, dom);
@@ -7797,295 +7797,322 @@ async function downloadPaReport() {
   const c = d.comp, r = d.rental;
   const PW = 210, PH = 297;
   const LM = 16, RM = PW - 16, BW = PW - LM * 2;
-  const GOLD    = [200, 148, 42];
-  const DEEP    = [20,  32,  78];
-  const CREAM   = [252, 248, 240];
-  const SLATE   = [120, 130, 160];
-  const WHITE   = [255, 255, 255];
-  const RULE    = [220, 216, 200];
-  const DARK    = [30,  35,  60];
-  const LIGHT   = [248, 246, 238];
+
+  // ── Palette (matches cash-flow analyzer) ──────────────────────────────────
+  const GOLD   = [200, 148,  42];
+  const DEEP   = [ 20,  32,  78];
+  const WHITE  = [255, 255, 255];
+  const LGRAY  = [248, 248, 246];
+  const BORDER = [218, 214, 204];
+  const GRAY   = [130, 130, 130];
+  const DARK   = [ 38,  42,  58];
 
   const doc = new jsPDF({ unit:'mm', format:'a4' });
   let page = 1, y = 0;
 
-  // Normalise address
+  // ── Address normalisation ─────────────────────────────────────────────────
   d.address = d.address
     .replace(/([a-zA-Z])(\d{5})/, '$1 $2')
     .replace(/\b([a-z])/g, ch => ch.toUpperCase());
+  const _ST = {Alabama:'AL',Alaska:'AK',Arizona:'AZ',Arkansas:'AR',California:'CA',
+    Colorado:'CO',Connecticut:'CT',Delaware:'DE',Florida:'FL',Georgia:'GA',Hawaii:'HI',
+    Idaho:'ID',Illinois:'IL',Indiana:'IN',Iowa:'IA',Kansas:'KS',Kentucky:'KY',
+    Louisiana:'LA',Maine:'ME',Maryland:'MD',Massachusetts:'MA',Michigan:'MI',
+    Minnesota:'MN',Mississippi:'MS',Missouri:'MO',Montana:'MT',Nebraska:'NE',
+    Nevada:'NV','New Hampshire':'NH','New Jersey':'NJ','New Mexico':'NM','New York':'NY',
+    'North Carolina':'NC','North Dakota':'ND',Ohio:'OH',Oklahoma:'OK',Oregon:'OR',
+    Pennsylvania:'PA','Rhode Island':'RI','South Carolina':'SC','South Dakota':'SD',
+    Tennessee:'TN',Texas:'TX',Utah:'UT',Vermont:'VT',Virginia:'VA',Washington:'WA',
+    'West Virginia':'WV',Wisconsin:'WI',Wyoming:'WY'};
+  Object.entries(_ST).forEach(([full, abbr]) => {
+    d.address = d.address.replace(new RegExp('\\b' + full + '\\b', 'gi'), abbr);
+  });
 
-  function addPage() {
-    doc.addPage(); page++; drawFooter(); y = 28;
-  }
-  function checkY(needed) {
-    if (y + needed > PH - 22) addPage();
+  // ── Lot-size helper (RentCast returns sq ft; convert if > 200) ────────────
+  function _lotSize(v) {
+    if (!v) return null;
+    if (v > 200) return (v / 43560).toFixed(2) + ' acres';
+    return v + ' acres';
   }
 
-  // ── Coin seal ──────────────────────────────────────────────────────────────
-  function drawSeal(cx, cy, r) {
-    doc.setDrawColor(...GOLD); doc.setLineWidth(r * 0.1);
-    doc.circle(cx, cy, r, 'S');
-    doc.setDrawColor(...GOLD); doc.setLineWidth(r * 0.04);
-    doc.setGState(doc.GState({ opacity: 0.35 }));
-    doc.circle(cx, cy, r * 0.78, 'S');
-    doc.setGState(doc.GState({ opacity: 1 }));
+  const avgDom = Math.round(c.avgDomSale || 45);
+
+  // ── Page helpers ──────────────────────────────────────────────────────────
+  function addPage() { doc.addPage(); page++; _drawFooter(); y = 26; }
+  function checkY(n) { if (y + n > PH - 22) addPage(); }
+
+  // ── Coin seal ─────────────────────────────────────────────────────────────
+  function _seal(cx, cy, r) {
+    doc.setDrawColor(...GOLD); doc.setLineWidth(r * 0.10); doc.circle(cx, cy, r, 'S');
+    doc.setLineWidth(r * 0.04);
+    doc.setGState(doc.GState({opacity:0.35})); doc.circle(cx, cy, r * 0.78, 'S');
+    doc.setGState(doc.GState({opacity:1}));
     doc.setFillColor(...GOLD);
-    [[cx, cy - r],[cx + r, cy],[cx, cy + r],[cx - r, cy]]
-      .forEach(([dx, dy]) => doc.circle(dx, dy, Math.max(0.35, r * 0.08), 'F'));
-    doc.setFont('helvetica', 'bolditalic');
-    doc.setFontSize(r * 3.6);
+    [[cx,cy-r],[cx+r,cy],[cx,cy+r],[cx-r,cy]]
+      .forEach(([dx,dy]) => doc.circle(dx, dy, Math.max(0.35, r*0.08), 'F'));
+    doc.setFont('helvetica','bolditalic'); doc.setFontSize(r * 3.5);
     doc.setTextColor(...GOLD);
-    doc.text('L', cx, cy + r * 0.35, { align:'center', baseline:'middle' });
+    doc.text('L', cx, cy + r * 0.32, {align:'center', baseline:'middle'});
   }
 
-  // ── Header — white background ───────────────────────────────────────────────
-  function drawHeader() {
-    // Gold top border
-    doc.setDrawColor(...GOLD); doc.setLineWidth(0.8);
-    doc.line(LM, 7, RM, 7);
-
-    // Coin seal + wordmark
-    drawSeal(LM + 8, 19, 8.5);
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(22);
+  // ── Header (logo left · report label right · gold rule) ──────────────────
+  function _drawHeader() {
+    _seal(LM + 5.5, 11, 5.5);
+    doc.setFont('helvetica','bold'); doc.setFontSize(17);
     doc.setTextColor(...DEEP);
-    doc.text('lan', LM + 22, 18);
+    const lx = LM + 14.5;
+    doc.text('Lan', lx, 12.5);
     doc.setTextColor(...GOLD);
-    doc.text('vivo', LM + 22 + doc.getTextWidth('lan'), 18);
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(7);
-    doc.setTextColor(...SLATE);
-    doc.text('LAND THAT LIVES FOR YOU', LM + 22, 23.5);
+    doc.text('vivo', lx + doc.getTextWidth('Lan'), 12.5);
 
-    // Gold separator
-    doc.setDrawColor(...GOLD); doc.setLineWidth(0.25);
-    doc.line(LM, 30, RM, 30);
-
-    // Report title
-    doc.setFont('helvetica', 'bolditalic'); doc.setFontSize(24);
-    doc.setTextColor(...GOLD);
-    doc.text('Real Estate Analysis Report', LM, 43);
-
-    // Address
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(13);
+    doc.setFont('helvetica','bold'); doc.setFontSize(9);
     doc.setTextColor(...DEEP);
-    doc.text(d.address, LM, 53);
+    doc.text('Real Estate Analysis Report', RM, 9, {align:'right'});
+    doc.setFont('helvetica','normal'); doc.setFontSize(8);
+    doc.setTextColor(...GRAY);
+    doc.text('Generated ' + d.date, RM, 14, {align:'right'});
 
-    // Prepared by
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
-    doc.setTextColor(...SLATE);
-    doc.text('Prepared by lanvivo  ·  ' + d.date, LM, 60);
+    doc.setDrawColor(...GOLD); doc.setLineWidth(0.4);
+    doc.line(LM, 19, RM, 19);
+    y = 28;
   }
 
-  // ── Metrics strip ──────────────────────────────────────────────────────────
-  function drawMetrics() {
-    const MY = 68, MH = 24;
-    doc.setFillColor(...DEEP);
-    doc.rect(0, MY, PW, MH, 'F');
-    const cols = [
-      ['CURRENT LIST PRICE',  _fmtPrice(d.price)],
-      ['DAYS ON MARKET',      d.dom + '+ (avg: ' + (c.avgDomSale || 45) + ' days)'],
-      ['COMP SWEET SPOT',     _fmtPrice(c.sweetLow) + '–' + _fmtPrice(c.sweetHigh)],
-      ['EST. MONTHLY RENTAL', _fmtPrice(r.rentLow) + '–' + _fmtPrice(r.rentHigh) + '/mo'],
-    ];
-    const cw = PW / 4;
-    cols.forEach(([label, val], i) => {
-      const cx = i * cw + cw / 2;
-      if (i > 0) {
-        doc.setDrawColor(40, 55, 110); doc.setLineWidth(0.15);
-        doc.line(i * cw, MY + 3, i * cw, MY + MH - 3);
+  // ── Footer ────────────────────────────────────────────────────────────────
+  function _drawFooter() {
+    doc.setDrawColor(...BORDER); doc.setLineWidth(0.2);
+    doc.line(LM, PH - 14, RM, PH - 14);
+    doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
+    doc.setTextColor(...GRAY);
+    doc.text('For informational purposes only. Data from RentCast and US Census Bureau. Not professional real estate advice. Consult a licensed professional for binding valuations.', LM, PH - 10);
+    doc.text('Generated by Lanvivo  ·  lanvivo.com  ·  hello@lanvivo.com  ·  ' + d.date, LM, PH - 6);
+    doc.text('Page ' + page, RM, PH - 6, {align:'right'});
+  }
+
+  // ── Large property headline ───────────────────────────────────────────────
+  function _headline() {
+    // Property name — large, clean
+    doc.setFont('helvetica','bold'); doc.setFontSize(26);
+    doc.setTextColor(...DEEP);
+    const nameLines = doc.splitTextToSize(d.address, BW);
+    nameLines.forEach(l => { doc.text(l, LM, y); y += 10; });
+
+    // Subline
+    const sub = [
+      _fmtPrice(d.price),
+      d.beds ? d.beds + ' BD / ' + d.baths + ' BA' : null,
+      d.sqft ? d.sqft.toLocaleString() + ' sqft' : null,
+      d.yearBuilt ? 'Built ' + d.yearBuilt : null,
+    ].filter(Boolean).join('  ·  ');
+    doc.setFont('helvetica','normal'); doc.setFontSize(10);
+    doc.setTextColor(...GRAY);
+    doc.text(sub, LM, y); y += 9;
+  }
+
+  // ── Gold-bordered summary box ─────────────────────────────────────────────
+  function _summaryBox(txt) {
+    doc.setFont('helvetica','bold'); doc.setFontSize(10.5);
+    const lines = doc.splitTextToSize(txt, BW - 12);
+    const bh = lines.length * 5.5 + 10;
+    checkY(bh + 6);
+    doc.setFillColor(251, 248, 241); doc.setDrawColor(225, 210, 175); doc.setLineWidth(0.15);
+    doc.rect(LM, y, BW, bh, 'FD');
+    doc.setFillColor(...GOLD); doc.rect(LM, y, 3, bh, 'F');
+    doc.setTextColor(...DARK);
+    lines.forEach((l, i) => doc.text(l, LM + 8, y + 7 + i * 5.5));
+    y += bh + 8;
+  }
+
+  // ── 4 KPI cards ───────────────────────────────────────────────────────────
+  function _kpiCards(cards) {
+    const cw = BW / cards.length, ch = 24, gap = 2;
+    cards.forEach(([label, value, sub], i) => {
+      const cx = LM + i * cw;
+      doc.setFillColor(...WHITE); doc.setDrawColor(...BORDER); doc.setLineWidth(0.25);
+      doc.rect(cx, y, cw - gap, ch, 'FD');
+
+      doc.setFont('helvetica','bold'); doc.setFontSize(6.5);
+      doc.setTextColor(...GRAY);
+      doc.text(label, cx + (cw - gap)/2, y + 5.5, {align:'center'});
+
+      doc.setFont('helvetica','bold'); doc.setFontSize(11.5);
+      doc.setTextColor(...DEEP);
+      const vl = doc.splitTextToSize(value, cw - gap - 6);
+      vl.forEach((l, li) => doc.text(l, cx + (cw - gap)/2, y + 13 + li * 5, {align:'center'}));
+
+      if (sub) {
+        doc.setFont('helvetica','normal'); doc.setFontSize(7);
+        doc.setTextColor(...GRAY);
+        doc.text(sub, cx + (cw - gap)/2, y + ch - 3, {align:'center'});
       }
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(6.5);
-      doc.setTextColor(...SLATE);
-      doc.text(label, cx, MY + 7, { align:'center' });
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5);
-      doc.setTextColor(240, 210, 128);
-      const lines = doc.splitTextToSize(val, cw - 6);
-      lines.forEach((l, li) => doc.text(l, cx, MY + 14 + li * 5, { align:'center' }));
     });
-    y = MY + MH + 12;
+    y += ch + 9;
   }
 
-  // ── Footer ─────────────────────────────────────────────────────────────────
-  function drawFooter() {
-    doc.setDrawColor(...GOLD); doc.setLineWidth(0.3);
-    doc.line(LM, PH - 11, RM, PH - 11);
-    drawSeal(LM + 4, PH - 6.5, 3.8);
-    const wx = LM + 11;
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
+  // ── Section heading (small-caps style, gold underline) ────────────────────
+  function _section(title) {
+    checkY(16);
+    doc.setFont('helvetica','bold'); doc.setFontSize(9.5);
     doc.setTextColor(...DEEP);
-    doc.text('lan', wx, PH - 5.5);
-    doc.setTextColor(...GOLD);
-    doc.text('vivo', wx + doc.getTextWidth('lan'), PH - 5.5);
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5);
-    doc.setTextColor(...SLATE);
-    doc.text('  ·  Land that lives for you.  ·  lanvivo.com', wx + doc.getTextWidth('lanvivo'), PH - 5.5);
-    doc.text('Page ' + page, RM, PH - 5.5, { align:'right' });
-  }
-
-  // ── Section heading ────────────────────────────────────────────────────────
-  function sectionHeading(num, title) {
-    checkY(18);
-    const numW = LM;
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
-    doc.setTextColor(...GOLD);
-    doc.text(num, LM, y + 1);
-    const nw = doc.getTextWidth(num) + 2;
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
-    doc.setTextColor(...DEEP);
-    doc.text(title.toUpperCase(), LM + nw, y + 1);
-    y += 6;
+    doc.text(title.toUpperCase(), LM, y);
+    y += 3.5;
     doc.setDrawColor(...GOLD); doc.setLineWidth(0.4);
     doc.line(LM, y, RM, y);
-    y += 8;
-  }
-
-  // ── Sub-heading ────────────────────────────────────────────────────────────
-  function subHeading(txt) {
-    checkY(12);
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
-    doc.setTextColor(...GOLD);
-    doc.text(txt, LM, y);
     y += 7;
   }
 
-  // ── Body text ──────────────────────────────────────────────────────────────
-  function bodyText(txt, size = 9.5, color = DARK) {
-    checkY(8);
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(size);
-    doc.setTextColor(...color);
-    doc.splitTextToSize(txt, BW).forEach(line => {
-      checkY(5); doc.text(line, LM, y); y += 5;
-    });
-    y += 2;
-  }
-
-  // ── Verdict box ────────────────────────────────────────────────────────────
-  function verdictBox(txt, italic = true) {
-    doc.setFont('helvetica', italic ? 'italic' : 'normal'); doc.setFontSize(9.5);
-    const lines = doc.splitTextToSize(txt, BW - 10);
-    const bh = lines.length * 5 + 9;
-    checkY(bh + 5);
-    doc.setFillColor(...LIGHT); doc.setDrawColor(210, 200, 180); doc.setLineWidth(0.15);
-    doc.rect(LM, y, BW, bh, 'FD');
-    doc.setFillColor(...GOLD); doc.rect(LM, y, 2.2, bh, 'F');
-    doc.setFont('helvetica', italic ? 'italic' : 'normal'); doc.setFontSize(9.5);
-    doc.setTextColor(...DARK);
-    lines.forEach((line, i) => doc.text(line, LM + 7, y + 6 + i * 5));
-    y += bh + 6;
-  }
-
-  // ── Pull quote ─────────────────────────────────────────────────────────────
-  function pullQuote(txt) {
-    doc.setFont('helvetica', 'bolditalic'); doc.setFontSize(11);
-    const lines = doc.splitTextToSize(txt, BW - 14);
-    const bh = lines.length * 5.5 + 10;
-    checkY(bh + 5);
-    doc.setFillColor(238, 243, 255); doc.setDrawColor(...DEEP); doc.setLineWidth(0.15);
-    doc.rect(LM, y, BW, bh, 'FD');
-    doc.setFillColor(...GOLD); doc.rect(LM, y, 2.5, bh, 'F');
-    doc.setFont('helvetica', 'bolditalic'); doc.setFontSize(11);
-    doc.setTextColor(...DEEP);
-    lines.forEach((line, i) => doc.text(line, LM + 8, y + 7.5 + i * 5.5));
-    y += bh + 6;
-  }
-
-  // ── Table ──────────────────────────────────────────────────────────────────
-  // centerCols: array of column indices to center-align
-  function simpleTable(headers, rows, colW, centerCols = []) {
-    const hh = 8.5, lh = 4.5, pad = 4;
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+  // ── Data table ────────────────────────────────────────────────────────────
+  function _table(headers, rows, colW, centerCols = []) {
+    const hh = 8, lh = 4.5, pad = 3.5;
     const wrapped = rows.map(row =>
       row.map((cell, ci) => {
-        doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-        return doc.splitTextToSize(String(cell || ''), colW[ci] - pad);
+        doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
+        return doc.splitTextToSize(String(cell ?? ''), colW[ci] - pad);
       })
     );
-    const rh = wrapped.map(row => Math.max(1, Math.max(...row.map(c => c.length))) * lh + 5);
-
-    checkY(hh + rh[0] + 4);
+    const rowH = wrapped.map(row => Math.max(1, Math.max(...row.map(c => c.length))) * lh + 5);
+    checkY(hh + rowH[0] + 4);
 
     // Header row
-    doc.setFillColor(...DEEP);
-    doc.rect(LM, y, BW, hh, 'F');
+    doc.setFillColor(...DEEP); doc.rect(LM, y, BW, hh, 'F');
     let xx = LM;
     headers.forEach((h, i) => {
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5);
+      doc.setFont('helvetica','bold'); doc.setFontSize(8);
       doc.setTextColor(...WHITE);
-      const center = centerCols.includes(i);
-      doc.text(h, center ? xx + colW[i] / 2 : xx + 2.5, y + 5.8,
-               { align: center ? 'center' : 'left' });
+      const cx = centerCols.includes(i);
+      doc.text(h, cx ? xx + colW[i]/2 : xx + 2.5, y + 5.5, {align: cx ? 'center' : 'left'});
       xx += colW[i];
     });
     y += hh;
 
     wrapped.forEach((row, ri) => {
-      const rowH = rh[ri];
-      if (y + rowH > PH - 22) { addPage(); }
-      doc.setFillColor(...(ri % 2 === 0 ? LIGHT : WHITE));
-      doc.rect(LM, y, BW, rowH, 'F');
-      doc.setDrawColor(...RULE); doc.setLineWidth(0.1);
-      doc.line(LM, y + rowH, LM + BW, y + rowH);
+      const rh = rowH[ri];
+      if (y + rh > PH - 22) addPage();
+      doc.setFillColor(...(ri % 2 === 0 ? LGRAY : WHITE));
+      doc.rect(LM, y, BW, rh, 'F');
+      doc.setDrawColor(...BORDER); doc.setLineWidth(0.1);
+      doc.line(LM, y + rh, LM + BW, y + rh);
       xx = LM;
       row.forEach((cellLines, ci) => {
-        doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+        doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
         doc.setTextColor(...DARK);
-        const center = centerCols.includes(ci);
-        cellLines.forEach((line, li) =>
-          doc.text(line, center ? xx + colW[ci] / 2 : xx + 2.5, y + 4.5 + li * lh,
-                   { align: center ? 'center' : 'left' })
+        const cx = centerCols.includes(ci);
+        cellLines.forEach((l, li) =>
+          doc.text(l, cx ? xx + colW[ci]/2 : xx + 2.5, y + 4 + li * lh, {align: cx ? 'center' : 'left'})
         );
         xx += colW[ci];
       });
-      y += rowH;
+      y += rh;
     });
     y += 6;
   }
 
-  // ── Rec block ──────────────────────────────────────────────────────────────
-  function recBlock(num, title, detail) {
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5);
+  // ── Insight box (gold left bar, cream bg) ─────────────────────────────────
+  function _insight(txt, bold = false) {
+    doc.setFont('helvetica', bold ? 'bold' : 'italic'); doc.setFontSize(9.5);
+    const lines = doc.splitTextToSize(txt, BW - 12);
+    const bh = lines.length * 5 + 9;
+    checkY(bh + 5);
+    doc.setFillColor(251, 248, 241); doc.setDrawColor(225, 210, 175); doc.setLineWidth(0.15);
+    doc.rect(LM, y, BW, bh, 'FD');
+    doc.setFillColor(...GOLD); doc.rect(LM, y, 3, bh, 'F');
+    doc.setFont('helvetica', bold ? 'bold' : 'italic'); doc.setFontSize(9.5);
+    doc.setTextColor(...DARK);
+    lines.forEach((l, i) => doc.text(l, LM + 8, y + 6 + i * 5));
+    y += bh + 6;
+  }
+
+  // ── Pull quote (blue tint) ────────────────────────────────────────────────
+  function _pullQuote(txt) {
+    doc.setFont('helvetica','bolditalic'); doc.setFontSize(10.5);
+    const lines = doc.splitTextToSize(txt, BW - 14);
+    const bh = lines.length * 5.5 + 10;
+    checkY(bh + 5);
+    doc.setFillColor(237, 242, 252); doc.setDrawColor(195, 208, 232); doc.setLineWidth(0.15);
+    doc.rect(LM, y, BW, bh, 'FD');
+    doc.setFillColor(...GOLD); doc.rect(LM, y, 3, bh, 'F');
+    doc.setTextColor(...DEEP);
+    lines.forEach((l, i) => doc.text(l, LM + 8, y + 7.5 + i * 5.5));
+    y += bh + 6;
+  }
+
+  // ── Recommendation card ───────────────────────────────────────────────────
+  function _rec(num, title, detail) {
+    doc.setFont('helvetica','normal'); doc.setFontSize(9.5);
     const lines = doc.splitTextToSize(detail, BW - 12);
     const bh = lines.length * 5 + 16;
     checkY(bh + 4);
-    doc.setFillColor(...WHITE); doc.setDrawColor(...RULE); doc.setLineWidth(0.15);
+    doc.setFillColor(...WHITE); doc.setDrawColor(...BORDER); doc.setLineWidth(0.15);
     doc.rect(LM, y, BW, bh, 'FD');
-    doc.setFillColor(...GOLD); doc.rect(LM, y, 2.2, bh, 'F');
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
-    doc.setTextColor(...GOLD);
-    doc.text(num + '.', LM + 5.5, y + 7);
+    doc.setFillColor(...GOLD); doc.rect(LM, y, 3, bh, 'F');
+    // Number
+    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...GOLD);
+    doc.text(num + '.', LM + 6.5, y + 7);
     const nw = doc.getTextWidth(num + '.') + 2;
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
-    doc.setTextColor(...DEEP);
-    doc.text(title, LM + 5.5 + nw, y + 7);
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5);
-    doc.setTextColor(75, 82, 110);
-    lines.forEach((line, i) => doc.text(line, LM + 5.5, y + 13.5 + i * 5));
+    // Title
+    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...DEEP);
+    doc.text(title, LM + 6.5 + nw, y + 7);
+    // Body
+    doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(82, 90, 118);
+    lines.forEach((l, i) => doc.text(l, LM + 6.5, y + 13.5 + i * 5));
     y += bh + 4;
   }
 
-  // ══ BUILD ══════════════════════════════════════════════════════════════════
-  drawHeader();
-  drawMetrics();
-  drawFooter();
+  // ── Arrow insight item ────────────────────────────────────────────────────
+  function _arrow(boldText, body) {
+    checkY(10);
+    const ax = LM, aw = 5;
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...GOLD);
+    doc.text('→', ax, y);
+    doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(...DEEP);
+    doc.text(boldText, ax + aw, y);
+    const bw = doc.getTextWidth(boldText) + 1.5;
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...DARK);
+    const bl = doc.splitTextToSize(body, BW - aw - bw);
+    bl.forEach((l, li) => doc.text(l, ax + aw + bw, y + li * 4.8));
+    y += bl.length * 4.8 + 3;
+  }
 
-  // 01 Subject property
-  sectionHeading('01', 'Subject Property: Listing Overview');
+  // ══ BUILD ══════════════════════════════════════════════════════════════════
+  _drawHeader();
+  _drawFooter();
+
+  // ── Headline ──
+  _headline();
+
+  // ── Summary verdict ──
+  if (c.verdict) _summaryBox(c.verdict);
+
+  // ── KPI cards ──
+  _kpiCards([
+    ['LIST PRICE',         _fmtPrice(d.price),
+                           d.sqft ? '~$' + Math.round(d.price / d.sqft) + '/sqft' : ''],
+    ['DAYS ON MARKET',     d.dom + '+ days',
+                           'Market avg: ' + avgDom + ' days'],
+    ['COMP SWEET SPOT',    _fmtPrice(c.sweetLow) + '–' + _fmtPrice(c.sweetHigh),
+                           'Competitive range'],
+    ['EST. MONTHLY RENTAL', _fmtPrice(r.rentLow) + '–' + _fmtPrice(r.rentHigh) + '/mo',
+                            r.marketTemp + ' rental market'],
+  ]);
+
+  // ── 01 Subject Property ──
+  _section('Subject Property');
+  const lotFmt = _lotSize(d.lotSize);
   const propRows = [
     ['Address',            d.address],
     ['List Price',         _fmtPrice(d.price)],
-    d.sqft      ? ['Price Per Sq Ft',   '~$' + Math.round(d.price / d.sqft) + ' per sqft'] : null,
-    d.beds      ? ['Bedrooms / Baths',  d.beds + ' BD / ' + d.baths + ' BA'] : null,
-    d.sqft      ? ['Square Footage',    d.sqft.toLocaleString() + ' sqft'] : null,
-    d.lotSize   ? ['Lot Size',          '~' + d.lotSize + ' Acres'] : null,
-    d.yearBuilt ? ['Year Built',        String(d.yearBuilt)] : null,
+    d.sqft      ? ['Price Per Sq Ft',  '~$' + Math.round(d.price / d.sqft) + ' per sqft'] : null,
+    d.beds      ? ['Bedrooms / Baths', d.beds + ' BD / ' + d.baths + ' BA'] : null,
+    d.sqft      ? ['Square Footage',   d.sqft.toLocaleString() + ' sqft'] : null,
+    lotFmt      ? ['Lot Size',         lotFmt] : null,
+    d.yearBuilt ? ['Year Built',       String(d.yearBuilt)] : null,
     (d.agent && d.agent !== 'N/A') ? ['Listing Agent', d.agent] : null,
-    ['Days on Market',     d.dom + '+ days'],
-    ['Market Avg Days to Sell', (c.avgDomSale || 45) + ' days avg'],
+    ['Days on Market',     d.dom > 0 ? d.dom + ' days' : 'Just listed'],
+    ['Market Avg DOM',     avgDom + ' days'],
   ].filter(Boolean);
-  simpleTable(['Detail', 'Information'], propRows, [62, BW - 62], [1]);
-  if (c.verdict) verdictBox(c.verdict, true);
+  _table(['Detail', 'Information'], propRows, [62, BW - 62]);
 
-  // 02 Comparable sales
-  sectionHeading('02', 'Comparable Sales');
+  // ── 02 Comparable Sales ──
+  _section('Comparable Sales');
   const scRows = (d.saleComps || []).slice(0, 6).map(sc => [
     (sc.formattedAddress || '').replace(/, [A-Z]{2}.*/, '').substring(0, 30),
     (sc.bedrooms || '?') + ' BD / ' + (sc.bathrooms || '?') + ' BA',
@@ -8095,60 +8122,54 @@ async function downloadPaReport() {
     (sc.removedDate || sc.listedDate || '').slice(0, 7),
   ]);
   if (scRows.length) {
-    simpleTable(
-      ['Address', 'Beds/Baths', 'Sq Ft', 'Sold Price', '$/sqft', 'Sold Date'],
-      scRows, [54, 24, 16, 26, 16, BW - 136], [1, 2, 3, 4, 5]
-    );
+    _table(['Address', 'Beds/Baths', 'Sq Ft', 'Sold Price', '$/sqft', 'Sold Date'],
+      scRows, [52, 24, 16, 26, 16, BW - 134], [1, 2, 3, 4, 5]);
   } else {
-    bodyText('No recent comparable sales found within the search radius.', 9, SLATE);
+    doc.setFont('helvetica','italic'); doc.setFontSize(9);
+    doc.setTextColor(...GRAY);
+    doc.text('No recent comparable sales found.', LM, y); y += 8;
   }
-  pullQuote('Competitive sweet spot: ' + _fmtPrice(c.sweetLow) + ' to ' + _fmtPrice(c.sweetHigh));
+  _pullQuote('Competitive sweet spot: ' + _fmtPrice(c.sweetLow) + ' to ' + _fmtPrice(c.sweetHigh));
 
-  // 03 Rental market
-  sectionHeading('03', 'Rental Market Comps and Days to Rent');
+  // ── 03 Rental Market ──
+  _section('Rental Market & Days to Rent');
   const rcRows = (d.rentalComps || []).slice(0, 6).map(rc => [
     (rc.formattedAddress || '').replace(/, [A-Z]{2}.*/, '').substring(0, 28),
     (rc.bedrooms || '?') + ' BD / ' + (rc.bathrooms || '?') + ' BA',
     rc.squareFootage ? rc.squareFootage.toLocaleString() : 'N/A',
     _fmtPrice(rc.price) + '/mo',
-    rc.daysOnMarket ? 'Listed ' + rc.daysOnMarket + 'd ago' : (rc.status || 'Active'),
+    rc.daysOnMarket ? rc.daysOnMarket + 'd ago' : (rc.status || 'Active'),
   ]);
   if (rcRows.length) {
-    simpleTable(
-      ['Address', 'Beds/Baths', 'Sq Ft', 'Monthly Rent', 'Status'],
-      rcRows, [54, 26, 18, 30, BW - 128], [1, 2, 3, 4]
-    );
-  } else {
-    bodyText('No active rental listings found nearby.', 9, SLATE);
+    _table(['Address', 'Beds/Baths', 'Sq Ft', 'Monthly Rent', 'Status'],
+      rcRows, [52, 26, 18, 30, BW - 126], [1, 2, 3, 4]);
   }
-  const mktRows = [
-    ['Estimated Rent for Subject Home', _fmtPrice(r.rentLow) + ' to ' + _fmtPrice(r.rentHigh) + '/mo'],
-    ['Market Temperature',             r.marketTemp],
-    ['Estimated Days to Rent',         '~' + r.daysToRent + ' days'],
-    ['Market Median Rent',             _fmtPrice(r.marketRent) + '/mo'],
-  ];
-  simpleTable(['Metric', 'Data'], mktRows, [72, BW - 72], [1]);
-  verdictBox(r.mortgageClause);
+  _table(['Metric', 'Data'], [
+    ['Estimated Rent',     _fmtPrice(r.rentLow) + ' – ' + _fmtPrice(r.rentHigh) + '/mo'],
+    ['Market Temperature', r.marketTemp],
+    ['Est. Days to Rent',  '~' + r.daysToRent + ' days'],
+    ['Market Median Rent', _fmtPrice(r.marketRent) + '/mo'],
+  ], [72, BW - 72]);
+  _insight(r.mortgageClause);
 
-  // 04 Recommendations
-  sectionHeading('04', 'Recommendations to Improve the Sale');
-  d.recs.forEach(rec => recBlock(rec.num, rec.title, rec.detail));
+  // ── 04 Recommendations ──
+  _section('Recommendations to Improve the Sale');
+  d.recs.forEach(rec => _rec(rec.num, rec.title, rec.detail));
 
-  // 05 Quick Reference
-  sectionHeading('05', 'Quick-Reference Summary');
-  const qrRows = d.qr.map(q => [q.cat, q.finding, q.action]);
-  simpleTable(
+  // ── 05 Quick Reference ──
+  _section('Quick-Reference Summary');
+  _table(
     ['Category', 'Finding', 'Recommended Action'],
-    qrRows, [42, 64, BW - 106], [1, 2]
+    d.qr.map(q => [q.cat, q.finding, q.action]),
+    [42, 64, BW - 106]
   );
 
-  // Disclaimer
-  checkY(14);
-  y += 3;
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5);
-  doc.setTextColor(...SLATE);
-  const disc = 'Disclaimer: This analysis draws on publicly available data from RentCast and the US Census Bureau. For informational purposes only. Not professional real estate or legal advice. Consult a licensed professional for binding valuations.';
-  doc.splitTextToSize(disc, BW).forEach(line => { doc.text(line, LM, y); y += 4; });
+  // ── Key takeaways (arrow style matching cash-flow PDF) ──
+  checkY(20);
+  y += 2;
+  _arrow('Pricing:', c.verdict ? c.verdict.split('.')[0] + '.' : 'Review comp data before adjusting.');
+  _arrow('Rental option:', r.mortgageClause.split('.')[0] + '.');
+  _arrow('Next step:', 'Run a full property analysis with your agent before making any listing changes.');
 
   const slug = d.address.replace(/[^a-z0-9]+/gi, '_').substring(0, 40);
   doc.save(slug + '_Lanvivo_Report.pdf');
