@@ -7592,6 +7592,8 @@ function _generateRecs(listPrice, compA, rentalA, dom, piti) {
     add('01', 'Strategic Price Reduction', `Reduce to ${_fmtPrice(compA.sweetLow)}–${_fmtPrice(compA.sweetHigh)}. Comp data puts the fair market range here; every week above it compounds carrying costs.`);
   } else if (compA.sweetLow && listPrice > compA.sweetHigh) {
     add('01', 'Trim to the Competitive Sweet Spot', `A targeted reduction to ${_fmtPrice(compA.sweetLow)}–${_fmtPrice(compA.sweetHigh)} moves the home into offer territory without leaving money on the table.`);
+  } else if (compA.sweetLow && listPrice < compA.sweetLow * 0.9) {
+    add('01', 'Verify the List Price', `At ${_fmtPrice(listPrice)} the home is listed well below the ${_fmtPrice(compA.sweetLow)}–${_fmtPrice(compA.sweetHigh)} comp range. Confirm the price is entered correctly and that condition, title, or lot constraints justify the gap — otherwise you may be leaving significant value on the table.`);
   } else {
     add('01', 'Hold Price, Add Value Narrative', `The home is priced within comp range. The listing presentation and marketing are the primary levers to pull.`);
   }
@@ -7613,11 +7615,24 @@ function _generateRecs(listPrice, compA, rentalA, dom, piti) {
   return recs;
 }
 
-function _buildQuickRef(listPrice, compA, rentalA, dom) {
+function _buildQuickRef(listPrice, compA, rentalA, dom, propSqft) {
+  // Subject property's actual $/sqft — compared like-for-like against comp $/sqft range
+  const myPpsf = propSqft ? listPrice / propSqft : 0;
+  let ppsfAction;
+  if (!compA.ppsf_high || !myPpsf) {
+    ppsfAction = 'See comp table';
+  } else if (myPpsf > compA.ppsf_high * 1.05) {
+    ppsfAction = 'Above range — price is a drag';
+  } else if (myPpsf < compA.ppsf_low * 0.95) {
+    ppsfAction = 'Below range — verify condition';
+  } else {
+    ppsfAction = 'Within range';
+  }
+
   return [
-    { cat:'List Price', finding:`${_fmtPrice(listPrice)} (${dom}+ DOM)`, action: compA.sweetLow && listPrice > compA.sweetHigh ? `Reduce to ${_fmtPrice(compA.sweetLow)}–${_fmtPrice(compA.sweetHigh)}` : 'Hold; focus on marketing' },
+    { cat:'List Price', finding:`${_fmtPrice(listPrice)}${dom > 0 ? ` (${dom} DOM)` : ' (just listed)'}`, action: compA.sweetLow && listPrice > compA.sweetHigh ? `Reduce to ${_fmtPrice(compA.sweetLow)}–${_fmtPrice(compA.sweetHigh)}` : 'Hold; focus on marketing' },
     { cat:'Comp Range', finding:`${_fmtPrice(compA.sweetLow)} to ${_fmtPrice(compA.sweetHigh)}`, action:'Use as anchor in all negotiations' },
-    { cat:'$/Sqft vs. Comps', finding:`$${compA.ppsf_low}–$${compA.ppsf_high}/sqft comps`, action: compA.ppsf_high ? (listPrice / (compA.ppsf_low + compA.ppsf_high) * 2 > 1.05 ? 'Above range — price is a drag' : 'Within range') : 'See comp table' },
+    { cat:'$/Sqft vs. Comps', finding:`${myPpsf ? '$' + Math.round(myPpsf) + ' vs ' : ''}$${compA.ppsf_low}–$${compA.ppsf_high}/sqft comps`, action: ppsfAction },
     { cat:'Days on Market', finding:`${dom} days (avg: ${Math.round(compA.avgDomSale || 45)})`, action: dom > (compA.avgDomSale || 45) * 1.2 ? 'Relist + refresh photos' : 'Monitor closely' },
     { cat:'Rental Estimate', finding:`${_fmtPrice(rentalA.rentLow)}–${_fmtPrice(rentalA.rentHigh)}/mo`, action:`Est. ${rentalA.daysToRent} days to rent (${rentalA.marketTemp} market)` },
     { cat:'Market Temp', finding:`${rentalA.marketTemp} rental market`, action:`Vacancy ~${rentalA.marketTemp === 'Hot' ? '<4%' : rentalA.marketTemp === 'Balanced' ? '4–7%' : '>7%'}` },
@@ -7687,7 +7702,7 @@ async function runPropertyAnalysis(demo = false) {
     compA.avgDomSale = Math.round(raw.market?.saleData?.averageDaysOnMarket || 45);
     const rentalA = _analyzeRental(raw.rentalAvm, raw.market, raw.census, piti || (demo ? 1750 : null));
     const recs   = _generateRecs(usedPrice, compA, rentalA, dom, piti);
-    const qr     = _buildQuickRef(usedPrice, compA, rentalA, dom);
+    const qr     = _buildQuickRef(usedPrice, compA, rentalA, dom, usedSqft);
 
     _paData = {
       address: usedAddress, price: usedPrice, dom, agent,
