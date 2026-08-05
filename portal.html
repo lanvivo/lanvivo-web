@@ -4801,11 +4801,12 @@ function renderMortgageLenderCta(targetId, visa) {
    most likely to pay for a human conversation. Previously this state rendered no
    CTA at all.
 
-   SETUP: replace LV_CAL_LINK with the real Cal.com event once it exists, e.g.
-   'lanvivo/specialist-session'. Until then the modal shows a setup notice rather
-   than a broken iframe.
+   LV_CAL_PRICE and LV_CAL_MINS are shown in the portal UI but are NOT read from
+   Cal.com — they're display-only. If you change the price or duration on the
+   Cal.com event, change them here too or the portal will advertise the wrong
+   figure right up until the booking page contradicts it.
    ────────────────────────────────────────────────────────────────────────────── */
-const LV_CAL_LINK  = '';           // e.g. 'lanvivo/specialist-session'
+const LV_CAL_LINK  = 'lanvivo-p9dc0e/lanvivo-specialist-session';
 const LV_CAL_PRICE = '$120';
 const LV_CAL_MINS  = 45;
 
