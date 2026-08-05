@@ -913,6 +913,14 @@ body.dark .mob-nav-signout:hover{color:#C8D4E8}
   .lang-select{min-height:40px;padding:8px 30px 8px 12px;font-size:12px}
   .header-controls{gap:8px}
   .prop-action-btn{min-height:38px;padding:9px 12px;font-size:12px}
+  /* CTA cards stack rather than squeezing the button off the edge */
+  .cta-card{flex-direction:column;align-items:stretch;gap:12px}
+  .cta-card-action{width:100%}
+  .cta-card-action .btn-cta{width:100%;min-height:44px}
+  .cta-card-action[style*="flex-end"]{align-items:stretch !important}
+  /* Booking modal goes near-fullscreen on phones */
+  #specialist-modal{padding:0 !important}
+  #specialist-modal > div[role="dialog"]{max-width:100% !important;height:100% !important;border-radius:0 !important}
   /* Momentum scrolling for the horizontally-scrollable tables */
   [style*="overflow-x:auto"],.pa-table-wrap{-webkit-overflow-scrolling:touch}
   /* Nothing should ever push the page sideways */
@@ -1409,6 +1417,11 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h8M2 12h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
           Lanvivo GPT
         </button>
+        <div class="mob-nav-section-label" style="color:var(--gold)">Get help</div>
+        <button class="mob-nav-item" onclick="closeMobNav();openSpecialistBooking('mobile_nav',{})">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 1.5A5.5 5.5 0 0 0 2.5 7v3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M13.5 10.5V7A5.5 5.5 0 0 0 8 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><rect x="1" y="8.5" width="3" height="4.5" rx="1.2" stroke="currentColor" stroke-width="1.3"/><rect x="12" y="8.5" width="3" height="4.5" rx="1.2" stroke="currentColor" stroke-width="1.3"/></svg>
+          Talk to a specialist
+        </button>
         <div class="mob-nav-section-label">Account</div>
         <button class="mob-nav-item" data-mob-page="account">
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M2 13c0-2.21 2.686-4 6-4s6 1.79 6 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
@@ -1473,6 +1486,13 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
           <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h8M2 12h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
           <span class="nav-label">Lanvivo GPT</span>
           <span class="nav-lock" id="gpt-lock" style="background:rgba(184,130,30,0.15);color:var(--gold)">Soon</span>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label" style="color:var(--gold)">Get help</div>
+        <div class="nav-item" id="nav-specialist" onclick="openSpecialistBooking('sidebar',{})">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M8 1.5A5.5 5.5 0 0 0 2.5 7v3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M13.5 10.5V7A5.5 5.5 0 0 0 8 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><rect x="1" y="8.5" width="3" height="4.5" rx="1.2" stroke="currentColor" stroke-width="1.3"/><rect x="12" y="8.5" width="3" height="4.5" rx="1.2" stroke="currentColor" stroke-width="1.3"/></svg>
+          <span class="nav-label">Talk to a specialist</span>
         </div>
       </div>
       <div class="nav-section">
@@ -1567,6 +1587,9 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
 
         <!-- Contextual partner CTA (auto-shows based on user activity) -->
         <div id="dash-cta"></div>
+
+        <!-- Direct path to a specialist, for users who don't want to start with the tools -->
+        <div id="dash-specialist"></div>
 
         <!-- Tool grid -->
         <div class="dash-section-header" style="margin-top:8px"><h3>Tools</h3></div>
@@ -3470,6 +3493,7 @@ function renderDashboard() {
     recentEl.style.display = 'none';
     if (subtitle) subtitle.textContent = 'Your immigrant real estate command center.';
     renderCtaCard('dash-cta', []); // CTA will only show if triggers fire, won't for empty state
+    renderDashboardSpecialist();   // empty state is exactly who needs the direct path
     return;
   }
 
@@ -3524,6 +3548,7 @@ function renderDashboard() {
 
   // Surface the highest-priority contextual CTA on the dashboard
   renderCtaCard('dash-cta', []);
+  renderDashboardSpecialist();
 
   // Onboarding checklist (rendered last so it has access to loaded properties)
   renderOnboardingChecklist();
@@ -3538,6 +3563,7 @@ function renderToolGrid() {
     { id:'cashflow', icon:'📊', name:'Cash Flow Analyzer', desc:'Model any property\'s rental income, expenses, cap rate, and return on investment instantly.' },
     { id:'market', icon:'🔍', name:'Zipcode Rater', desc:'Score any US zipcode across 8 investor dimensions — vacancy, crime, jobs, schools, landlord laws, and more.' },
     { id:'roi', icon:'📈', name:'Zipcode ROI', desc:'Enter a zip code and purchase price. Get gross yield, cap rate, cash-on-cash, and a 30-year projection using HUD rent data.' },
+    { id:'propanalysis', icon:'📋', name:'Property Analysis Report', desc:'Pull live comps, rental rates, and days-to-sell for any address. Get a branded PDF report with pricing recommendations.' },
     { id:'properties', icon:'🏠', name:'My Properties', desc:'Save analyses, compare up to 4 properties side-by-side, and generate shareable PDF reports.' },
     { id:'gpt', icon:'✦', name:'Lanvivo GPT', desc:'An AI assistant trained on visa-status, loan-product, and immigrant-buyer questions. Currently in development. Join the waitlist to be notified.', comingSoon:true },
   ];
@@ -3634,6 +3660,10 @@ function renderOnboardingChecklist() {
         <div class="onboarding-progress-bar"><div class="onboarding-progress-fill" style="width:${pct}%"></div></div>
         <div class="onboarding-progress-label">${doneCount} of ${steps.length} done</div>
       </div>
+      <div style="margin-top:14px;padding-top:13px;border-top:1px solid var(--rule);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <div style="font-size:12.5px;color:var(--muted);line-height:1.5">Rather skip the tools and talk to someone?</div>
+        <button onclick="openSpecialistBooking('onboarding',{})" style="background:transparent;border:1px solid var(--rule);border-radius:3px;padding:8px 14px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--deep);cursor:pointer;white-space:nowrap;min-height:38px">Book a session →</button>
+      </div>
     </div>`;
 
   // Store step actions for click handler
@@ -3700,6 +3730,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function navigateTo(page, navEl) {
+  // Some nav entries are actions, not destinations (e.g. Talk to a specialist opens
+  // a modal). Bail rather than throwing on a missing page container.
+  if (!document.getElementById(`page-${page}`)) return;
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   if (navEl) navEl.classList.add('active');
   else {
@@ -4637,6 +4670,16 @@ function runMortgageAnalysis() {
     if (credit>=620) loans.push({name:'Conventional Loan (Fannie Mae/Freddie Mac)',rate:'6.5–7.5%',desc:'Standard 30-year fixed mortgage. Best rates available to you.',tags:['Primary & investment','20% down for investment'],ok:true});
     if (credit>=580&&purpose!=='investment') loans.push({name:'FHA Loan',rate:'6.5–7.2%',desc:'3.5% down payment with 580+ credit score. Ideal for primary home purchase.',tags:['Primary home only','3.5% down'],ok:true});
     loans.push({name:'DSCR Loan',rate:'7.0–8.5%',desc:'For investment properties. Qualification is based on rental income, not your personal income.',tags:['Investment only','No W-2 required'],ok:true});
+    // Status must reflect what actually came back. Citizenship alone doesn't qualify
+    // anyone — a 500-score applicant gets DSCR only, and the banner must not claim
+    // conventional access they don't have.
+    if (credit < 580) {
+      overallStatus = 'cond';
+      overallMsg = 'Your immigration status is not the constraint here — your credit score is. At this score conventional and FHA lenders will decline, but DSCR financing on an investment property qualifies on the property\'s rental income rather than your personal credit. Raising your score above 620 opens the full conventional range.';
+    } else if (credit < 620) {
+      overallStatus = 'cond';
+      overallMsg = 'You are treated the same as any US citizen for lending purposes, but a score below 620 rules out conventional financing today. FHA and DSCR remain open, and a modest score improvement unlocks the rest.';
+    }
   } else if (visa==='h1b'||visa==='l1') {
     if (history>=2&&credit>=620) {
       overallMsg = 'With 2+ years of US employment and a 620+ credit score you qualify for conventional financing. Your visa expiry must be at least 12 months away.';
@@ -4719,11 +4762,14 @@ function runMortgageAnalysis() {
       <p style="font-size:10px;color:var(--muted,#9B9CAD);margin:0 0 4px;padding:0 24px;line-height:1.6">For informational purposes only. Actual eligibility depends on lender-specific criteria. Consult a mortgage professional for your situation.</p>
     </div>
   `;
-  // Surface a contextual CTA at the bottom of the mortgage results, prioritizing lender connections
-  // if the user has any qualifying options. (CTA system already filters by trigger logic.)
-  if (overallStatus !== 'no') {
-    // Force a lender-priority CTA since this user has loan options and is the most ready for a connection.
-    // Bypasses the standard saved-property triggers because mortgage results imply purchase-readiness.
+  // Contextual CTA routing.
+  //   Confident (3+ products)      → connect to a lender; they're ready to transact.
+  //   Thin or no options           → offer a specialist session; this is where people
+  //                                  get stuck, and previously nothing rendered at all.
+  const ctaCtx = { visa, loanCount: loans.length, status: overallStatus, purpose, ssn };
+  if (overallStatus === 'no' || loans.length <= 2) {
+    renderSpecialistCta('mortgage-cta', ctaCtx);
+  } else {
     renderMortgageLenderCta('mortgage-cta', visa);
   }
 }
@@ -4747,6 +4793,155 @@ function renderMortgageLenderCta(targetId, visa) {
         <button class="btn-cta" onclick="openLeadModal('dscr-lender')">Connect with a lender →</button>
       </div>
     </div>`;
+}
+
+/* ══ TALK TO A SPECIALIST — contextual trigger test ════════════════════════════
+   Placement test: the Mortgage Engine is the highest-intent moment in the portal.
+   A user who just learned they have few or no qualifying products is the person
+   most likely to pay for a human conversation. Previously this state rendered no
+   CTA at all.
+
+   SETUP: replace LV_CAL_LINK with the real Cal.com event once it exists, e.g.
+   'lanvivo/specialist-session'. Until then the modal shows a setup notice rather
+   than a broken iframe.
+   ────────────────────────────────────────────────────────────────────────────── */
+const LV_CAL_LINK  = '';           // e.g. 'lanvivo/specialist-session'
+const LV_CAL_PRICE = '$120';
+const LV_CAL_MINS  = 45;
+
+// Fire-and-forget event log. Never blocks or breaks the UI if it fails.
+async function _trackSpecialistCta(event, placement, context = {}) {
+  try {
+    if (typeof supabase === 'undefined' || !supabase?.auth) return;
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return;
+    await supabase.from('specialist_cta_events').insert({
+      user_id: session.user.id, event, placement, context,
+    });
+  } catch (e) { /* analytics must never surface an error to the user */ }
+}
+
+// Renders the specialist CTA. `ctx` carries the reason it fired, for analysis.
+function renderSpecialistCta(targetId, ctx = {}) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  const dismissed = JSON.parse(localStorage.getItem('lv_cta_dismissed') || '[]');
+  if (dismissed.includes('specialist-session')) { target.innerHTML = ''; return; }
+
+  const headline = ctx.loanCount === 0
+    ? 'Not qualifying yet? Talk it through with a specialist'
+    : 'Only a few options? A specialist can widen them';
+  const body = ctx.loanCount === 0
+    ? `Limited options today doesn't mean limited options. A ${LV_CAL_MINS}-minute call maps what actually moves the needle for your status — building US credit, ITIN routes, or a DSCR path that ignores personal income entirely.`
+    : `You have options, but not many. A ${LV_CAL_MINS}-minute call covers which of these is realistic for your situation, what lenders will actually ask for, and what to do in the next 30 days.`;
+
+  target.innerHTML = `
+    <div class="cta-card">
+      <div class="cta-card-content">
+        <div class="cta-card-label">Talk to a specialist</div>
+        <h4>${headline}</h4>
+        <p>${body}</p>
+      </div>
+      <div class="cta-card-action" style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+        <button class="btn-cta" onclick="openSpecialistBooking('mortgage_engine', ${JSON.stringify(JSON.stringify(ctx)).replace(/"/g, '&quot;')})">Book a session →</button>
+        <span style="font-size:11px;color:var(--muted)">${LV_CAL_PRICE} · ${LV_CAL_MINS} min</span>
+      </div>
+    </div>`;
+
+  _trackSpecialistCta('impression', 'mortgage_engine', ctx);
+}
+
+// Opens the booking modal with a Cal.com embed, prefilled from the session.
+function openSpecialistBooking(placement, ctxJson) {
+  let ctx = {};
+  try { ctx = typeof ctxJson === 'string' ? JSON.parse(ctxJson) : (ctxJson || {}); } catch (e) {}
+  _trackSpecialistCta('click', placement, ctx);
+
+  const name  = currentUser?.name  || '';
+  const email = currentUser?.email || '';
+
+  let inner;
+  if (LV_CAL_LINK) {
+    const q = new URLSearchParams({
+      embed: 'true', theme: 'light',
+      ...(name  && { name }),
+      ...(email && { email }),
+      ...(ctx.visa && { 'metadata[visa]': ctx.visa }),
+      ...(ctx.loanCount !== undefined && { 'metadata[loanCount]': String(ctx.loanCount) }),
+      'metadata[placement]': placement,
+    });
+    inner = `<iframe src="https://cal.com/${LV_CAL_LINK}?${q}" style="width:100%;height:100%;border:none" title="Book a specialist session"></iframe>`;
+    _trackSpecialistCta('booking_opened', placement, ctx);
+  } else {
+    inner = `
+      <div style="padding:36px 30px;text-align:center;max-width:420px;margin:0 auto">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--ink);margin-bottom:10px">Booking not connected yet</div>
+        <p style="font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:18px">
+          Create a Cal.com event for the specialist session, then set <code style="font-size:12px;background:var(--bg);padding:2px 6px;border-radius:3px">LV_CAL_LINK</code>
+          in the portal source to your event path — for example <code style="font-size:12px;background:var(--bg);padding:2px 6px;border-radius:3px">lanvivo/specialist-session</code>.
+        </p>
+        <p style="font-size:12px;color:var(--muted);line-height:1.6">
+          The click was still recorded, so click-through rate is being measured from now.
+        </p>
+      </div>`;
+  }
+
+  const wrap = document.createElement('div');
+  wrap.id = 'specialist-modal';
+  wrap.style.cssText = 'position:fixed;inset:0;z-index:1200;display:flex;align-items:center;justify-content:center;padding:20px';
+  wrap.innerHTML = `
+    <div onclick="closeSpecialistBooking()" style="position:absolute;inset:0;background:rgba(10,14,26,0.55)"></div>
+    <div role="dialog" aria-modal="true" aria-label="Book a specialist session"
+         style="position:relative;background:var(--surface);border-radius:6px;width:100%;max-width:920px;height:min(84vh,720px);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 12px 40px rgba(10,14,26,0.28)">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--rule);flex-shrink:0">
+        <div style="font-size:13px;font-weight:500;color:var(--ink)">Book a specialist session</div>
+        <button onclick="closeSpecialistBooking()" aria-label="Close"
+                style="width:36px;height:36px;border:none;background:transparent;font-size:18px;color:var(--muted);cursor:pointer;border-radius:4px">×</button>
+      </div>
+      <div style="flex:1;overflow:auto;display:flex;align-items:${LV_CAL_LINK ? 'stretch' : 'center'};justify-content:center">${inner}</div>
+    </div>`;
+  document.body.appendChild(wrap);
+  document.body.style.overflow = 'hidden';
+  document.addEventListener('keydown', _specialistEsc);
+}
+
+// Dashboard entry card — the direct path for users who never open a calculator.
+function renderDashboardSpecialist() {
+  const target = document.getElementById('dash-specialist');
+  if (!target) return;
+  const dismissed = JSON.parse(localStorage.getItem('lv_cta_dismissed') || '[]');
+  if (dismissed.includes('specialist-session')) { target.innerHTML = ''; return; }
+
+  target.innerHTML = `
+    <div style="background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:20px 24px;margin-bottom:24px">
+      <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap">
+        <div style="flex:1;min-width:260px">
+          <div style="font-size:9.5px;letter-spacing:1.6px;text-transform:uppercase;color:var(--gold);font-weight:500;margin-bottom:7px">Not sure where to start</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600;color:var(--ink);line-height:1.2;margin-bottom:7px">Talk it through with a specialist</div>
+          <p style="font-size:13px;line-height:1.6;color:var(--muted);margin:0 0 14px">A ${LV_CAL_MINS}-minute call covering visa-aware financing routes, which markets fit your budget, and what to do in the next 30 days. No tools required.</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <span style="font-size:11px;color:var(--deep);background:rgba(200,148,42,0.12);padding:4px 10px;border-radius:20px">ITIN &amp; foreign national</span>
+            <span style="font-size:11px;color:var(--deep);background:rgba(200,148,42,0.12);padding:4px 10px;border-radius:20px">H-1B &amp; visa holders</span>
+            <span style="font-size:11px;color:var(--deep);background:rgba(200,148,42,0.12);padding:4px 10px;border-radius:20px">First US property</span>
+          </div>
+        </div>
+        <div style="flex-shrink:0;display:flex;flex-direction:column;gap:7px;align-items:flex-end">
+          <button class="btn-cta" onclick="openSpecialistBooking('dashboard',{})"
+                  style="background:var(--deep);color:#fff;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:500;padding:12px 22px;border:none;border-radius:3px;cursor:pointer;white-space:nowrap;min-height:44px">Book a session →</button>
+          <span style="font-size:11px;color:var(--muted)">${LV_CAL_PRICE} · ${LV_CAL_MINS} min</span>
+        </div>
+      </div>
+    </div>`;
+
+  _trackSpecialistCta('impression', 'dashboard', {});
+}
+
+function _specialistEsc(e) { if (e.key === 'Escape') closeSpecialistBooking(); }
+
+function closeSpecialistBooking() {
+  document.getElementById('specialist-modal')?.remove();
+  document.body.style.overflow = '';
+  document.removeEventListener('keydown', _specialistEsc);
 }
 
 // ── Cash Flow Analyzer ────────────────────────────────────────────────────────
