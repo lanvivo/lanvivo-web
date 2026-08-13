@@ -176,7 +176,13 @@ body.dark .onboarding-progress-bar{background:rgba(255,255,255,0.1)}
 .dashboard-welcome h2{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;color:var(--ink);line-height:1.2}
 .dashboard-welcome h2 em{font-style:italic;color:var(--deep)}
 .dashboard-welcome p{font-size:14px;color:var(--muted);margin-top:8px;line-height:1.7}
-.tool-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:24px}
+/* Tool cards are grouped by journey stage. The outer container stacks the groups;
+   each group holds its own responsive card grid. */
+.tool-grid{display:flex;flex-direction:column;gap:26px;margin-bottom:24px}
+.tool-group-head{display:flex;align-items:baseline;gap:10px;margin-bottom:11px;flex-wrap:wrap}
+.tool-group-label{font-size:10.5px;font-weight:600;letter-spacing:1.6px;text-transform:uppercase;color:var(--gold)}
+.tool-group-hint{font-size:12px;color:var(--muted)}
+.tool-group-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
 .tool-card{background:var(--surface);border:1px solid var(--rule);padding:24px;cursor:pointer;position:relative;overflow:hidden;transition:all .2s;box-shadow:0 1px 3px rgba(26,42,94,0.06)}
 .tool-card:hover:not(.locked){border-color:var(--gold);transform:translateY(-2px);box-shadow:0 4px 16px rgba(26,42,94,0.1)}
 .tool-card.locked{opacity:0.55;cursor:not-allowed}
@@ -451,13 +457,15 @@ body.dark .dash-recent-card .recent-metric-val{color:#F5F0E4}
 /* Info tooltip, appears on hover/tap next to metric labels */
 .info-tip{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:var(--rule);color:var(--muted);font-size:9px;font-weight:600;margin-left:5px;cursor:help;position:relative;vertical-align:middle;font-style:normal}
 .info-tip:hover{background:var(--gold);color:#fff}
-.info-tip .tip-text{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);width:220px;background:var(--ink);color:#fff;font-size:11px;font-weight:400;font-style:normal;line-height:1.5;padding:9px 11px;border-radius:3px;text-transform:none;letter-spacing:normal;opacity:0;pointer-events:none;transition:opacity .15s;z-index:50;text-align:left;box-shadow:0 4px 12px rgba(0,0,0,0.18)}
-.info-tip .tip-text::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--ink)}
-.info-tip:hover .tip-text,.info-tip.active .tip-text{opacity:1;pointer-events:auto}
-@media(max-width:600px){
-  .info-tip .tip-text{width:200px;left:auto;right:-6px;transform:none}
-  .info-tip .tip-text::after{left:auto;right:14px;transform:none}
-}
+/* Tooltips use position:fixed, not absolute. The tool panels they sit inside have
+   overflow-y:auto, and an absolutely positioned child is clipped by any scrollable
+   ancestor regardless of z-index. Fixed positioning escapes that clipping context.
+   Coordinates are set by _positionTip() on hover/focus. */
+.info-tip .tip-text{position:fixed;top:0;left:0;width:220px;background:var(--ink);color:#fff;font-size:11px;font-weight:400;font-style:normal;line-height:1.5;padding:9px 11px;border-radius:3px;text-transform:none;letter-spacing:normal;opacity:0;pointer-events:none;transition:opacity .15s;z-index:1400;text-align:left;box-shadow:0 4px 14px rgba(0,0,0,0.22)}
+.info-tip .tip-text::after{content:'';position:absolute;top:100%;left:var(--tip-arrow,50%);transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--ink)}
+.info-tip .tip-text.below::after{top:auto;bottom:100%;border-top-color:transparent;border-bottom-color:var(--ink)}
+.info-tip:hover .tip-text,.info-tip.active .tip-text,.info-tip:focus-within .tip-text{opacity:1}
+@media(max-width:600px){ .info-tip .tip-text{width:min(220px,72vw)} }
 
 /* Plain-English subtitle under metric labels, for new investors */
 .metric-card .plain-sub{font-size:10.5px;color:var(--muted);font-style:italic;margin-top:1px;line-height:1.3}
@@ -1388,10 +1396,10 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="1" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="9" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="9" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>
           Dashboard
         </button>
-        <div class="mob-nav-section-label">Tools</div>
-        <button class="mob-nav-item" data-mob-page="cashflow">
-          <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 12L6 7l3 3 5-7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          Cash Flow Analyzer
+        <div class="mob-nav-section-label">Before you buy</div>
+        <button class="mob-nav-item" data-mob-page="mortgage">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 1L2 5v9h4V9h4v5h4V5L8 1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          Mortgage Engine
         </button>
         <button class="mob-nav-item" data-mob-page="market">
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.3"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M7 4v6M4 7h6" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
@@ -1401,26 +1409,28 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 13L5 9l3 3 3-4 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="13" cy="5" r="1.5" stroke="currentColor" stroke-width="1.2"/></svg>
           Zipcode ROI
         </button>
-        <button class="mob-nav-item" data-mob-page="properties">
-          <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 7l6-5 6 5v7H2V7z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 14V9h4v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          My Properties
-        </button>
-        <button class="mob-nav-item" data-mob-page="mortgage">
-          <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 1L2 5v9h4V9h4v5h4V5L8 1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
-          Mortgage Engine
-        </button>
+        <div class="mob-nav-section-label">Evaluate a deal</div>
         <button class="mob-nav-item" data-mob-page="propanalysis">
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 7l6-5 6 5v7H2V7z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 14V9h4v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M10 5.5L12.5 3 14 4.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
           Property Analysis
         </button>
-        <button class="mob-nav-item" data-mob-page="gpt">
-          <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h8M2 12h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-          Lanvivo GPT
+        <button class="mob-nav-item" data-mob-page="cashflow">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 12L6 7l3 3 5-7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Cash Flow Analyzer
+        </button>
+        <div class="mob-nav-section-label">Your portfolio</div>
+        <button class="mob-nav-item" data-mob-page="properties">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 7l6-5 6 5v7H2V7z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 14V9h4v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          My Properties
         </button>
         <div class="mob-nav-section-label" style="color:var(--gold)">Get help</div>
         <button class="mob-nav-item" onclick="closeMobNav();openSpecialistBooking('mobile_nav',{})">
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 1.5A5.5 5.5 0 0 0 2.5 7v3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M13.5 10.5V7A5.5 5.5 0 0 0 8 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><rect x="1" y="8.5" width="3" height="4.5" rx="1.2" stroke="currentColor" stroke-width="1.3"/><rect x="12" y="8.5" width="3" height="4.5" rx="1.2" stroke="currentColor" stroke-width="1.3"/></svg>
           Talk to a specialist
+        </button>
+        <button class="mob-nav-item" data-mob-page="gpt">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h8M2 12h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          Lanvivo GPT
         </button>
         <div class="mob-nav-section-label">Account</div>
         <button class="mob-nav-item" data-mob-page="account">
@@ -1454,11 +1464,11 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
         </div>
       </div>
       <div class="nav-section">
-        <div class="nav-section-label">Tools</div>
-        <div class="nav-item" id="nav-cashflow" onclick="navigateTo('cashflow',this)">
-          <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M2 12L6 7l3 3 5-7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <span class="nav-label">Cash Flow Analyzer</span>
-          <span class="nav-lock" id="cashflow-lock">Investor</span>
+        <div class="nav-section-label">Before you buy</div>
+        <div class="nav-item" id="nav-mortgage" onclick="navigateTo('mortgage',this)">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M8 1L2 5v9h4V9h4v5h4V5L8 1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          <span class="nav-label">Mortgage Engine</span>
+          <span class="nav-lock" id="mortgage-lock">Pro</span>
         </div>
         <div class="nav-item" id="nav-market" onclick="navigateTo('market',this)">
           <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.3"/><path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M7 4v6M4 7h6" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
@@ -1468,24 +1478,25 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
           <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M2 13L5 9l3 3 3-4 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="13" cy="5" r="1.5" stroke="currentColor" stroke-width="1.2"/></svg>
           <span class="nav-label">Zipcode ROI</span>
         </div>
-        <div class="nav-item" id="nav-properties" onclick="navigateTo('properties',this)">
-          <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M2 7l6-5 6 5v7H2V7z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 14V9h4v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <span class="nav-label">My Properties</span>
-          <span class="nav-lock" id="properties-lock">Investor</span>
-        </div>
-        <div class="nav-item" id="nav-mortgage" onclick="navigateTo('mortgage',this)">
-          <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M8 1L2 5v9h4V9h4v5h4V5L8 1z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
-          <span class="nav-label">Mortgage Engine</span>
-          <span class="nav-lock" id="mortgage-lock">Pro</span>
-        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Evaluate a deal</div>
         <div class="nav-item" id="nav-propanalysis" onclick="navigateTo('propanalysis',this)">
           <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M2 7l6-5 6 5v7H2V7z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 14V9h4v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M10 5.5L12.5 3 14 4.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <span class="nav-label">Property Analysis</span>
         </div>
-        <div class="nav-item" id="nav-gpt" onclick="navigateTo('gpt',this)">
-          <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h8M2 12h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-          <span class="nav-label">Lanvivo GPT</span>
-          <span class="nav-lock" id="gpt-lock" style="background:rgba(184,130,30,0.15);color:var(--gold)">Soon</span>
+        <div class="nav-item" id="nav-cashflow" onclick="navigateTo('cashflow',this)">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M2 12L6 7l3 3 5-7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="nav-label">Cash Flow Analyzer</span>
+          <span class="nav-lock" id="cashflow-lock">Investor</span>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Your portfolio</div>
+        <div class="nav-item" id="nav-properties" onclick="navigateTo('properties',this)">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M2 7l6-5 6 5v7H2V7z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 14V9h4v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="nav-label">My Properties</span>
+          <span class="nav-lock" id="properties-lock">Investor</span>
         </div>
       </div>
       <div class="nav-section">
@@ -1493,6 +1504,11 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
         <div class="nav-item" id="nav-specialist" onclick="openSpecialistBooking('sidebar',{})">
           <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M8 1.5A5.5 5.5 0 0 0 2.5 7v3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M13.5 10.5V7A5.5 5.5 0 0 0 8 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><rect x="1" y="8.5" width="3" height="4.5" rx="1.2" stroke="currentColor" stroke-width="1.3"/><rect x="12" y="8.5" width="3" height="4.5" rx="1.2" stroke="currentColor" stroke-width="1.3"/></svg>
           <span class="nav-label">Talk to a specialist</span>
+        </div>
+        <div class="nav-item" id="nav-gpt" onclick="navigateTo('gpt',this)">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h8M2 12h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          <span class="nav-label">Lanvivo GPT</span>
+          <span class="nav-lock" id="gpt-lock" style="background:rgba(184,130,30,0.15);color:var(--gold)">Soon</span>
         </div>
       </div>
       <div class="nav-section">
@@ -3558,23 +3574,46 @@ function renderToolGrid() {
   const u = currentUser;
   // Plan consolidation: every tool is unlocked. Badges removed in favor of a clean dashboard.
   // GPT shows as "Coming Soon" since the live chat is paused pending API/proxy build-out.
-  const tools = [
-    { id:'mortgage', icon:'🏦', name:'Mortgage Eligibility Engine', desc:'Enter your visa status and income. See exactly which loan products you qualify for right now.' },
-    { id:'cashflow', icon:'📊', name:'Cash Flow Analyzer', desc:'Model any property\'s rental income, expenses, cap rate, and return on investment instantly.' },
-    { id:'market', icon:'🔍', name:'Zipcode Rater', desc:'Score any US zipcode across 8 investor dimensions — vacancy, crime, jobs, schools, landlord laws, and more.' },
-    { id:'roi', icon:'📈', name:'Zipcode ROI', desc:'Enter a zip code and purchase price. Get gross yield, cap rate, cash-on-cash, and a 30-year projection using HUD rent data.' },
-    { id:'propanalysis', icon:'📋', name:'Property Analysis Report', desc:'Pull live comps, rental rates, and days-to-sell for any address. Get a branded PDF report with pricing recommendations.' },
-    { id:'properties', icon:'🏠', name:'My Properties', desc:'Save analyses, compare up to 4 properties side-by-side, and generate shareable PDF reports.' },
-    { id:'gpt', icon:'✦', name:'Lanvivo GPT', desc:'An AI assistant trained on visa-status, loan-product, and immigrant-buyer questions. Currently in development. Join the waitlist to be notified.', comingSoon:true },
+  // Grouped by the question the user is asking at that stage, not by product type.
+  // A flat list of seven tools reads as a menu; grouped, it reads as a path.
+  const groups = [
+    { label: 'Before you buy', hint: 'Work out what you can borrow and where it goes furthest', tools: [
+      { id:'mortgage', icon:'🏦', name:'Mortgage Eligibility Engine', desc:'Enter your visa status and income. See exactly which loan products you qualify for right now.' },
+      { id:'market', icon:'🔍', name:'Zipcode Rater', desc:'Score any US zipcode across 8 investor dimensions: vacancy, crime, jobs, schools, landlord laws, and more.' },
+      { id:'roi', icon:'📈', name:'Zipcode ROI', desc:'Enter a zip code and purchase price. Get gross yield, cap rate, cash-on-cash, and a 30-year projection using HUD rent data.' },
+    ]},
+    { label: 'Evaluate a deal', hint: 'Once you have an address in mind', tools: [
+      { id:'propanalysis', icon:'📋', name:'Property Analysis Report', desc:'Pull live comps, rental rates, and days-to-sell for any address. Get a branded PDF report with pricing recommendations.' },
+      { id:'cashflow', icon:'📊', name:'Cash Flow Analyzer', desc:'Model any property\'s rental income, expenses, cap rate, and return on investment instantly.' },
+    ]},
+    { label: 'Your portfolio', hint: 'Everything you\'ve saved', tools: [
+      { id:'properties', icon:'🏠', name:'My Properties', desc:'Save analyses, compare up to 4 properties side-by-side, and generate shareable PDF reports.' },
+    ]},
+    { label: 'Get help', hint: 'When you\'d rather ask a person', tools: [
+      { id:'__specialist', icon:'🎧', name:'Talk to a Specialist', desc:'Book a 45-minute session with someone who works with ITIN, visa-holder, and foreign-national buyers every week.' },
+      { id:'gpt', icon:'✦', name:'Lanvivo GPT', desc:'An AI assistant trained on visa-status, loan-product, and immigrant-buyer questions. Currently in development.', comingSoon:true },
+    ]},
   ];
-  document.getElementById('tool-grid').innerHTML = tools.map(t => `
-    <div class="tool-card" onclick="navigateTo('${t.id}',null)">
+
+  const card = t => `
+    <div class="tool-card" onclick="${t.id === '__specialist'
+        ? `openSpecialistBooking('dashboard_grid',{})`
+        : `navigateTo('${t.id}',null)`}">
       <div class="tool-card-icon">${t.icon}</div>
       <h3>${t.name}</h3>
       <p>${t.desc}</p>
       <div class="tool-card-meta">
-        ${t.comingSoon ? `<span class="tool-lock-msg">Coming soon · join waitlist</span>` : `<span class="tool-arrow">→</span>`}
+        ${t.comingSoon ? `<span class="tool-lock-msg">Coming soon</span>` : `<span class="tool-arrow">→</span>`}
       </div>
+    </div>`;
+
+  document.getElementById('tool-grid').innerHTML = groups.map(g => `
+    <div class="tool-group">
+      <div class="tool-group-head">
+        <span class="tool-group-label">${g.label}</span>
+        <span class="tool-group-hint">${g.hint}</span>
+      </div>
+      <div class="tool-group-grid">${g.tools.map(card).join('')}</div>
     </div>`).join('');
 }
 
@@ -3686,6 +3725,48 @@ function dismissOnboarding() {
 const PAGE_TITLES = {dashboard:'Dashboard',gpt:'Lanvivo GPT',mortgage:'Mortgage Eligibility Engine',cashflow:'Cash Flow Analyzer',market:'Zipcode Rater',roi:'Zipcode ROI',properties:'My Properties',compare:'Compare Properties',report:'Property Report',account:'My Account',performance:'Performance Tracker',propanalysis:'Property Analysis Report'};
 
 // ── Mobile navigation ────────────────────────────────────────────────────────
+/* ── Tooltip positioning ──────────────────────────────────────────────────────
+   Tooltips are position:fixed so scrollable panels can't clip them. That means
+   coordinates must be computed against the viewport each time one opens, and
+   clamped so a tooltip near an edge stays fully on screen. */
+function _positionTip(tip) {
+  if (!tip) return;
+  const t = tip.parentElement.getBoundingClientRect();
+  tip.style.visibility = 'hidden';
+  tip.classList.remove('below');
+  const w = tip.offsetWidth, h = tip.offsetHeight, M = 8;
+
+  // Prefer above the trigger; flip below when there isn't room
+  let top = t.top - h - M;
+  if (top < M) { top = t.bottom + M; tip.classList.add('below'); }
+
+  // Centre on the trigger, then clamp to the viewport
+  let left = t.left + t.width / 2 - w / 2;
+  left = Math.max(M, Math.min(left, window.innerWidth - w - M));
+
+  // Keep the arrow pointing at the trigger even after clamping
+  const arrow = t.left + t.width / 2 - left;
+  tip.style.setProperty('--tip-arrow', Math.round(Math.max(10, Math.min(arrow, w - 10))) + 'px');
+  tip.style.top  = Math.round(top) + 'px';
+  tip.style.left = Math.round(left) + 'px';
+  tip.style.visibility = '';
+}
+
+document.addEventListener('pointerenter', e => {
+  const el = e.target instanceof Element ? e.target.closest('.info-tip') : null;
+  if (el) _positionTip(el.querySelector('.tip-text'));
+}, true);
+document.addEventListener('focusin', e => {
+  const el = e.target instanceof Element ? e.target.closest('.info-tip') : null;
+  if (el) _positionTip(el.querySelector('.tip-text'));
+});
+// Touch has no hover, so tap toggles the tooltip
+document.addEventListener('click', e => {
+  const el = e.target instanceof Element ? e.target.closest('.info-tip') : null;
+  document.querySelectorAll('.info-tip.active').forEach(o => { if (o !== el) o.classList.remove('active'); });
+  if (el && el.classList.toggle('active')) _positionTip(el.querySelector('.tip-text'));
+});
+
 // Scroll lock — the app scrolls inside .main-content, not on <body>,
 // so both have to be pinned or the page slides behind the open drawer.
 let _mobNavScrollY = 0;
