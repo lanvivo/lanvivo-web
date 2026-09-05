@@ -6,7 +6,6 @@
 <title>Lanvivo Portal</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -19,6 +18,26 @@
   --sidebar:224px;
   /* Aliases used by perf/account pages */
   --card-bg:var(--surface);--border:var(--rule);--input-bg:var(--bg);
+
+  /* ── Results palette ───────────────────────────────────────────────────────
+     The four calculator results panels (Mortgage, Cash Flow, Zipcode Rater,
+     Zipcode ROI) share this palette. It used to be hardcoded hex in each
+     renderer, which meant results never responded to dark mode. Tokenised here
+     so both themes are driven from one place. */
+  --r-ink:#1A1C2A;      /* headline numbers, strong labels          */
+  --r-body:#6B6C7E;     /* explanatory body copy                    */
+  --r-cap:#6B6C7E;      /* small caps labels, captions, axis text.
+                           Matches --r-body in light mode by design: these run
+                           9-11px and carry threshold/provenance text, so they
+                           need AA (4.70:1). Hierarchy comes from size + case. */
+  --r-rule:#E8E0CC;     /* section dividers, card borders           */
+  --r-rule-l:#F0EAE0;   /* faint inner row dividers                 */
+  --r-panel:#F7F4EE;    /* tile / card fill inside a results panel  */
+  --r-pos:#2E7D52;      /* strong, qualifies, positive cash flow    */
+  --r-warn:#8A5E0A;     /* moderate, borderline, watch this         */
+  --r-neg:#C62828;      /* weak, declines, negative cash flow       */
+  --r-neg-l:#E57373;    /* softer red for chart strokes             */
+  --r-cta:#2C2B2B;      /* dark inline CTA button                   */
 }
 html,body{height:100%;overflow:hidden}
 body{font-family:'DM Sans',sans-serif;font-weight:300;background:var(--bg);color:var(--body)}
@@ -364,6 +383,12 @@ body.dark .dash-recent-card .recent-metric-val{color:#F5F0E4}
 .toast.toast-success{border-left-color:#2E7D52;background:#0F2A1A}
 .toast.toast-error{border-left-color:#C02020;background:#2A0F0F}
 .tool-results{background:var(--surface);border:1px solid var(--rule);padding:24px;overflow-y:auto;box-shadow:0 1px 3px rgba(26,42,94,0.06)}
+/* Zipcode ROI + Zipcode Rater render ledger-style: every section supplies its own
+   24px horizontal padding and its divider is meant to span the full panel width.
+   Without this the container's own 24px doubled the inset and held the rules
+   short of the edge. */
+.tool-results.is-bleed{padding:0}
+.tool-results.is-bleed .results-placeholder{padding:24px}
 .results-placeholder{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--muted)}
 .results-placeholder .icon{font-size:3rem;margin-bottom:12px;opacity:.35}
 .results-placeholder p{font-size:14px;line-height:1.6;max-width:280px}
@@ -376,13 +401,6 @@ body.dark .dash-recent-card .recent-metric-val{color:#F5F0E4}
 .eligibility-icon{font-size:1.5rem}
 .eligibility-text h4{font-size:14px;font-weight:500;color:var(--ink);margin-bottom:3px}
 .eligibility-text p{font-size:12px;color:var(--muted);line-height:1.5}
-.loan-card{background:var(--bg);border:1px solid var(--rule);padding:14px 16px;margin-bottom:10px}
-.loan-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
-.loan-name{font-size:13px;font-weight:500;color:var(--ink)}
-.loan-rate{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:600;color:var(--gold)}
-.loan-desc{font-size:12px;color:var(--muted);line-height:1.5}
-.loan-tags{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
-.loan-tag{font-size:10px;padding:2px 8px;border-radius:10px;background:rgba(26,42,94,0.07);color:var(--slate)}
 .req-list{display:flex;flex-direction:column;gap:6px}
 .req-item{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--body);line-height:1.5}
 .req-item::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--gold);flex-shrink:0;margin-top:6px}
@@ -395,30 +413,12 @@ body.dark .dash-recent-card .recent-metric-val{color:#F5F0E4}
 .slider-row{display:flex;align-items:center;gap:10px;margin-top:6px}
 .slider-row input[type=range]{flex:1;accent-color:var(--gold)}
 .slider-val{font-size:12px;color:var(--gold);font-weight:500;min-width:40px;text-align:right}
-.metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
-.metric-card{background:var(--bg);border:1px solid var(--rule);padding:16px}
-.metric-card.highlight{border-color:rgba(184,130,30,0.4);background:rgba(184,130,30,0.05)}
-.metric-label{font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
-.metric-value{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;color:var(--deep);line-height:1}
-.metric-value.good{color:#2E7D52}
-.metric-value.warn{color:var(--gold)}
-.metric-value.bad{color:#C62828}
-.metric-sub{font-size:11px;color:var(--muted);margin-top:3px}
 .breakdown-table{width:100%;border-collapse:collapse;font-size:12.5px}
 .breakdown-table tr{border-bottom:1px solid var(--rule)}
 .breakdown-table td{padding:8px 4px;color:var(--muted)}
 .breakdown-table td:last-child{text-align:right;color:var(--body)}
 .breakdown-table tr.total td{color:var(--ink);font-weight:500;border-top:2px solid var(--gold);border-bottom:none}
 .breakdown-table tr.total td:last-child{color:var(--gold)}
-.verdict{padding:16px;border-radius:3px;margin-top:16px}
-.verdict.good{background:rgba(26,92,58,0.07);border:1px solid rgba(46,125,82,0.3)}
-.verdict.warn{background:rgba(184,130,30,0.07);border:1px solid rgba(184,130,30,0.3)}
-.verdict.bad{background:rgba(139,32,32,0.07);border:1px solid rgba(198,40,40,0.3)}
-.verdict h4{font-size:13px;font-weight:500;margin-bottom:4px}
-.verdict.good h4{color:#2E7D52}
-.verdict.warn h4{color:var(--gold)}
-.verdict.bad h4{color:#C62828}
-.verdict p{font-size:12px;color:var(--muted);line-height:1.5}
 
 /* Projection chart */
 .proj-chart{width:100%;background:var(--bg);border:1px solid var(--rule);padding:16px;margin-bottom:12px}
@@ -468,7 +468,6 @@ body.dark .dash-recent-card .recent-metric-val{color:#F5F0E4}
 @media(max-width:600px){ .info-tip .tip-text{width:min(220px,72vw)} }
 
 /* Plain-English subtitle under metric labels, for new investors */
-.metric-card .plain-sub{font-size:10.5px;color:var(--muted);font-style:italic;margin-top:1px;line-height:1.3}
 
 /* Rule-of-thumb caption */
 .rot-note{font-size:10.5px;color:var(--muted);margin-top:4px;font-style:italic;line-height:1.4}
@@ -795,6 +794,33 @@ body.dark .report-page{box-shadow:0 4px 20px rgba(0,0,0,0.4)}
 .report-compare-section{font-size:8.5px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#B8821E;padding:8px 0 3px;margin-top:4px;border-top:1px solid #E8E0CC}
 .report-compare-section:first-of-type{border-top:none;margin-top:0;padding-top:2px}
 
+/* ── Property Analysis report: extra blocks, same visual language as CFA ──── */
+.report-section{margin-bottom:22px}
+.report-section > h5{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#1A2A5E;margin-bottom:10px}
+.report-table{width:100%;border-collapse:collapse;font-size:10.5px;margin-bottom:4px}
+.report-table thead th{background:#FAF8F4;border-bottom:1.5px solid #1A2A5E;font-size:8.5px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:#1A2A5E;text-align:left;padding:7px 8px}
+.report-table tbody td{border-bottom:1px solid #EFEBE0;padding:7px 8px;color:#444;vertical-align:top}
+.report-table tbody tr:nth-child(even) td{background:#FCFBF8}
+.report-table tbody td:first-child{color:var(--ink,#1A1C2A);font-weight:500}
+.report-kv{width:100%;border-collapse:collapse;font-size:11px}
+.report-kv tr td{padding:6px 8px;border-bottom:1px solid #EFEBE0}
+.report-kv tr:nth-child(even) td{background:#FCFBF8}
+.report-kv td:first-child{color:#666;width:38%}
+.report-kv td:last-child{color:var(--ink,#1A1C2A);font-weight:500}
+.report-pull{background:#FAF8F4;border:1px solid #E8E0CC;border-left:3px solid #B8821E;padding:11px 16px;border-radius:3px;margin:10px 0 0;font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-weight:600;color:#B8821E}
+.report-note{background:#FAF8F4;border-left:3px solid #B8821E;padding:11px 16px;border-radius:3px;margin-top:10px;font-size:11.5px;line-height:1.55;color:#444}
+.report-note strong{color:var(--ink,#1A1C2A)}
+.report-rec{background:#fff;border:1px solid #E8E0CC;border-left:3px solid #B8821E;border-radius:3px;padding:11px 16px;margin-bottom:8px}
+.report-rec-title{font-size:11.5px;font-weight:600;color:var(--ink,#1A1C2A);margin-bottom:4px}
+.report-rec-title span{color:#B8821E;font-weight:700;margin-right:6px}
+.report-rec-detail{font-size:11px;line-height:1.55;color:#444}
+
+@media print {
+  .report-section, .report-rec, .report-pull, .report-note { page-break-inside: avoid; break-inside: avoid; }
+  .report-table thead { display: table-header-group; }
+  .report-table tr { page-break-inside: avoid; break-inside: avoid; }
+}
+
 @media (max-width: 700px){
   .report-page{padding:22px 18px}
   .report-big4{grid-template-columns:repeat(2,1fr)}
@@ -911,7 +937,6 @@ body.dark .mob-nav-signout:hover{color:#C8D4E8}
   .tool-layout,.analyzer-grid{grid-template-columns:1fr;height:auto}
   .stats-row{grid-template-columns:1fr 1fr}
   .plan-compare{grid-template-columns:1fr}
-  .metrics-grid{grid-template-columns:1fr}
 }
 /* ── Touch-target & overflow hardening for phones ──────────────── */
 @media(max-width:900px){
@@ -962,6 +987,20 @@ body.dark{
   --rule:rgba(26,42,94,0.7);--deep-border:rgba(26,42,94,0.7);
   --green:#1A5C3A;--green-l:#D4EDDF;--red:#8B2020;--red-l:#F5DADA;
   --card-bg:#101624;--border:rgba(26,42,94,0.7);--input-bg:rgba(255,255,255,0.04);
+
+  /* Results palette — dark. Greens/reds/golds are lifted in luminance so they
+     keep AA contrast against the dark panel; rules become translucent navy. */
+  --r-ink:#F5F0E4;
+  --r-body:#B4BCD0;
+  --r-cap:#9AA2B8;   /* 6.46:1 on the dark panel; stays clearly below --r-body (8.67:1) */
+  --r-rule:rgba(26,42,94,0.7);
+  --r-rule-l:rgba(26,42,94,0.45);
+  --r-panel:rgba(255,255,255,0.04);
+  --r-pos:#4FA97B;
+  --r-warn:#D0A03F;
+  --r-neg:#E86A6A;
+  --r-neg-l:#F09A9A;
+  --r-cta:#242938;
 }
 body.dark .auth-card{background:#101624;border-color:rgba(26,42,94,0.7)}
 body.dark .auth-card h2{color:#F5F0E4}
@@ -993,13 +1032,7 @@ body.dark .form-field select option{background:#0A0E1A;color:#F5F0E4}
 body.dark .btn-analyze{background:#C8942A;color:#0A0E1A}
 body.dark .tool-results{background:#101624;border-color:rgba(26,42,94,0.7);box-shadow:none}
 body.dark .result-section h4{color:#F5F0E4;border-color:rgba(26,42,94,0.7)}
-body.dark .loan-card{background:rgba(255,255,255,0.03);border-color:rgba(26,42,94,0.7)}
-body.dark .loan-name{color:#F5F0E4}
-body.dark .loan-tag{background:rgba(26,42,94,0.5);color:#9BA8C8}
 body.dark .eligibility-text h4{color:#F5F0E4}
-body.dark .metric-card{background:rgba(255,255,255,0.03);border-color:rgba(26,42,94,0.7)}
-body.dark .metric-card.highlight{background:rgba(200,148,42,0.08);border-color:rgba(200,148,42,0.3)}
-body.dark .metric-value{color:#F0D080}
 body.dark .breakdown-table td{color:#9BA8C8}
 body.dark .breakdown-table td:last-child{color:#F5F0E4}
 body.dark .breakdown-table tr{border-color:rgba(26,42,94,0.6)}
@@ -1100,14 +1133,8 @@ body.dark .tool-results{box-shadow:none}
 body.dark .form-field label{color:#9BA8C8}
 body.dark .results-placeholder{color:#6A7090}
 body.dark .eligibility-text p{color:#9BA8C8}
-body.dark .loan-desc{color:#9BA8C8}
-body.dark .loan-tag{background:rgba(26,42,94,0.5);color:#9BA8C8}
 body.dark .req-item{color:#C8D0E0}
 /* Cash flow analyzer */
-body.dark .metric-label{color:#9BA8C8}
-body.dark .metric-value{color:#F0D080}
-body.dark .metric-sub{color:#6A7090}
-body.dark .verdict p{color:#9BA8C8}
 body.dark .breakdown-table td{color:#9BA8C8}
 /* Chat */
 body.dark .chat-header-info h3{color:#F5F0E4}
@@ -1126,12 +1153,8 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
 .tool-form p{color:#4A5070}
 .results-placeholder{color:#6A7090}
 .form-field label{color:#4A5070;font-weight:500}
-.loan-desc{color:#4A5070}
 .eligibility-text p{color:#4A5070}
 .req-item{color:#2A2E42}
-.metric-label{color:#4A5070}
-.metric-sub{color:#6A7090}
-.verdict p{color:#4A5070}
 .chat-header-info p{color:#4A5070}
 .locked-page p{color:#4A5070}
 .plan-col ul{color:#4A5070}
@@ -1904,7 +1927,7 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
             <p style="font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:6px"><strong style="color:var(--ink);font-weight:500">Have a specific deal?</strong><br>Run cash flow, DSCR, and 1% rule in the analyzer. The deal score appears alongside this market score.</p>
             <button onclick="navigateTo('cashflow',null)" style="background:none;border:1px solid var(--rule);border-radius:3px;padding:9px 14px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink);cursor:pointer;width:100%;text-align:left">Open Cash Flow Analyzer →</button>
           </div>
-          <div class="tool-results" id="market-results">
+          <div class="tool-results is-bleed" id="market-results">
             <div class="results-placeholder">
               <div class="icon">📍</div>
               <p data-i18n="mr_placeholder">Enter a zipcode to score the rental market across 8 investor-specific dimensions.</p>
@@ -1998,7 +2021,7 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
             <p style="font-size:11px;color:var(--muted);line-height:1.6;margin-bottom:6px"><strong style="color:var(--ink);font-weight:500">Have a specific deal?</strong><br>Run full DSCR and 1% rule analysis with your exact numbers.</p>
             <button onclick="navigateTo('cashflow',null)" style="background:none;border:1px solid var(--rule);border-radius:3px;padding:9px 14px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink);cursor:pointer;width:100%;text-align:left">Open Cash Flow Analyzer →</button>
           </div>
-          <div class="tool-results" id="roi-results">
+          <div class="tool-results is-bleed" id="roi-results">
             <div class="results-placeholder">
               <div class="icon">📈</div>
               <p data-i18n="roi_placeholder">Enter a zip code and purchase price to estimate returns.</p>
@@ -4585,29 +4608,29 @@ async function runROIAnalysis() {
   const dimLabels = {vacancy:'Vacancy',income:'Income',jobs:'Jobs',crime:'Crime',schools:'Schools',costOfLiving:'Cost of living',renter:'Renter demand',landlord:'Landlord laws'};
 
   el.innerHTML = `
-    <div style="font-family:'DM Sans',system-ui,sans-serif;font-size:13px;color:var(--ink,#1A1C2A)">
+    <div style="font-family:'DM Sans',system-ui,sans-serif;font-size:13px;color:var(--r-ink)">
 
       <!-- Verdict banner -->
-      <div style="padding:20px 24px 18px;border-bottom:1px solid var(--rule,#E8E0CC)">
+      <div style="padding:20px 24px 18px;border-bottom:1px solid var(--r-rule)">
         <div style="display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:#fff;border-radius:3px;padding:4px 10px;margin-bottom:10px;background:${verdictBg}">${verdictSignal}</div>
-        <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.45rem;font-weight:600;color:var(--ink,#1A1C2A);line-height:1.25;margin-bottom:6px">${verdictHeadline}</div>
-        <div style="font-size:12px;color:var(--muted,#6B6C7E);line-height:1.5">${verdictSub}</div>
-        <div style="font-size:11px;color:var(--muted,#9B9CAD);margin-top:6px">
-          ${d.stateName ? d.stateName + ' · ' : ''}${zip}${rentSource ? ' &nbsp;·&nbsp; Rent: <strong style="color:var(--ink,#1A1C2A)">' + fmt(monthlyRent) + '/mo</strong> <span style="opacity:0.6">(' + rentSource + ')</span> <button onclick="document.getElementById(\'roi-rent-override\').focus()" style="background:none;border:none;font-size:10px;color:var(--gold,#B8821E);cursor:pointer;padding:0;font-family:inherit;text-decoration:underline">adjust →</button>' : ' &nbsp;·&nbsp; <span style="color:#C62828">⚠ No rent data</span>'}
+        <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.45rem;font-weight:600;color:var(--r-ink);line-height:1.25;margin-bottom:6px">${verdictHeadline}</div>
+        <div style="font-size:12px;color:var(--r-body);line-height:1.5">${verdictSub}</div>
+        <div style="font-size:11px;color:var(--r-cap);margin-top:6px">
+          ${d.stateName ? d.stateName + ' · ' : ''}${zip}${rentSource ? ' &nbsp;·&nbsp; Rent: <strong style="color:var(--r-ink)">' + fmt(monthlyRent) + '/mo</strong> <span style="opacity:0.6">(' + rentSource + ')</span> <button onclick="document.getElementById(\'roi-rent-override\').focus()" style="background:none;border:none;font-size:10px;color:var(--gold);cursor:pointer;padding:0;font-family:inherit;text-decoration:underline">adjust →</button>' : ' &nbsp;·&nbsp; <span style="color:var(--r-neg)">⚠ No rent data</span>'}
           &nbsp;·&nbsp; ${downPct}% down
         </div>
       </div>
 
       <!-- Census ACS warning banner (shown when rent is not bedroom-specific) -->
       ${rentIsEstimated ? '<div style="padding:10px 24px;background:rgba(198,40,40,0.05);border-bottom:2px solid rgba(198,40,40,0.2);display:flex;gap:10px;align-items:flex-start">'
-        + '<span style="color:#C62828;font-size:14px;flex-shrink:0;margin-top:1px">⚠</span>'
-        + '<div style="font-size:11.5px;color:#C62828;line-height:1.5">'
+        + '<span style="color:var(--r-neg);font-size:14px;flex-shrink:0;margin-top:1px">⚠</span>'
+        + '<div style="font-size:11.5px;color:var(--r-neg);line-height:1.5">'
         + '<strong>Rent figure may be inaccurate.</strong> No HUD Fair Market Rent was found for ' + bedsLabel + ' in this zip — the calculation is using the Census ACS median across <em>all unit sizes</em>. This typically understates ' + bedsLabel + ' rent and can make deals look worse than they are. '
-        + '<button onclick="document.getElementById(\'roi-rent-override\').focus()" style="background:none;border:none;font-size:11.5px;color:#C62828;cursor:pointer;padding:0;font-family:inherit;font-weight:600;text-decoration:underline">Enter your expected rent above ↑</button> for a reliable estimate.'
+        + '<button onclick="document.getElementById(\'roi-rent-override\').focus()" style="background:none;border:none;font-size:11.5px;color:var(--r-neg);cursor:pointer;padding:0;font-family:inherit;font-weight:600;text-decoration:underline">Enter your expected rent above ↑</button> for a reliable estimate.'
         + '</div></div>' : ''}
 
       <!-- 3-column metric bars -->
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid var(--rule,#E8E0CC)">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid var(--r-rule)">
         ${[
           {label:'Gross yield', val:grossYield, display:grossYield.toFixed(1)+'%', good:7, ok:5, max:12, floor:'5%', target:'7%'},
           {label:'Cap rate',    val:capRate,    display:capRate.toFixed(1)+'%',    good:5, ok:3, max:10, floor:'3%', target:'5%'},
@@ -4615,43 +4638,43 @@ async function runROIAnalysis() {
         ].map((m,i) => {
           const col = metricBarColor(m.val, m.good, m.ok);
           const barW = metricBarWidth(Math.max(0,m.val), m.max);
-          return '<div style="padding:16px 18px;' + (i<2?'border-right:1px solid var(--rule,#E8E0CC)':'') + '">'
-            + '<div style="font-size:10px;letter-spacing:1.1px;text-transform:uppercase;color:var(--muted,#9B9CAD);margin-bottom:6px">' + m.label + '</div>'
+          return '<div style="padding:16px 18px;' + (i<2?'border-right:1px solid var(--r-rule)':'') + '">'
+            + '<div style="font-size:10px;letter-spacing:1.1px;text-transform:uppercase;color:var(--r-cap);margin-bottom:6px">' + m.label + '</div>'
             + '<div style="font-family:Georgia,serif;font-size:1.85rem;font-weight:700;line-height:1;color:' + col + ';margin-bottom:8px">' + m.display + '</div>'
-            + '<div style="height:4px;background:var(--rule,#E8E0CC);border-radius:2px;overflow:hidden;margin-bottom:4px"><div style="height:100%;width:' + barW + '%;background:' + col + ';border-radius:2px"></div></div>'
-            + '<div style="font-size:10px;color:var(--muted,#9B9CAD)">floor ' + m.floor + ' · target ' + m.target + '</div>'
+            + '<div style="height:4px;background:var(--r-rule);border-radius:2px;overflow:hidden;margin-bottom:4px"><div style="height:100%;width:' + barW + '%;background:' + col + ';border-radius:2px"></div></div>'
+            + '<div style="font-size:10px;color:var(--r-cap)">floor ' + m.floor + ' · target ' + m.target + '</div>'
             + '</div>';
         }).join('')}
       </div>
 
       <!-- Cash flow + DSCR row -->
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--rule,#E8E0CC);background:rgba(46,125,82,0.03)">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 24px;border-bottom:1px solid var(--r-rule);background:rgba(46,125,82,0.03)">
         <div>
-          <div style="font-size:11.5px;color:var(--muted,#6B6C7E)">Monthly cash flow</div>
-          <div style="font-size:10px;color:var(--muted,#9B9CAD);margin-top:2px">after ${fmt(monthlyPayment)}/mo mortgage</div>
+          <div style="font-size:11.5px;color:var(--r-body)">Monthly cash flow</div>
+          <div style="font-size:10px;color:var(--r-cap);margin-top:2px">after ${fmt(monthlyPayment)}/mo mortgage</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-family:Georgia,serif;font-size:1.35rem;font-weight:600;color:${monthlyCashFlow>=0?'#8A5E0A':'#C62828'}">${monthlyCashFlow>=0?'+':''}${fmtMoney(monthlyCashFlow)}</span>
+          <span style="font-family:Georgia,serif;font-size:1.35rem;font-weight:600;color:${monthlyCashFlow>=0?'var(--r-warn)':'var(--r-neg)'}">${monthlyCashFlow>=0?'+':''}${fmtMoney(monthlyCashFlow)}</span>
           <span style="font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;background:${dscrPillColor};color:#fff">${dscr.toFixed(2)}x DSCR</span>
         </div>
       </div>
-      ${dscr < 1.0 ? '<div style="padding:8px 24px;background:rgba(198,40,40,0.05);border-bottom:1px solid var(--rule,#E8E0CC);font-size:11px;color:#C62828">⚠ ' + dscrLabel + '</div>' : ''}
+      ${dscr < 1.0 ? '<div style="padding:8px 24px;background:rgba(198,40,40,0.05);border-bottom:1px solid var(--r-rule);font-size:11px;color:var(--r-neg)">⚠ ' + dscrLabel + '</div>' : ''}
 
       <!-- Projection -->
-      <div style="padding:16px 24px;border-bottom:1px solid var(--rule,#E8E0CC)">
-        <div style="font-size:10px;letter-spacing:1.1px;text-transform:uppercase;color:var(--muted,#9B9CAD);margin-bottom:12px">${hold}-year projection · 3.5% p.a. appreciation</div>
+      <div style="padding:16px 24px;border-bottom:1px solid var(--r-rule)">
+        <div style="font-size:10px;letter-spacing:1.1px;text-transform:uppercase;color:var(--r-cap);margin-bottom:12px">${hold}-year projection · 3.5% p.a. appreciation</div>
         <div style="position:relative;height:26px;margin-bottom:10px">
-          <div style="position:absolute;top:9px;left:0;right:0;height:6px;background:var(--rule,#E8E0CC);border-radius:3px"></div>
-          <div style="position:absolute;top:9px;left:0;height:6px;width:${projBarPct}%;background:#2E7D52;border-radius:3px"></div>
-          <div style="position:absolute;top:4px;left:0;transform:translateX(-50%);width:14px;height:14px;background:var(--bg,#F7F4EE);border-radius:50%;border:2px solid var(--ink,#1A1C2A)"></div>
-          <div style="position:absolute;top:4px;left:${projBarPct}%;transform:translateX(-50%);width:14px;height:14px;background:var(--bg,#F7F4EE);border-radius:50%;border:2px solid #2E7D52"></div>
+          <div style="position:absolute;top:9px;left:0;right:0;height:6px;background:var(--r-rule);border-radius:3px"></div>
+          <div style="position:absolute;top:9px;left:0;height:6px;width:${projBarPct}%;background:var(--r-pos);border-radius:3px"></div>
+          <div style="position:absolute;top:4px;left:0;transform:translateX(-50%);width:14px;height:14px;background:var(--r-panel);border-radius:50%;border:2px solid var(--r-ink)"></div>
+          <div style="position:absolute;top:4px;left:${projBarPct}%;transform:translateX(-50%);width:14px;height:14px;background:var(--r-panel);border-radius:50%;border:2px solid var(--r-pos)"></div>
         </div>
         <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:10px">
-          <div><div style="font-weight:600;color:var(--ink,#1A1C2A)">${fmt(price)}</div><div style="font-size:10px;color:var(--muted,#9B9CAD)">Today</div></div>
-          <div style="text-align:center"><div style="font-weight:600;color:#2E7D52">${fmt(futureValue)}</div><div style="font-size:10px;color:var(--muted,#9B9CAD)">Year ${hold} value</div></div>
-          <div style="text-align:right"><div style="font-weight:600;color:var(--ink,#1A1C2A)">${fmt(equityAtSale)}</div><div style="font-size:10px;color:var(--muted,#9B9CAD)">Est. equity</div></div>
+          <div><div style="font-weight:600;color:var(--r-ink)">${fmt(price)}</div><div style="font-size:10px;color:var(--r-cap)">Today</div></div>
+          <div style="text-align:center"><div style="font-weight:600;color:var(--r-pos)">${fmt(futureValue)}</div><div style="font-size:10px;color:var(--r-cap)">Year ${hold} value</div></div>
+          <div style="text-align:right"><div style="font-weight:600;color:var(--r-ink)">${fmt(equityAtSale)}</div><div style="font-size:10px;color:var(--r-cap)">Est. equity</div></div>
         </div>
-        <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(46,125,82,0.07);border-radius:3px;padding:6px 12px;font-size:12px;color:var(--ink,#1A1C2A)">Total return on down payment: <strong style="color:${totalReturn>=0?'#2E7D52':'#C62828'}">${fmtPct(totalReturn)} over ${hold} years</strong></div>
+        <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(46,125,82,0.07);border-radius:3px;padding:6px 12px;font-size:12px;color:var(--r-ink)">Total return on down payment: <strong style="color:${totalReturn>=0?'var(--r-pos)':'var(--r-neg)'}">${fmtPct(totalReturn)} over ${hold} years</strong></div>
       </div>
 
       <!-- Market quality strip -->
@@ -4660,34 +4683,34 @@ async function runROIAnalysis() {
         const dimRows = dims.map(k => {
           const dim = d.dimensions?.[k];
           if (!dim) return '';
-          return '<div style="display:flex;align-items:center;justify-content:space-between;font-size:11px;padding:4px 0;border-bottom:1px solid var(--rule,#F0EAE0)">'
-            + '<span style="color:var(--muted,#6B6C7E)">' + dimLabels[k] + '</span>'
+          return '<div style="display:flex;align-items:center;justify-content:space-between;font-size:11px;padding:4px 0;border-bottom:1px solid var(--r-rule-l)">'
+            + '<span style="color:var(--r-body)">' + dimLabels[k] + '</span>'
             + '<span style="font-weight:600;font-size:10px;color:' + tagColor(dim.tag) + '">' + dim.tag + '</span>'
             + '</div>';
         }).join('');
-        return '<div style="padding:14px 24px;border-bottom:1px solid var(--rule,#E8E0CC)">'
+        return '<div style="padding:14px 24px;border-bottom:1px solid var(--r-rule)">'
           + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">'
-          + '<span style="font-size:10px;letter-spacing:1.1px;text-transform:uppercase;color:var(--muted,#9B9CAD)">Market quality</span>'
-          + '<span style="font-family:Georgia,serif;font-size:1.15rem;font-weight:700;color:#8A5E0A">' + mktGrade + ' · ' + mktComposite + '/100</span>'
+          + '<span style="font-size:10px;letter-spacing:1.1px;text-transform:uppercase;color:var(--r-cap)">Market quality</span>'
+          + '<span style="font-family:Georgia,serif;font-size:1.15rem;font-weight:700;color:var(--r-warn)">' + mktGrade + ' · ' + mktComposite + '/100</span>'
           + '</div>'
           + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 16px">' + dimRows + '</div>'
           + '</div>';
       })() : ''}
 
       <!-- Landlord profile -->
-      ${ll ? '<div style="padding:14px 24px;border-bottom:1px solid var(--rule,#E8E0CC)">'
-        + '<div style="font-size:10px;letter-spacing:1.1px;text-transform:uppercase;color:var(--muted,#9B9CAD);margin-bottom:10px">Landlord profile — ' + ll.label + '</div>'
+      ${ll ? '<div style="padding:14px 24px;border-bottom:1px solid var(--r-rule)">'
+        + '<div style="font-size:10px;letter-spacing:1.1px;text-transform:uppercase;color:var(--r-cap);margin-bottom:10px">Landlord profile — ' + ll.label + '</div>'
         + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'
-        + '<div><div style="font-size:10px;color:var(--muted,#9B9CAD)">Eviction timeline</div><div style="font-size:12px;font-weight:500;color:var(--ink,#1A1C2A);margin-top:2px">' + ll.eviction + '</div></div>'
-        + '<div><div style="font-size:10px;color:var(--muted,#9B9CAD)">Rent control</div><div style="font-size:12px;font-weight:500;color:var(--ink,#1A1C2A);margin-top:2px">' + ll.rentControl + '</div></div>'
-        + '<div><div style="font-size:10px;color:var(--muted,#9B9CAD)">Security deposit</div><div style="font-size:12px;font-weight:500;color:var(--ink,#1A1C2A);margin-top:2px">' + ll.deposit + '</div></div>'
-        + '<div><div style="font-size:10px;color:var(--muted,#9B9CAD)">Overall rating</div><div style="font-size:12px;font-weight:500;margin-top:2px;color:' + (ll.rating==='Friendly'?'#2E7D52':ll.rating==='Restrictive'?'#C62828':'var(--ink,#1A1C2A)') + '">' + ll.rating + '</div></div>'
+        + '<div><div style="font-size:10px;color:var(--r-cap)">Eviction timeline</div><div style="font-size:12px;font-weight:500;color:var(--r-ink);margin-top:2px">' + ll.eviction + '</div></div>'
+        + '<div><div style="font-size:10px;color:var(--r-cap)">Rent control</div><div style="font-size:12px;font-weight:500;color:var(--r-ink);margin-top:2px">' + ll.rentControl + '</div></div>'
+        + '<div><div style="font-size:10px;color:var(--r-cap)">Security deposit</div><div style="font-size:12px;font-weight:500;color:var(--r-ink);margin-top:2px">' + ll.deposit + '</div></div>'
+        + '<div><div style="font-size:10px;color:var(--r-cap)">Overall rating</div><div style="font-size:12px;font-weight:500;margin-top:2px;color:' + (ll.rating==='Friendly'?'var(--r-pos)':ll.rating==='Restrictive'?'var(--r-neg)':'var(--r-ink)') + '">' + ll.rating + '</div></div>'
         + '</div></div>' : ''}
 
       <!-- Assumptions accordion -->
-      <div style="padding:11px 24px;border-bottom:1px solid var(--rule,#E8E0CC)">
+      <div style="padding:11px 24px;border-bottom:1px solid var(--r-rule)">
         <details>
-          <summary style="font-size:11px;color:var(--muted,#9B9CAD);cursor:pointer;list-style:none">Show assumptions &amp; detail</summary>
+          <summary style="font-size:11px;color:var(--r-cap);cursor:pointer;list-style:none">Show assumptions &amp; detail</summary>
           <div style="margin-top:10px">
             ${[
               ['Monthly rent (' + (rentSource||'manual') + ')', fmt(monthlyRent)],
@@ -4698,9 +4721,9 @@ async function runROIAnalysis() {
               ['Vacancy assumed', vacPct.toFixed(1) + '%'],
               ['Expense ratio', expPct + '%'],
               ['Selling costs (6%)', fmt(sellingCosts)]
-            ].map(r => '<div style="display:flex;justify-content:space-between;font-size:11.5px;padding:5px 0;border-bottom:1px solid var(--rule,#F0EAE0)">'
-              + '<span style="color:var(--muted,#6B6C7E)">' + r[0] + '</span>'
-              + '<span style="font-weight:500;color:var(--ink,#1A1C2A)">' + r[1] + '</span>'
+            ].map(r => '<div style="display:flex;justify-content:space-between;font-size:11.5px;padding:5px 0;border-bottom:1px solid var(--r-rule-l)">'
+              + '<span style="color:var(--r-body)">' + r[0] + '</span>'
+              + '<span style="font-weight:500;color:var(--r-ink)">' + r[1] + '</span>'
               + '</div>').join('')}
           </div>
         </details>
@@ -4708,17 +4731,17 @@ async function runROIAnalysis() {
 
       <!-- Contextual CTA -->
       <div style="padding:14px 24px 0">
-        ${rentIsEstimated || cashOnCash < 2 || dscr < 1.0 ? '<div style="padding:12px 16px;background:rgba(184,130,30,0.07);border:1px solid rgba(184,130,30,0.25);border-radius:3px;font-size:12px;color:var(--ink,#1A1C2A);line-height:1.5;margin-bottom:10px">'
+        ${rentIsEstimated || cashOnCash < 2 || dscr < 1.0 ? '<div style="padding:12px 16px;background:rgba(184,130,30,0.07);border:1px solid rgba(184,130,30,0.25);border-radius:3px;font-size:12px;color:var(--r-ink);line-height:1.5;margin-bottom:10px">'
           + (rentIsEstimated
               ? '💡 <strong>This zip had no HUD bedroom-level rent data</strong> — the result above used the Census ACS all-unit median, which often understates ' + bedsLabel + ' rent. Enter your expected rent in the field above and re-run. If you already have a specific deal, put your real numbers into the Cash Flow Analyzer below for a definitive answer.'
               : cashOnCash < 2 || dscr < 1.0
                 ? '💡 <strong>Borderline on benchmark rent.</strong> These numbers use HUD Fair Market Rent (the 40th percentile of actual rents). If your specific property rents above that — which is common in tighter markets — the deal may look very different. Run your actual numbers in the Cash Flow Analyzer.'
                 : '')
           + '</div>' : ''}
-        <div onclick="navigateTo('cashflow',null)" style="width:100%;background:#2C2B2B;border:none;border-radius:3px;padding:12px 16px;font-family:'DM Sans',system-ui,sans-serif;font-size:12px;color:#F7F4EE;cursor:pointer;text-align:left;display:block;box-sizing:border-box">
+        <div onclick="navigateTo('cashflow',null)" style="width:100%;background:var(--r-cta);border:none;border-radius:3px;padding:12px 16px;font-family:'DM Sans',system-ui,sans-serif;font-size:12px;color:var(--r-panel);cursor:pointer;text-align:left;display:block;box-sizing:border-box">
           Run a full deal analysis with your actual numbers in Cash Flow Analyzer →
         </div>
-        <p style="font-size:10px;color:var(--muted,#9B9CAD);margin-top:10px;line-height:1.5;margin-bottom:0">Estimates use HUD Fair Market Rents, Census ACS, and 3.5% p.a. appreciation. Results are illustrative only — not financial advice.</p>
+        <p style="font-size:10px;color:var(--r-cap);margin-top:10px;line-height:1.5;margin-bottom:0">Estimates use HUD Fair Market Rents, Census ACS, and 3.5% p.a. appreciation. Results are illustrative only — not financial advice.</p>
       </div>
 
     </div>
@@ -4789,9 +4812,9 @@ function runMortgageAnalysis() {
   if (loans.length===0) { overallStatus='no'; overallMsg='Based on your inputs, conventional lenders are unlikely to approve you right now. Consider building US credit history, obtaining an ITIN, or saving a larger down payment before applying.'; }
 
   const statusConfig = {
-    yes:  {signal:'✓ You qualify', bg:'#2E7D52', headline:'You qualify for conventional financing', cls:'yes'},
-    cond: {signal:'⚡ Options available', bg:'#8A5E0A', headline:'You have loan options available', cls:'cond'},
-    no:   {signal:'✗ Limited options', bg:'#C62828', headline:'Limited options right now', cls:'no'},
+    yes:  {signal:'✓ You qualify', bg:'var(--r-pos)', headline:'You qualify for conventional financing', cls:'yes'},
+    cond: {signal:'⚡ Options available', bg:'var(--r-warn)', headline:'You have loan options available', cls:'cond'},
+    no:   {signal:'✗ Limited options', bg:'var(--r-neg)', headline:'Limited options right now', cls:'no'},
   };
   const sc = statusConfig[overallStatus];
 
@@ -4805,42 +4828,42 @@ function runMortgageAnalysis() {
 
   const resultsEl = document.getElementById('mortgage-results');
   resultsEl.innerHTML = `
-    <div style="font-family:'DM Sans',system-ui,sans-serif;font-size:13px;color:var(--ink,#1A1C2A)">
+    <div style="font-family:'DM Sans',system-ui,sans-serif;font-size:13px;color:var(--r-ink)">
 
       <!-- Verdict banner -->
-      <div style="padding:20px 24px 18px;border-bottom:1px solid var(--rule,#E8E0CC)">
+      <div style="padding:20px 24px 18px;border-bottom:1px solid var(--r-rule)">
         <div style="display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:#fff;border-radius:3px;padding:4px 10px;margin-bottom:10px;background:${sc.bg}">${sc.signal}</div>
-        <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.45rem;font-weight:600;color:var(--ink,#1A1C2A);line-height:1.25;margin-bottom:6px">${sc.headline}</div>
-        <div style="font-size:12px;color:var(--muted,#6B6C7E);line-height:1.55">${overallMsg}</div>
+        <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.45rem;font-weight:600;color:var(--r-ink);line-height:1.25;margin-bottom:6px">${sc.headline}</div>
+        <div style="font-size:12px;color:var(--r-body);line-height:1.55">${overallMsg}</div>
       </div>
 
       <!-- Loan cards -->
       ${loans.length > 0 ? `
-      <div style="padding:16px 24px;border-bottom:1px solid var(--rule,#E8E0CC)">
-        <div style="font-size:10px;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted,#9B9CAD);margin-bottom:14px">Loan products you qualify for (${loans.length})</div>
+      <div style="padding:16px 24px;border-bottom:1px solid var(--r-rule)">
+        <div style="font-size:10px;letter-spacing:1.3px;text-transform:uppercase;color:var(--r-cap);margin-bottom:14px">Loan products you qualify for (${loans.length})</div>
         ${loans.map((l, i) => `
-        <div style="border:1px solid var(--rule,#E8E0CC);border-radius:3px;padding:14px 16px;${i < loans.length-1 ? 'margin-bottom:10px;' : ''}">
+        <div style="border:1px solid var(--r-rule);border-radius:3px;padding:14px 16px;${i < loans.length-1 ? 'margin-bottom:10px;' : ''}">
           <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:6px">
-            <span style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.05rem;font-weight:600;color:var(--ink,#1A1C2A);line-height:1.3">${l.name}</span>
-            <span style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.4rem;font-weight:700;color:#8A5E0A;white-space:nowrap;line-height:1">${l.rate}</span>
+            <span style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.05rem;font-weight:600;color:var(--r-ink);line-height:1.3">${l.name}</span>
+            <span style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.4rem;font-weight:700;color:var(--r-warn);white-space:nowrap;line-height:1">${l.rate}</span>
           </div>
-          <div style="font-size:12px;color:var(--muted,#6B6C7E);line-height:1.5;margin-bottom:8px">${l.desc}</div>
-          <div style="display:flex;flex-wrap:wrap;gap:5px">${l.tags.map(t => `<span style="font-size:10px;padding:3px 9px;border-radius:10px;background:rgba(26,42,94,0.07);color:var(--slate,#3A4570)">${t}</span>`).join('')}</div>
+          <div style="font-size:12px;color:var(--r-body);line-height:1.5;margin-bottom:8px">${l.desc}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px">${l.tags.map(t => `<span style="font-size:10px;padding:3px 9px;border-radius:10px;background:rgba(26,42,94,0.07);color:var(--r-body)">${t}</span>`).join('')}</div>
         </div>`).join('')}
       </div>` : ''}
 
       <!-- Next steps -->
-      <div style="padding:16px 24px;border-bottom:1px solid var(--rule,#E8E0CC)">
-        <div style="font-size:10px;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted,#9B9CAD);margin-bottom:14px">What to do next</div>
+      <div style="padding:16px 24px;border-bottom:1px solid var(--r-rule)">
+        <div style="font-size:10px;letter-spacing:1.3px;text-transform:uppercase;color:var(--r-cap);margin-bottom:14px">What to do next</div>
         ${nextSteps.map((s, i) => `
         <div style="display:flex;align-items:flex-start;gap:12px;${i < nextSteps.length-1 ? 'margin-bottom:12px;' : ''}">
-          <div style="flex-shrink:0;width:22px;height:22px;border-radius:50%;background:#8A5E0A;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px">${i+1}</div>
-          <div style="font-size:12.5px;color:var(--body,#2A2E42);line-height:1.55">${s}</div>
+          <div style="flex-shrink:0;width:22px;height:22px;border-radius:50%;background:var(--r-warn);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px">${i+1}</div>
+          <div style="font-size:12.5px;color:var(--body);line-height:1.55">${s}</div>
         </div>`).join('')}
       </div>
 
       <div id="mortgage-cta" style="padding:0 0 4px"></div>
-      <p style="font-size:10px;color:var(--muted,#9B9CAD);margin:0 0 4px;padding:0 24px;line-height:1.6">For informational purposes only. Actual eligibility depends on lender-specific criteria. Consult a mortgage professional for your situation.</p>
+      <p style="font-size:10px;color:var(--r-cap);margin:0 0 4px;padding:0 24px;line-height:1.6">For informational purposes only. Actual eligibility depends on lender-specific criteria. Consult a mortgage professional for your situation.</p>
     </div>
   `;
   // Contextual CTA routing.
@@ -5874,6 +5897,7 @@ function renderComparePage() {
 let reportPropertyId = null;
 let reportCompareIds = [];
 let reportPreviousPage = 'properties'; // where "Back" returns to
+let paReportData = null;   // when set, #page-report renders the Property Analysis report
 
 // Generates the same wtm headline/body/bullets the analyzer shows, given inputs + metrics.
 // Mirrors the logic in calcCashFlow's interpreter section so reports can render the same story
@@ -6272,6 +6296,7 @@ function openPropertyReport(propertyId) {
   const list = loadSavedProperties();
   const prop = list.find(p => p.id === propertyId);
   if (!prop) return;
+  paReportData = null;
   reportPropertyId = prop.id;
   reportCompareIds = [];
   reportPreviousPage = 'properties';
@@ -6290,6 +6315,7 @@ function openReportFromAnalyzer() {
   if (editingPropertyId) {
     // Already a saved property, refresh it with current form values, then open the report
     updateSavedPropertyQuietly();
+    paReportData = null;
     reportPropertyId = editingPropertyId;
   } else {
     // Save as a new property silently, then open the report on it
@@ -6327,6 +6353,7 @@ function updateSavedPropertyQuietly() {
 // Entry point: from compare view, build a multi-property compare report.
 function openCompareReport() {
   if (compareSelection.length < COMPARE_MIN || compareSelection.length > COMPARE_MAX) return;
+  paReportData = null;
   reportPropertyId = null;
   reportCompareIds = [...compareSelection];
   reportPreviousPage = 'compare';
@@ -6335,12 +6362,23 @@ function openCompareReport() {
 }
 
 function exitReportView() {
-  navigateTo(reportPreviousPage || 'properties', null);
+  const back = reportPreviousPage || 'properties';
+  paReportData = null;
+  navigateTo(back, null);
 }
 
 function renderReportPage() {
   const container = document.getElementById('report-container');
   if (!container) return;
+  // Property Analysis report shares this page (and its print stylesheet) so both
+  // PDFs come out of the same rendering pipeline and look identical.
+  const shareBtn = document.getElementById('report-share-btn');
+  if (paReportData) {
+    container.innerHTML = renderPaReportHTML(paReportData);
+    if (shareBtn) shareBtn.style.display = 'none';   // share links are cash-flow-only
+    return;
+  }
+  if (shareBtn) shareBtn.style.display = '';
   if (reportCompareIds && reportCompareIds.length >= COMPARE_MIN) {
     container.innerHTML = renderCompareReportHTML();
   } else if (reportPropertyId) {
@@ -6746,95 +6784,95 @@ function calcCashFlow() {
 
   // Verdict signal for banner
   const wtmSignal = verdict === 'good' ? '✓ Strong deal' : verdict === 'warn' ? '⚡ Marginal deal' : '✗ Doesn\'t pencil';
-  const wtmBg     = verdict === 'good' ? '#2E7D52'       : verdict === 'warn' ? '#8A5E0A'           : '#C62828';
+  const wtmBg     = verdict === 'good' ? 'var(--r-pos)'       : verdict === 'warn' ? 'var(--r-warn)'           : 'var(--r-neg)';
 
   document.getElementById('cashflow-results').innerHTML = `
-    <div style="padding:20px 24px 18px;border-bottom:1px solid var(--rule,#E8E0CC);margin-bottom:20px">
+    <div style="padding:20px 24px 18px;border-bottom:1px solid var(--r-rule);margin-bottom:20px">
       <div style="display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:#fff;border-radius:3px;padding:4px 10px;margin-bottom:10px;background:${wtmBg}">${wtmSignal}</div>
-      <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.35rem;font-weight:600;color:var(--ink,#1A1C2A);line-height:1.3;margin-bottom:8px">${wtmHeadline}</div>
-      <div style="font-size:12.5px;color:var(--body,#4A5070);line-height:1.65;margin-bottom:12px">${wtmBody}</div>
+      <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.35rem;font-weight:600;color:var(--r-ink);line-height:1.3;margin-bottom:8px">${wtmHeadline}</div>
+      <div style="font-size:12.5px;color:var(--slate);line-height:1.65;margin-bottom:12px">${wtmBody}</div>
       <div style="display:flex;flex-direction:column;gap:8px">
         ${wtmBullets.map(b => `<div style="display:flex;align-items:flex-start;gap:10px">
-          <span style="flex-shrink:0;color:#8A5E0A;font-weight:700;margin-top:1px">→</span>
-          <span style="font-size:12px;color:var(--body,#4A5070);line-height:1.55">${b}</span>
+          <span style="flex-shrink:0;color:var(--r-warn);font-weight:700;margin-top:1px">→</span>
+          <span style="font-size:12px;color:var(--slate);line-height:1.55">${b}</span>
         </div>`).join('')}
       </div>
     </div>
 
     <!-- 3-column metric bars: CF, CoC, Cap rate -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid var(--rule,#E8E0CC);border-top:1px solid var(--rule,#E8E0CC);margin-bottom:0">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid var(--r-rule);border-top:1px solid var(--r-rule);margin-bottom:0">
       ${[
         { label:'Monthly cash flow', tip:'What\'s left over each month after rent collects and all expenses (mortgage, taxes, insurance, repairs) are paid.',
           val: cashflow, display: fmt(cashflow),
-          col: cashflow>=200?'#2E7D52':cashflow>=0?'#8A5E0A':'#C62828',
+          col: cashflow>=200?'var(--r-pos)':cashflow>=0?'var(--r-warn)':'var(--r-neg)',
           barW: Math.min(100,Math.max(0,(cashflow+500)/1000*100)).toFixed(1),
           note:'target > $200/mo' },
         { label:'Cash-on-cash return', tip:'Annual cash flow divided by the cash you put in. Tells you what your money earns each year, ignoring future appreciation.',
           val: cocReturn, display: pct(cocReturn),
-          col: cocReturn>=0.08?'#2E7D52':cocReturn>=0.04?'#8A5E0A':'#C62828',
+          col: cocReturn>=0.08?'var(--r-pos)':cocReturn>=0.04?'var(--r-warn)':'var(--r-neg)',
           barW: Math.min(100,Math.max(0,cocReturn/0.12*100)).toFixed(1),
           note:'target > 8%' },
         { label:'Cap rate', tip:'Net operating income divided by purchase price. Compares properties as if you paid cash.',
           val: capRate, display: pct(capRate),
-          col: capRate>=0.06?'#2E7D52':capRate>=0.04?'#8A5E0A':'#C62828',
+          col: capRate>=0.06?'var(--r-pos)':capRate>=0.04?'var(--r-warn)':'var(--r-neg)',
           barW: Math.min(100,Math.max(0,capRate/0.10*100)).toFixed(1),
           note:'target > 6%' },
       ].map((m,i) => `
-        <div style="padding:16px 18px;${i<2?'border-right:1px solid var(--rule,#E8E0CC)':''}">
-          <div style="font-size:10px;letter-spacing:1.1px;text-transform:uppercase;color:var(--muted,#9B9CAD);margin-bottom:6px">
+        <div style="padding:16px 18px;${i<2?'border-right:1px solid var(--r-rule)':''}">
+          <div style="font-size:10px;letter-spacing:1.1px;text-transform:uppercase;color:var(--r-cap);margin-bottom:6px">
             ${m.label}<span class="info-tip">i<span class="tip-text">${m.tip}</span></span>
           </div>
           <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.85rem;font-weight:700;line-height:1;color:${m.col};margin-bottom:8px">${m.display}</div>
-          <div style="height:4px;background:var(--rule,#E8E0CC);border-radius:2px;overflow:hidden;margin-bottom:4px">
+          <div style="height:4px;background:var(--r-rule);border-radius:2px;overflow:hidden;margin-bottom:4px">
             <div style="width:${m.barW}%;height:4px;border-radius:2px;background:${m.col}"></div>
           </div>
-          <div style="font-size:10px;color:var(--muted,#9B9CAD)">${m.note}</div>
+          <div style="font-size:10px;color:var(--r-cap)">${m.note}</div>
         </div>`).join('')}
     </div>
 
     <!-- CF detail + PITI row -->
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 18px;border-bottom:1px solid var(--rule,#E8E0CC);background:rgba(46,125,82,0.03);margin-bottom:0;font-size:11.5px">
-      <div style="color:var(--muted,#6B6C7E)">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 18px;border-bottom:1px solid var(--r-rule);background:rgba(46,125,82,0.03);margin-bottom:0;font-size:11.5px">
+      <div style="color:var(--r-body)">
         Monthly PITI<span class="info-tip">i<span class="tip-text">Principal, Interest, Taxes, Insurance — the total monthly housing payment a lender uses to qualify your loan${pmiMonthly>0?'. PMI is added when down payment is under 20%':''}.</span></span>
-        <span style="font-size:10px;color:var(--muted,#9B9CAD);margin-left:6px">what lenders quote as your payment</span>
+        <span style="font-size:10px;color:var(--r-cap);margin-left:6px">what lenders quote as your payment</span>
       </div>
-      <span style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.25rem;font-weight:600;color:var(--ink,#1A1C2A)">${fmt(piti)}</span>
+      <span style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.25rem;font-weight:600;color:var(--r-ink)">${fmt(piti)}</span>
     </div>
 
     <!-- DSCR row -->
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-bottom:1px solid var(--rule,#E8E0CC);margin-bottom:20px;gap:12px">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-bottom:1px solid var(--r-rule);margin-bottom:20px;gap:12px">
       <div style="flex:1">
-        <div style="font-size:10px;letter-spacing:1.1px;text-transform:uppercase;color:var(--muted,#9B9CAD);margin-bottom:4px">
+        <div style="font-size:10px;letter-spacing:1.1px;text-transform:uppercase;color:var(--r-cap);margin-bottom:4px">
           DSCR — Debt Service Coverage Ratio<span class="info-tip">i<span class="tip-text">The property's net income divided by its annual mortgage payments. Investor lenders use this instead of your personal income to qualify you for a loan.</span></span>
         </div>
-        <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.6rem;font-weight:700;line-height:1;color:${dscrClass==='qualify'?'#2E7D52':dscrClass==='borderline'?'#8A5E0A':'#C62828'};margin-bottom:5px">${formatDSCR(dscr, !isCashPurchase)}</div>
-        <div style="font-size:11.5px;color:var(--muted,#6B6C7E);line-height:1.5">${dscrMsg}</div>
-        <div style="font-size:10px;color:var(--muted,#9B9CAD);margin-top:3px;font-style:italic">${dscrROT}</div>
+        <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.6rem;font-weight:700;line-height:1;color:${dscrClass==='qualify'?'var(--r-pos)':dscrClass==='borderline'?'var(--r-warn)':'var(--r-neg)'};margin-bottom:5px">${formatDSCR(dscr, !isCashPurchase)}</div>
+        <div style="font-size:11.5px;color:var(--r-body);line-height:1.5">${dscrMsg}</div>
+        <div style="font-size:10px;color:var(--r-cap);margin-top:3px;font-style:italic">${dscrROT}</div>
       </div>
-      <span style="flex-shrink:0;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:5px 12px;border-radius:3px;background:${dscrClass==='qualify'?'#2E7D52':dscrClass==='borderline'?'#8A5E0A':'#C62828'};color:#fff">${dscrBadge}</span>
+      <span style="flex-shrink:0;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:5px 12px;border-radius:3px;background:${dscrClass==='qualify'?'var(--r-pos)':dscrClass==='borderline'?'var(--r-warn)':'var(--r-neg)'};color:#fff">${dscrBadge}</span>
     </div>
 
     <div class="result-section">
       <h4>After-tax returns<span class="info-tip">i<span class="tip-text">Estimates how depreciation and the mortgage interest deduction change your real return. Most rental losses can offset other passive income, and up to $25K of W-2 income for many investors.</span></span></h4>
-      <div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--rule,#E8E0CC);border-radius:3px;overflow:hidden;margin-bottom:14px">
-        <div style="padding:14px 16px;border-right:1px solid var(--rule,#E8E0CC)">
-          <div style="font-size:10px;letter-spacing:1.1px;text-transform:uppercase;color:var(--muted,#9B9CAD);margin-bottom:6px">After-tax monthly CF<span class="info-tip">i<span class="tip-text">Your pre-tax cash flow plus tax savings from depreciation, minus any tax owed on rental profit.</span></span></div>
-          <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.6rem;font-weight:700;line-height:1;color:${afterTaxMonthlyCF>=0?'#2E7D52':'#C62828'};margin-bottom:4px">${fmt(afterTaxMonthlyCF)}</div>
-          <div style="font-size:10.5px;color:var(--muted,#9B9CAD)">vs ${fmt(cashflow)} pre-tax</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--r-rule);border-radius:3px;overflow:hidden;margin-bottom:14px">
+        <div style="padding:14px 16px;border-right:1px solid var(--r-rule)">
+          <div style="font-size:10px;letter-spacing:1.1px;text-transform:uppercase;color:var(--r-cap);margin-bottom:6px">After-tax monthly CF<span class="info-tip">i<span class="tip-text">Your pre-tax cash flow plus tax savings from depreciation, minus any tax owed on rental profit.</span></span></div>
+          <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.6rem;font-weight:700;line-height:1;color:${afterTaxMonthlyCF>=0?'var(--r-pos)':'var(--r-neg)'};margin-bottom:4px">${fmt(afterTaxMonthlyCF)}</div>
+          <div style="font-size:10.5px;color:var(--r-cap)">vs ${fmt(cashflow)} pre-tax</div>
         </div>
         <div style="padding:14px 16px">
-          <div style="font-size:10px;letter-spacing:1.1px;text-transform:uppercase;color:var(--muted,#9B9CAD);margin-bottom:6px">After-tax CoC return<span class="info-tip">i<span class="tip-text">Annual cash-on-cash return after factoring in depreciation tax savings.</span></span></div>
-          <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.6rem;font-weight:700;line-height:1;color:${afterTaxCoC>=0.07?'#2E7D52':afterTaxCoC>=0?'#8A5E0A':'#C62828'};margin-bottom:4px">${pct(afterTaxCoC)}</div>
-          <div style="font-size:10.5px;color:var(--muted,#9B9CAD)">vs ${pct(cocReturn)} pre-tax</div>
+          <div style="font-size:10px;letter-spacing:1.1px;text-transform:uppercase;color:var(--r-cap);margin-bottom:6px">After-tax CoC return<span class="info-tip">i<span class="tip-text">Annual cash-on-cash return after factoring in depreciation tax savings.</span></span></div>
+          <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.6rem;font-weight:700;line-height:1;color:${afterTaxCoC>=0.07?'var(--r-pos)':afterTaxCoC>=0?'var(--r-warn)':'var(--r-neg)'};margin-bottom:4px">${pct(afterTaxCoC)}</div>
+          <div style="font-size:10.5px;color:var(--r-cap)">vs ${pct(cocReturn)} pre-tax</div>
         </div>
       </div>
       <table class="breakdown-table">
         <tr><td>Building value (${((1-landPct)*100).toFixed(0)}% of price, land excluded)</td><td>${fmt(buildingValue)}</td></tr>
         <tr><td>Annual depreciation (27.5-yr straight-line)</td><td>${fmt(annualDepreciation)}</td></tr>
         <tr><td>Year-1 mortgage interest (deductible)</td><td>${fmt(year1Interest)}</td></tr>
-        <tr><td>Taxable rental income (NOI − interest − depreciation)</td><td style="color:${taxableIncome<0?'#2E7D52':'var(--ink)'}">${fmt(taxableIncome)}</td></tr>
-        ${annualTaxSavings>0?`<tr class="total"><td>Annual tax savings at ${(marginalTaxRate*100).toFixed(0)}% bracket</td><td style="color:#2E7D52">+ ${fmt(annualTaxSavings)}</td></tr>`:''}
-        ${taxOwed>0?`<tr class="total"><td>Annual tax owed at ${(marginalTaxRate*100).toFixed(0)}% bracket</td><td style="color:#E57373">− ${fmt(taxOwed)}</td></tr>`:''}
+        <tr><td>Taxable rental income (NOI − interest − depreciation)</td><td style="color:${taxableIncome<0?'var(--r-pos)':'var(--ink)'}">${fmt(taxableIncome)}</td></tr>
+        ${annualTaxSavings>0?`<tr class="total"><td>Annual tax savings at ${(marginalTaxRate*100).toFixed(0)}% bracket</td><td style="color:var(--r-pos)">+ ${fmt(annualTaxSavings)}</td></tr>`:''}
+        ${taxOwed>0?`<tr class="total"><td>Annual tax owed at ${(marginalTaxRate*100).toFixed(0)}% bracket</td><td style="color:var(--r-neg-l)">− ${fmt(taxOwed)}</td></tr>`:''}
       </table>
       <p style="font-size:11px;color:var(--muted);margin-top:10px;line-height:1.5"><strong>Important:</strong> This is a simplified estimate. Passive activity loss rules limit how much rental loss most W-2 earners can deduct against ordinary income (up to $25K, phasing out from $100K to $150K AGI). Above $150K AGI, losses typically carry forward until you sell. Consult a CPA before relying on these numbers for major decisions.</p>
     </div>
@@ -6858,10 +6896,10 @@ function calcCashFlow() {
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px">
         ${[[5,yr5,'Total gain on '+fmt(totalCashIn)+' in'],[10,yr10,'Equity: '+fmt0(yr10.equity)],[15,yr15,'Equity: '+fmt0(yr15.equity)]].map(([yr,p,sub])=>`
-        <div style="border:1px solid var(--rule,#E8E0CC);border-radius:3px;padding:10px 14px">
-          <div style="font-size:10px;letter-spacing:0.5px;text-transform:uppercase;color:var(--muted,#9B9CAD);margin-bottom:4px">Year ${yr}</div>
-          <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.15rem;font-weight:600;color:${p.totalReturn>=0?'#2E7D52':'#C62828'}">${fmt0(p.totalReturn)}</div>
-          <div style="font-size:10px;color:var(--muted,#9B9CAD);margin-top:3px">${sub}</div>
+        <div style="border:1px solid var(--r-rule);border-radius:3px;padding:10px 14px">
+          <div style="font-size:10px;letter-spacing:0.5px;text-transform:uppercase;color:var(--r-cap);margin-bottom:4px">Year ${yr}</div>
+          <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.15rem;font-weight:600;color:${p.totalReturn>=0?'var(--r-pos)':'var(--r-neg)'}">${fmt0(p.totalReturn)}</div>
+          <div style="font-size:10px;color:var(--r-cap);margin-top:3px">${sub}</div>
         </div>`).join('')}
       </div>
       <p style="font-size:11px;color:var(--muted);margin-top:10px;line-height:1.5">Assumes ${(rentGrowth*100).toFixed(1)}% annual rent growth and ${(appreciation*100).toFixed(1)}% annual appreciation. Operating expenses held flat (conservative).</p>
@@ -6880,13 +6918,13 @@ function calcCashFlow() {
       <h4>Monthly breakdown</h4>
       <table class="breakdown-table">
         <tr><td>Effective rent (after ${(vacancy*100).toFixed(0)}% vacancy)</td><td>${fmt(effRent)}</td></tr>
-        <tr><td>Principal &amp; interest</td><td style="color:#E57373">− ${fmt(mortgage)}</td></tr>
-        <tr><td>Property tax</td><td style="color:#E57373">− ${fmt(tax/12)}</td></tr>
-        <tr><td>Insurance</td><td style="color:#E57373">− ${fmt(insurance/12)}</td></tr>
-        ${pmiMonthly>0?`<tr><td>PMI (down payment under 20%)</td><td style="color:#E57373">− ${fmt(pmiMonthly)}</td></tr>`:''}
-        ${hoa>0?`<tr><td>HOA fee</td><td style="color:#E57373">− ${fmt(hoa)}</td></tr>`:''}
-        <tr><td>Property management (${(mgmt*100).toFixed(0)}%)</td><td style="color:#E57373">− ${fmt(mgmtFee)}</td></tr>
-        <tr><td>CapEx reserve (1% of price/yr)</td><td style="color:#E57373">− ${fmt(capexMonthly)}</td></tr>
+        <tr><td>Principal &amp; interest</td><td style="color:var(--r-neg-l)">− ${fmt(mortgage)}</td></tr>
+        <tr><td>Property tax</td><td style="color:var(--r-neg-l)">− ${fmt(tax/12)}</td></tr>
+        <tr><td>Insurance</td><td style="color:var(--r-neg-l)">− ${fmt(insurance/12)}</td></tr>
+        ${pmiMonthly>0?`<tr><td>PMI (down payment under 20%)</td><td style="color:var(--r-neg-l)">− ${fmt(pmiMonthly)}</td></tr>`:''}
+        ${hoa>0?`<tr><td>HOA fee</td><td style="color:var(--r-neg-l)">− ${fmt(hoa)}</td></tr>`:''}
+        <tr><td>Property management (${(mgmt*100).toFixed(0)}%)</td><td style="color:var(--r-neg-l)">− ${fmt(mgmtFee)}</td></tr>
+        <tr><td>CapEx reserve (1% of price/yr)</td><td style="color:var(--r-neg-l)">− ${fmt(capexMonthly)}</td></tr>
         <tr class="total"><td>Net monthly cash flow</td><td>${fmt(cashflow)}</td></tr>
       </table>
     </div>
@@ -6912,7 +6950,7 @@ async function submitGptWaitlist(evt) {
   // Save via db wrapper (writes to Supabase if configured, localStorage otherwise)
   try { await db.joinWaitlist(email); } catch(e) { console.error('joinWaitlist failed:', e); }
   msgEl.style.display = 'block';
-  msgEl.style.color = '#2E7D52';
+  msgEl.style.color = 'var(--r-pos)';
   msgEl.textContent = `✓ You're on the list. We'll email ${email} when Lanvivo GPT goes live.`;
   showToast(`You're on the list!`, 'success');
   emailEl.value = '';
@@ -7503,16 +7541,16 @@ function buildMarketResultsHTML(d, beds) {
 
   // ── Verdict config by grade ──
   const gradeConfig = {
-    A: { signal: '✓ Strong market',  bg: '#2E7D52', headline: 'Strong investor fundamentals across the board',     sub: 'This zip scores well on the metrics that drive rental demand, tenant quality, and landlord-friendly law. A good candidate for further deal analysis.' },
-    B: { signal: '✓ Good market',    bg: '#2E7D52', headline: 'Solid market with a few trade-offs',                sub: 'Most dimensions are in good shape. Check which specific signals are weaker and decide if they affect your investment thesis.' },
-    C: { signal: '⚡ Mixed signals',  bg: '#8A5E0A', headline: 'Mixed signals — do your homework on this zip',     sub: 'Some dimensions score well, others are below average. Dig into the detail below to understand the specific risks before proceeding.' },
-    D: { signal: '✗ Weak market',    bg: '#C62828', headline: 'Significant headwinds for rental investors here',   sub: 'Multiple dimensions are below average. This zip may still work for specific strategies (high-yield, appreciation play) but needs a strong deal to compensate.' },
+    A: { signal: '✓ Strong market',  bg: 'var(--r-pos)', headline: 'Strong investor fundamentals across the board',     sub: 'This zip scores well on the metrics that drive rental demand, tenant quality, and landlord-friendly law. A good candidate for further deal analysis.' },
+    B: { signal: '✓ Good market',    bg: 'var(--r-pos)', headline: 'Solid market with a few trade-offs',                sub: 'Most dimensions are in good shape. Check which specific signals are weaker and decide if they affect your investment thesis.' },
+    C: { signal: '⚡ Mixed signals',  bg: 'var(--r-warn)', headline: 'Mixed signals — do your homework on this zip',     sub: 'Some dimensions score well, others are below average. Dig into the detail below to understand the specific risks before proceeding.' },
+    D: { signal: '✗ Weak market',    bg: 'var(--r-neg)', headline: 'Significant headwinds for rental investors here',   sub: 'Multiple dimensions are below average. This zip may still work for specific strategies (high-yield, appreciation play) but needs a strong deal to compensate.' },
   };
   const gc = gradeConfig[d.grade] || gradeConfig['C'];
 
   // ── Dimension tag color ──
   function tagColor(tag) {
-    return tag === 'strong' ? '#2E7D52' : tag === 'moderate' ? '#8A5E0A' : '#C62828';
+    return tag === 'strong' ? 'var(--r-pos)' : tag === 'moderate' ? 'var(--r-warn)' : 'var(--r-neg)';
   }
 
   // ── Dimension row ──
@@ -7530,17 +7568,17 @@ function buildMarketResultsHTML(d, beds) {
       else valStr = String(dim.value);
     }
     const barW     = Math.round(dim.score);
-    const barColor = dim.score >= 65 ? '#2E7D52' : dim.score >= 45 ? '#8A5E0A' : '#C62828';
+    const barColor = dim.score >= 65 ? 'var(--r-pos)' : dim.score >= 45 ? 'var(--r-warn)' : 'var(--r-neg)';
     return `
-      <div style="padding:8px 0;border-bottom:1px solid var(--rule,#E8E0CC)">
+      <div style="padding:8px 0;border-bottom:1px solid var(--r-rule)">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
-          <span style="font-size:11.5px;color:var(--body,#4A5070)">${label}</span>
+          <span style="font-size:11.5px;color:var(--slate)">${label}</span>
           <div style="display:flex;align-items:center;gap:8px">
-            <span style="font-size:10.5px;color:var(--ink,#1A1C2A)">${valStr}</span>
+            <span style="font-size:10.5px;color:var(--r-ink)">${valStr}</span>
             <span style="font-size:9px;font-weight:600;color:${tagColor(dim.tag)}">${dim.tag}</span>
           </div>
         </div>
-        <div style="height:4px;background:var(--rule,#E8E0CC);border-radius:2px;overflow:hidden">
+        <div style="height:4px;background:var(--r-rule);border-radius:2px;overflow:hidden">
           <div style="width:${barW}%;height:4px;border-radius:2px;background:${barColor}"></div>
         </div>
       </div>`;
@@ -7564,28 +7602,28 @@ function buildMarketResultsHTML(d, beds) {
   ];
 
   return `
-    <div style="font-family:'DM Sans',system-ui,sans-serif;font-size:13px;color:var(--ink,#1A1C2A)">
+    <div style="font-family:'DM Sans',system-ui,sans-serif;font-size:13px;color:var(--r-ink)">
 
       <!-- Verdict banner -->
-      <div style="padding:20px 24px 18px;border-bottom:1px solid var(--rule,#E8E0CC)">
+      <div style="padding:20px 24px 18px;border-bottom:1px solid var(--r-rule)">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px">
           <div style="display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:#fff;border-radius:3px;padding:4px 10px;background:${gc.bg}">${gc.signal}</div>
           <div style="text-align:right;flex-shrink:0">
             <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:2rem;font-weight:700;color:${gc.bg};line-height:1">${d.grade}</div>
-            <div style="font-size:10px;color:var(--muted,#9B9CAD)">${d.composite} / 100</div>
+            <div style="font-size:10px;color:var(--r-cap)">${d.composite} / 100</div>
           </div>
         </div>
-        <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.4rem;font-weight:600;color:var(--ink,#1A1C2A);line-height:1.25;margin-bottom:6px">${gc.headline}</div>
-        <div style="font-size:12px;color:var(--muted,#6B6C7E);line-height:1.55">${gc.sub}</div>
-        <div style="font-size:11px;color:var(--muted,#9B9CAD);margin-top:8px">
+        <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.4rem;font-weight:600;color:var(--r-ink);line-height:1.25;margin-bottom:6px">${gc.headline}</div>
+        <div style="font-size:12px;color:var(--r-body);line-height:1.55">${gc.sub}</div>
+        <div style="font-size:11px;color:var(--r-cap);margin-top:8px">
           ${escapeHTML(d.stateName)} · ${escapeHTML(d.zip)}${h?.area ? ' · ' + escapeHTML(h.area) : ''}
           &nbsp;·&nbsp; <span style="font-size:9px">Census ACS · HUD FMR · FBI UCR · State Law</span>
         </div>
       </div>
 
       <!-- 8 dimensions -->
-      <div style="padding:14px 24px;border-bottom:1px solid var(--rule,#E8E0CC)">
-        <div style="font-size:10px;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted,#9B9CAD);margin-bottom:2px">Market dimensions</div>
+      <div style="padding:14px 24px;border-bottom:1px solid var(--r-rule)">
+        <div style="font-size:10px;letter-spacing:1.3px;text-transform:uppercase;color:var(--r-cap);margin-bottom:2px">Market dimensions</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 24px">
           <div>
             ${dimRow('vacancy',     'Vacancy rate',      c?.vacancyRate != null ? c.vacancyRate.toFixed(1)+'%' : null)}
@@ -7603,42 +7641,42 @@ function buildMarketResultsHTML(d, beds) {
       </div>
 
       <!-- Signal tiles -->
-      <div style="padding:14px 24px;border-bottom:1px solid var(--rule,#E8E0CC)">
-        <div style="font-size:10px;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted,#9B9CAD);margin-bottom:10px">Market signals</div>
+      <div style="padding:14px 24px;border-bottom:1px solid var(--r-rule)">
+        <div style="font-size:10px;letter-spacing:1.3px;text-transform:uppercase;color:var(--r-cap);margin-bottom:10px">Market signals</div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
           ${signalTiles.map(([lbl,val,sub]) => `
-          <div style="border:1px solid var(--rule,#E8E0CC);border-radius:3px;padding:10px 12px;background:var(--bg,#F7F4EE)">
-            <div style="font-size:9px;color:var(--muted,#9B9CAD);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.8px">${lbl}</div>
-            <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.25rem;font-weight:600;color:var(--ink,#1A1C2A);line-height:1">${val}</div>
-            <div style="font-size:9px;color:var(--muted,#9B9CAD);margin-top:3px">${sub}</div>
+          <div style="border:1px solid var(--r-rule);border-radius:3px;padding:10px 12px;background:var(--r-panel)">
+            <div style="font-size:9px;color:var(--r-cap);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.8px">${lbl}</div>
+            <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.25rem;font-weight:600;color:var(--r-ink);line-height:1">${val}</div>
+            <div style="font-size:9px;color:var(--r-cap);margin-top:3px">${sub}</div>
           </div>`).join('')}
         </div>
       </div>
 
       <!-- Rent benchmarks -->
       ${rentRows.length ? `
-      <div style="padding:14px 24px;border-bottom:1px solid var(--rule,#E8E0CC)">
-        <div style="font-size:10px;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted,#9B9CAD);margin-bottom:10px">Rent benchmarks</div>
+      <div style="padding:14px 24px;border-bottom:1px solid var(--r-rule)">
+        <div style="font-size:10px;letter-spacing:1.3px;text-transform:uppercase;color:var(--r-cap);margin-bottom:10px">Rent benchmarks</div>
         ${rentRows.map(([lbl,val,note]) => `
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--rule,#E8E0CC);font-size:11.5px">
-          <span style="color:var(--muted,#6B6C7E)">${lbl}</span>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--r-rule);font-size:11.5px">
+          <span style="color:var(--r-body)">${lbl}</span>
           <div style="text-align:right">
-            <span style="font-weight:600;color:var(--ink,#1A1C2A)">${val}</span>
-            <span style="font-size:9px;color:var(--muted,#9B9CAD);margin-left:6px">${note}</span>
+            <span style="font-weight:600;color:var(--r-ink)">${val}</span>
+            <span style="font-size:9px;color:var(--r-cap);margin-left:6px">${note}</span>
           </div>
         </div>`).join('')}
-        <p style="font-size:10px;color:var(--muted,#9B9CAD);margin-top:8px;margin-bottom:0;line-height:1.5">HUD FMR = 40th percentile gross rent. Market rents typically run 10–30% above FMR.</p>
+        <p style="font-size:10px;color:var(--r-cap);margin-top:8px;margin-bottom:0;line-height:1.5">HUD FMR = 40th percentile gross rent. Market rents typically run 10–30% above FMR.</p>
       </div>` : ''}
 
       <!-- Landlord profile -->
       ${ll ? `
-      <div style="padding:14px 24px;border-bottom:1px solid var(--rule,#E8E0CC)">
-        <div style="font-size:10px;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted,#9B9CAD);margin-bottom:10px">Landlord profile — ${escapeHTML(ll.label)}</div>
+      <div style="padding:14px 24px;border-bottom:1px solid var(--r-rule)">
+        <div style="font-size:10px;letter-spacing:1.3px;text-transform:uppercase;color:var(--r-cap);margin-bottom:10px">Landlord profile — ${escapeHTML(ll.label)}</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
           ${[['Eviction timeline',ll.eviction],['Rent control',ll.rentControl],['Security deposit',ll.deposit],['Overall rating',ll.rating]].map(([lbl,val]) => `
-          <div style="border:1px solid var(--rule,#E8E0CC);border-radius:3px;padding:10px 12px;background:var(--bg,#F7F4EE)">
-            <div style="font-size:9px;color:var(--muted,#9B9CAD);margin-bottom:4px">${lbl}</div>
-            <div style="font-size:12px;font-weight:500;color:${val==='Friendly'?'#2E7D52':val==='Restrictive'?'#C62828':'var(--ink,#1A1C2A)'}">${val}</div>
+          <div style="border:1px solid var(--r-rule);border-radius:3px;padding:10px 12px;background:var(--r-panel)">
+            <div style="font-size:9px;color:var(--r-cap);margin-bottom:4px">${lbl}</div>
+            <div style="font-size:12px;font-weight:500;color:${val==='Friendly'?'var(--r-pos)':val==='Restrictive'?'var(--r-neg)':'var(--r-ink)'}">${val}</div>
           </div>`).join('')}
         </div>
       </div>` : ''}
@@ -7646,10 +7684,10 @@ function buildMarketResultsHTML(d, beds) {
       <!-- CTA -->
       <div style="padding:14px 24px 0">
         <div onclick="navigateTo('cashflow',null);setTimeout(()=>{const z=document.getElementById('cf-zip');if(z){z.value='${escapeHTML(d.zip)}';onCfZipInput('${escapeHTML(d.zip)}');}},100)"
-          style="width:100%;background:#2C2B2B;border:none;border-radius:3px;padding:12px 16px;font-family:'DM Sans',system-ui,sans-serif;font-size:12px;color:#F7F4EE;cursor:pointer;text-align:left;display:block;box-sizing:border-box">
+          style="width:100%;background:var(--r-cta);border:none;border-radius:3px;padding:12px 16px;font-family:'DM Sans',system-ui,sans-serif;font-size:12px;color:var(--r-panel);cursor:pointer;text-align:left;display:block;box-sizing:border-box">
           Open Cash Flow Analyzer for ${escapeHTML(d.zip)} →
         </div>
-        <p style="font-size:10px;color:var(--muted,#9B9CAD);margin-top:10px;margin-bottom:0;line-height:1.5">Market score uses Census ACS 2022, FBI UCR, HUD FMR, and BLS data. Landlord data reflects state law as of 2024. Scores are relative to US national benchmarks. Not financial advice.</p>
+        <p style="font-size:10px;color:var(--r-cap);margin-top:10px;margin-bottom:0;line-height:1.5">Market score uses Census ACS 2022, FBI UCR, HUD FMR, and BLS data. Landlord data reflects state law as of 2024. Scores are relative to US national benchmarks. Not financial advice.</p>
       </div>
 
     </div>
@@ -7715,7 +7753,7 @@ function updateChatLimit() {
 <div class="lead-modal-backdrop" id="add-owned-modal" onclick="if(event.target===this)closeAddOwnedModal()">
   <div class="lead-modal" style="max-width:480px;max-height:90vh;overflow-y:auto">
     <button class="lead-modal-close" onclick="closeAddOwnedModal()">×</button>
-    <div class="lead-modal-label" style="background:rgba(200,170,90,0.12);color:#C8AA5A">My Properties</div>
+    <div class="lead-modal-label" style="background:rgba(200,170,90,0.12);color:var(--gold-l)">My Properties</div>
     <h3>Add a property you own</h3>
     <p class="lead-modal-intro" style="margin-bottom:20px">Fill in the required fields. Add expenses below for accurate projected figures.</p>
 
@@ -7778,7 +7816,7 @@ function updateChatLimit() {
       </div>
     </div>
 
-    <div id="aop-error" style="display:none;color:#c0392b;font-size:13px;margin-bottom:10px"></div>
+    <div id="aop-error" style="display:none;color:var(--r-neg);font-size:13px;margin-bottom:10px"></div>
 
     <div class="lead-form-actions">
       <button class="lead-cancel" onclick="closeAddOwnedModal()">Cancel</button>
@@ -7790,7 +7828,7 @@ function updateChatLimit() {
 <div class="lead-modal-backdrop" id="mgmt-modal" onclick="if(event.target===this)closeManagementModal()">
   <div class="lead-modal" style="max-width:480px">
     <button class="lead-modal-close" onclick="closeManagementModal()">×</button>
-    <div class="lead-modal-label" style="background:rgba(184,130,30,0.12);color:#B8821E">Property Management</div>
+    <div class="lead-modal-label" style="background:rgba(184,130,30,0.12);color:var(--gold)">Property Management</div>
     <h3>Let Lanvivo manage your property</h3>
 
     <div style="background:rgba(46,125,82,0.07);border:1px solid rgba(46,125,82,0.2);border-radius:8px;padding:12px 14px;margin-bottom:18px">
@@ -7823,8 +7861,8 @@ function updateChatLimit() {
       <textarea id="mgmt-note" rows="3" placeholder="e.g. Currently tenant-occupied, looking for full-service management..." style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;background:var(--input-bg,var(--bg));color:inherit;font-size:14px;resize:vertical;box-sizing:border-box"></textarea>
     </div>
 
-    <div id="mgmt-error" style="display:none;color:#c0392b;font-size:13px;margin-bottom:10px"></div>
-    <div id="mgmt-success" style="display:none;background:rgba(46,125,82,0.1);color:#2E7D52;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:10px">
+    <div id="mgmt-error" style="display:none;color:var(--r-neg);font-size:13px;margin-bottom:10px"></div>
+    <div id="mgmt-success" style="display:none;background:rgba(46,125,82,0.1);color:var(--r-pos);border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:10px">
       ✓ Request received! Our team will be in touch within 1 business day.
     </div>
 
@@ -8225,7 +8263,7 @@ function renderPaResults(d) {
 
     <!-- Actions bar -->
     <div class="pa-actions">
-      <button class="btn-pdf" onclick="downloadPaReport()">⬇ Download PDF Report</button>
+      <button class="btn-pdf" onclick="openPaReport()">📄 View print report →</button>
       <button class="btn-new" onclick="resetPaForm()">← New analysis</button>
     </div>`;
 }
@@ -8239,466 +8277,198 @@ function resetPaForm() {
     </div>`;
 }
 
-// ── jsPDF Report Generator ────────────────────────────────────────────────────
-async function downloadPaReport() {
+// ── Property Analysis Report ──────────────────────────────────────────────────
+// Renders into the SAME .report-page markup the Cash Flow Analyzer report uses, so
+// both PDFs share one stylesheet and one print pipeline. Replaces the old jsPDF
+// generator, which drew at manual coordinates and could never match exactly.
+
+function openPaReport() {
   if (!_paData) return;
-  const { jsPDF } = window.jspdf;
-  const d = _paData;
+  paReportData     = _paData;
+  reportPropertyId = null;
+  reportCompareIds = [];
+  reportPreviousPage = 'propanalysis';
+  navigateTo('report', null);
+}
+
+// Kept for backwards compatibility with any existing button wiring.
+function downloadPaReport() { openPaReport(); }
+
+function renderPaReportHTML(d) {
   const c = d.comp, r = d.rental;
-  const PW = 210, PH = 297;
-  const LM = 16, RM = PW - 16, BW = PW - LM * 2;
-
-  // ── Palette (matches cash-flow analyzer) ──────────────────────────────────
-  const GOLD   = [200, 148,  42];
-  const DEEP   = [ 20,  32,  78];
-  const GREEN  = [ 26, 110,  86];
-  const WHITE  = [255, 255, 255];
-  const CREAM  = [246, 244, 237];
-  const LGRAY  = [250, 250, 248];
-  const BORDER = [226, 222, 212];
-  const GRAY   = [130, 130, 130];
-  const DARK   = [ 38,  42,  58];
-  // Serif face for wordmark / headline / KPI values (matches reference)
-  const SERIF  = 'times';
-
-  const doc = new jsPDF({ unit:'mm', format:'a4' });
-  let page = 1, y = 0;
-
-  // ── Address normalisation ─────────────────────────────────────────────────
-  d.address = d.address
-    .replace(/([a-zA-Z])(\d{5})/, '$1 $2')
-    .replace(/\b([a-z])/g, ch => ch.toUpperCase());
-  const _ST = {Alabama:'AL',Alaska:'AK',Arizona:'AZ',Arkansas:'AR',California:'CA',
-    Colorado:'CO',Connecticut:'CT',Delaware:'DE',Florida:'FL',Georgia:'GA',Hawaii:'HI',
-    Idaho:'ID',Illinois:'IL',Indiana:'IN',Iowa:'IA',Kansas:'KS',Kentucky:'KY',
-    Louisiana:'LA',Maine:'ME',Maryland:'MD',Massachusetts:'MA',Michigan:'MI',
-    Minnesota:'MN',Mississippi:'MS',Missouri:'MO',Montana:'MT',Nebraska:'NE',
-    Nevada:'NV','New Hampshire':'NH','New Jersey':'NJ','New Mexico':'NM','New York':'NY',
-    'North Carolina':'NC','North Dakota':'ND',Ohio:'OH',Oklahoma:'OK',Oregon:'OR',
-    Pennsylvania:'PA','Rhode Island':'RI','South Carolina':'SC','South Dakota':'SD',
-    Tennessee:'TN',Texas:'TX',Utah:'UT',Vermont:'VT',Virginia:'VA',Washington:'WA',
-    'West Virginia':'WV',Wisconsin:'WI',Wyoming:'WY'};
-  Object.entries(_ST).forEach(([full, abbr]) => {
-    d.address = d.address.replace(new RegExp('\\b' + full + '\\b', 'gi'), abbr);
-  });
-
-  // ── Lot-size helper (RentCast returns sq ft; >200 = convert to acres) ─────
-  function _lotSize(v) {
-    if (!v || isNaN(v)) return null;
-    const n = parseFloat(v);
-    if (n <= 0) return null;
-    // RentCast often returns sq ft (large integers); anything over 200 is sq ft
-    if (n > 200) return (n / 43560).toFixed(2) + ' acres';
-    return n.toFixed(2) + ' acres';
-  }
-
-  // Always round DOM average — API sometimes returns a float
+  const esc = (typeof escapeHTML === 'function') ? escapeHTML : (s => String(s ?? ''));
   const avgDom = Math.round(parseFloat(c.avgDomSale) || 45);
+  const ppsf   = d.sqft ? Math.round(d.price / d.sqft) : null;
 
-  // ── Page helpers ──────────────────────────────────────────────────────────
-  function addPage() { doc.addPage(); page++; _drawFooter(); y = 26; }
-  function checkY(n) { if (y + n > PH - 16) addPage(); }
+  // Lot size: RentCast returns sq ft; anything over 200 converts to acres.
+  const lotFmt = (() => {
+    const n = parseFloat(d.lotSize);
+    if (!n || isNaN(n) || n <= 0) return null;
+    return (n > 200 ? (n / 43560).toFixed(2) : n.toFixed(2)) + ' acres';
+  })();
 
-  // ── Coin seal ─────────────────────────────────────────────────────────────
-  function _seal(cx, cy, r) {
-    doc.setDrawColor(...GOLD); doc.setLineWidth(r * 0.075); doc.circle(cx, cy, r, 'S');
-    doc.setLineWidth(r * 0.028);
-    doc.setGState(doc.GState({opacity:0.3})); doc.circle(cx, cy, r * 0.84, 'S');
-    doc.setGState(doc.GState({opacity:1}));
-    // Serif "L", optically centred — matches the serif wordmark beside it
-    doc.setFont(SERIF, 'normal');
-    doc.setFontSize(r * 2.5);
-    doc.setTextColor(...GOLD);
-    doc.text('L', cx, cy + r * 0.04, { align:'center', baseline:'middle' });
-  }
+  // ── Hero subline, uppercase + letterspaced like the cash-flow report ──
+  const heroMeta = [
+    _fmtPrice(d.price),
+    d.beds ? d.beds + ' BD / ' + d.baths + ' BA' : null,
+    d.sqft ? d.sqft.toLocaleString() + ' sqft' : null,
+    d.yearBuilt ? 'Built ' + d.yearBuilt : null,
+    d.dom > 0 ? d.dom + ' days on market' : 'Just listed',
+  ].filter(Boolean).join(' · ');
 
-  // ── Header (coin seal + serif wordmark left · label right · navy rule) ────
-  function _drawHeader() {
-    // Seal centre sits on the wordmark's optical centre, not its baseline
-    _seal(LM + 5.2, 12.7, 5.2);
-    // "Lanvivo" wordmark — serif, navy (matches cash-flow report)
-    doc.setFont(SERIF, 'normal'); doc.setFontSize(21);
-    doc.setTextColor(...DEEP);
-    doc.text('Lanvivo', LM + 14.2, 15.6);
+  // ── Four KPI cards ──
+  const kpis = [
+    ['List Price', _fmtPrice(d.price), ppsf ? '$' + ppsf + ' per sqft' : '', 'r4-neutral'],
+    ['Days on Market', d.dom > 0 ? d.dom + ' days' : 'Just listed',
+      'Market avg ' + avgDom + ' days', d.dom > avgDom ? 'r4-warn' : 'r4-good'],
+    ['Comp Sweet Spot', _fmtPrice(c.sweetLow) + '–' + _fmtPrice(c.sweetHigh),
+      'Competitive range', 'r4-good'],
+    ['Est. Monthly Rent', _fmtPrice(r.rentLow) + '–' + _fmtPrice(r.rentHigh),
+      (r.marketTemp || '') + ' rental market', 'r4-warn'],
+  ].map(([lbl, val, sub, cls]) =>
+    `<div class="r4-card"><div class="r4-label">${esc(lbl)}</div>` +
+    `<div class="r4-value ${cls}">${esc(val)}</div>` +
+    `<div class="r4-sub">${esc(sub)}</div></div>`).join('');
 
-    // Report label right-aligned
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(9.5);
-    doc.setTextColor(...DEEP);
-    doc.text('Property Analysis Report', RM, 10.5, { align: 'right' });
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
-    doc.setTextColor(...GRAY);
-    doc.text('Generated ' + d.date, RM, 15.5, { align: 'right' });
-
-    // Navy rule (reference uses deep navy, not gold)
-    doc.setDrawColor(...DEEP); doc.setLineWidth(0.7);
-    doc.line(LM, 20.5, RM, 20.5);
-    y = 31;
-  }
-
-  // ── Footer (slim — full disclaimer appears once at end of report) ─────────
-  function _drawFooter() {
-    doc.setDrawColor(...BORDER); doc.setLineWidth(0.2);
-    doc.line(LM, PH - 11, RM, PH - 11);
-    doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
-    doc.setTextColor(...GRAY);
-    doc.text('Generated by Lanvivo · lanvivo.com · hello@lanvivo.com · ' + d.date, LM, PH - 6.5);
-    doc.text('Page ' + page, RM, PH - 6.5, {align:'right'});
-  }
-
-  // ── Full disclaimer block, rendered once at the very end ──────────────────
-  function _disclaimer() {
-    const disc = 'For informational purposes only. Comparable sales, rental estimates, and days-on-market figures are drawn from RentCast and US Census Bureau data and reflect market conditions at time of generation. Actual sale price depends on condition, presentation, and buyer demand. Consult a licensed real estate professional before relying on these numbers for pricing decisions.';
-    doc.setFont('helvetica','normal'); doc.setFontSize(6.4);
-    const dl = doc.splitTextToSize(disc, BW);
-    checkY(dl.length * 2.9 + 8);
-    y += 4;
-    doc.setDrawColor(...BORDER); doc.setLineWidth(0.2);
-    doc.line(LM, y, RM, y);
-    y += 4;
-    doc.setTextColor(...GRAY);
-    dl.forEach(l => { doc.text(l, LM, y); y += 2.9; });
-  }
-
-  // ── Large property headline (serif, matching reference) ───────────────────
-  function _headline() {
-    // Property name — large serif
-    doc.setFont(SERIF, 'normal'); doc.setFontSize(27);
-    doc.setTextColor(...DEEP);
-    const nameLines = doc.splitTextToSize(d.address, BW);
-    nameLines.forEach(l => { doc.text(l, LM, y); y += 10.5; });
-    y += 1;
-
-    // Subline — letterspaced uppercase, like "$219,000 · $1,800/MO RENT · 20% DOWN"
-    const sub = [
-      _fmtPrice(d.price),
-      d.beds ? d.beds + ' BD / ' + d.baths + ' BA' : null,
-      d.sqft ? d.sqft.toLocaleString() + ' SQFT' : null,
-      d.yearBuilt ? 'BUILT ' + d.yearBuilt : null,
-      d.dom > 0 ? d.dom + ' DAYS ON MARKET' : 'JUST LISTED',
-    ].filter(Boolean).join('  ·  ');
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5);
-    doc.setTextColor(...GRAY);
-    doc.setCharSpace(0.3);
-    doc.text(sub.toUpperCase(), LM, y);
-    doc.setCharSpace(0);
-    y += 9;
-  }
-
-  // ── Summary box (cream fill, gold left bar — matches reference) ───────────
-  function _summaryBox(txt) {
-    doc.setFont('helvetica','normal'); doc.setFontSize(10.5);
-    const lines = doc.splitTextToSize(txt, BW - 16);
-    const bh = lines.length * 5.6 + 11;
-    checkY(bh + 6);
-    doc.setFillColor(...CREAM);
-    doc.rect(LM, y, BW, bh, 'F');
-    doc.setFillColor(...GOLD); doc.rect(LM, y, 2.2, bh, 'F');
-    doc.setTextColor(...DARK);
-    lines.forEach((l, i) => doc.text(l, LM + 9, y + 7.5 + i * 5.6));
-    y += bh + 8;
-  }
-
-  // ── 4 KPI cards (serif values, letterspaced labels, colour-coded) ─────────
-  function _kpiCards(cards) {
-    const gap = 2.5;
-    const cw = (BW - gap * (cards.length - 1)) / cards.length;
-    const ch = 26;
-    cards.forEach(([label, value, sub, tone], i) => {
-      const cx = LM + i * (cw + gap);
-      doc.setFillColor(...WHITE); doc.setDrawColor(...BORDER); doc.setLineWidth(0.25);
-      doc.rect(cx, y, cw, ch, 'FD');
-      const mid = cx + cw / 2;
-
-      // Label — letterspaced uppercase gray
-      doc.setFont('helvetica','normal'); doc.setFontSize(6);
-      doc.setTextColor(...GRAY);
-      doc.setCharSpace(0.35);
-      doc.text(label.toUpperCase(), mid, y + 6, {align:'center'});
-      doc.setCharSpace(0);
-
-      // Value — serif, colour by tone
-      const col = tone === 'green' ? GREEN : tone === 'gold' ? GOLD : DEEP;
-      doc.setFont(SERIF,'normal'); doc.setTextColor(...col);
-      let fs = 15;
-      doc.setFontSize(fs);
-      while (doc.getTextWidth(value) > cw - 5 && fs > 8.5) { fs -= 0.5; doc.setFontSize(fs); }
-      doc.text(value, mid, y + 14.5, {align:'center'});
-
-      // Sub-label
-      if (sub) {
-        doc.setFont('helvetica','normal'); doc.setFontSize(6.8);
-        doc.setTextColor(...GRAY);
-        const sl = doc.splitTextToSize(sub, cw - 3);
-        doc.text(sl[0], mid, y + 21, {align:'center'});
-      }
-    });
-    y += ch + 10;
-  }
-
-  // ── Section heading (letterspaced navy small caps — matches reference) ────
-  function _section(title) {
-    checkY(16);
-    y += 2;
-    doc.setFont('helvetica','bold'); doc.setFontSize(8);
-    doc.setTextColor(...DEEP);
-    doc.setCharSpace(0.55);
-    doc.text(title.toUpperCase(), LM, y);
-    doc.setCharSpace(0);
-    y += 6.5;
-  }
-
-  // ── Data table ────────────────────────────────────────────────────────────
-  function _table(headers, rows, colW, centerCols = []) {
-    const hh = 8, lh = 4.5, pad = 3.5;
-    const wrapped = rows.map(row =>
-      row.map((cell, ci) => {
-        doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
-        return doc.splitTextToSize(String(cell ?? ''), colW[ci] - pad);
-      })
-    );
-    const rowH = wrapped.map(row => Math.max(1, Math.max(...row.map(c => c.length))) * lh + 5);
-    checkY(hh + rowH[0] + 4);
-
-    // Header row — light cream with navy letterspaced caps (no heavy navy bar)
-    doc.setFillColor(...CREAM); doc.rect(LM, y, BW, hh, 'F');
-    let xx = LM;
-    headers.forEach((h, i) => {
-      doc.setFont('helvetica','bold'); doc.setFontSize(6.5);
-      doc.setTextColor(...DEEP);
-      doc.setCharSpace(0.3);
-      const cx = centerCols.includes(i);
-      doc.text(h.toUpperCase(), cx ? xx + colW[i]/2 : xx + 2.5, y + 5.2, {align: cx ? 'center' : 'left'});
-      doc.setCharSpace(0);
-      xx += colW[i];
-    });
-    y += hh;
-    // Navy underline beneath header
-    doc.setDrawColor(...DEEP); doc.setLineWidth(0.4);
-    doc.line(LM, y, RM, y);
-
-    wrapped.forEach((row, ri) => {
-      const rh = rowH[ri];
-      if (y + rh > PH - 16) addPage();
-      doc.setFillColor(...(ri % 2 === 0 ? WHITE : LGRAY));
-      doc.rect(LM, y, BW, rh, 'F');
-      doc.setDrawColor(...BORDER); doc.setLineWidth(0.1);
-      doc.line(LM, y + rh, LM + BW, y + rh);
-      xx = LM;
-      row.forEach((cellLines, ci) => {
-        doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
-        doc.setTextColor(...DARK);
-        const cx = centerCols.includes(ci);
-        cellLines.forEach((l, li) =>
-          doc.text(l, cx ? xx + colW[ci]/2 : xx + 2.5, y + 4 + li * lh, {align: cx ? 'center' : 'left'})
-        );
-        xx += colW[ci];
-      });
-      y += rh;
-    });
-    y += 6;
-  }
-
-  // ── Insight box (cream fill, gold left bar) ───────────────────────────────
-  function _insight(txt, bold = false) {
-    doc.setFont('helvetica', bold ? 'bold' : 'normal'); doc.setFontSize(9);
-    const lines = doc.splitTextToSize(txt, BW - 16);
-    const bh = lines.length * 5 + 9;
-    checkY(bh + 5);
-    doc.setFillColor(...CREAM);
-    doc.rect(LM, y, BW, bh, 'F');
-    doc.setFillColor(...GOLD); doc.rect(LM, y, 2.2, bh, 'F');
-    doc.setTextColor(...DARK);
-    lines.forEach((l, i) => doc.text(l, LM + 9, y + 6.5 + i * 5));
-    y += bh + 6;
-  }
-
-  // ── Pull quote (serif figure + cream band, like the DSCR callout) ─────────
-  function _pullQuote(txt) {
-    const bh = 13;
-    checkY(bh + 5);
-    doc.setFillColor(...CREAM);
-    doc.rect(LM, y, BW, bh, 'F');
-    doc.setFillColor(...GOLD); doc.rect(LM, y, 2.2, bh, 'F');
-    doc.setFont(SERIF,'normal'); doc.setFontSize(12);
-    doc.setTextColor(...GOLD);
-    doc.text(txt, LM + 9, y + 8.5);
-    y += bh + 7;
-  }
-
-  // ── Recommendation card ───────────────────────────────────────────────────
-  function _rec(num, title, detail) {
-    doc.setFont('helvetica','normal'); doc.setFontSize(8.8);
-    const lines = doc.splitTextToSize(detail, BW - 14);
-    const bh = lines.length * 4.6 + 14;
-    checkY(bh + 3);
-    doc.setFillColor(...WHITE); doc.setDrawColor(...BORDER); doc.setLineWidth(0.2);
-    doc.rect(LM, y, BW, bh, 'FD');
-    doc.setFillColor(...GOLD); doc.rect(LM, y, 2.2, bh, 'F');
-    // Number in gold
-    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...GOLD);
-    doc.text(num + '.', LM + 7, y + 6.5);
-    const nw = doc.getTextWidth(num + '.') + 2;
-    // Title in navy
-    doc.setFont('helvetica','bold'); doc.setFontSize(9.2); doc.setTextColor(...DEEP);
-    doc.text(title, LM + 7 + nw, y + 6.5);
-    // Body
-    doc.setFont('helvetica','normal'); doc.setFontSize(8.8); doc.setTextColor(82, 90, 118);
-    lines.forEach((l, i) => doc.text(l, LM + 7, y + 12 + i * 4.6));
-    y += bh + 3.5;
-  }
-
-  // ── Arrow insight item (drawn triangle — avoids jsPDF Unicode encoding bug) ─
-  function _arrow(boldText, body) {
-    checkY(12);
-    const ax = LM;
-    // Draw gold right-pointing triangle (replaces → which jsPDF mangles)
-    const tw = 2.8, th = 3.5;
-    doc.setFillColor(...GOLD);
-    doc.lines([[tw, th / 2], [-tw, th / 2]], ax, y - th / 2 + 1.5, [1, 1], 'F', true);
-    const textStart = ax + tw + 2.5;
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...DEEP);
-    doc.text(boldText, textStart, y);
-    const bw = doc.getTextWidth(boldText) + 1.5;
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...DARK);
-    const bl = doc.splitTextToSize(body, BW - tw - 2.5 - bw);
-    bl.forEach((l, li) => doc.text(l, textStart + bw, y + li * 4.8));
-    y += bl.length * 4.8 + 4;
-  }
-
-  // ══ BUILD ══════════════════════════════════════════════════════════════════
-  _drawHeader();
-  _drawFooter();
-
-  // ── Headline ──
-  _headline();
-
-  // ── Summary verdict ──
-  if (c.verdict) _summaryBox(c.verdict);
-
-  // ── KPI cards ──
-  _kpiCards([
-    ['List price',        _fmtPrice(d.price),
-                          d.sqft ? '$' + Math.round(d.price / d.sqft) + ' per sqft' : '',
-                          'navy'],
-    ['Days on market',    d.dom > 0 ? d.dom + ' days' : 'Just listed',
-                          'Market avg ' + avgDom + ' days',
-                          d.dom > avgDom ? 'gold' : 'green'],
-    ['Comp sweet spot',   _fmtPrice(c.sweetLow) + '–' + _fmtPrice(c.sweetHigh),
-                          'Competitive range',
-                          'green'],
-    ['Est. monthly rent', _fmtPrice(r.rentLow) + '–' + _fmtPrice(r.rentHigh),
-                          r.marketTemp + ' rental market',
-                          'gold'],
-  ]);
-
-  // ── 01 Subject Property ──
-  _section('Subject Property');
-  const lotFmt = _lotSize(d.lotSize);
+  // ── 01 Subject property ──
   const propRows = [
-    ['Address',            d.address],
-    ['List Price',         _fmtPrice(d.price)],
-    d.sqft      ? ['Price Per Sq Ft',  '$' + Math.round(d.price / d.sqft) + ' per sqft'] : null,
-    d.beds      ? ['Bedrooms / Baths', d.beds + ' BD / ' + d.baths + ' BA'] : null,
-    d.sqft      ? ['Square Footage',   d.sqft.toLocaleString() + ' sqft'] : null,
-    lotFmt      ? ['Lot Size',         lotFmt] : null,
-    d.yearBuilt ? ['Year Built',       String(d.yearBuilt)] : null,
+    ['Address', d.address],
+    ['List Price', _fmtPrice(d.price)],
+    ppsf ? ['Price Per Sq Ft', '$' + ppsf + ' per sqft'] : null,
+    d.beds ? ['Bedrooms / Baths', d.beds + ' BD / ' + d.baths + ' BA'] : null,
+    d.sqft ? ['Square Footage', d.sqft.toLocaleString() + ' sqft'] : null,
+    lotFmt ? ['Lot Size', lotFmt] : null,
+    d.yearBuilt ? ['Year Built', String(d.yearBuilt)] : null,
     (d.agent && d.agent !== 'N/A') ? ['Listing Agent', d.agent] : null,
-    ['Days on Market',          d.dom > 0 ? d.dom + ' days' : 'Just listed'],
-    d.avm ? ['RentCast AVM', _fmtPrice(d.avm) + (d.avmLow ? ` (${_fmtPrice(d.avmLow)}–${_fmtPrice(d.avmHigh)})` : '')] : null,
+    ['Days on Market', d.dom > 0 ? d.dom + ' days' : 'Just listed'],
+    d.avm ? ['RentCast AVM', _fmtPrice(d.avm) + (d.avmLow ? ' (' + _fmtPrice(d.avmLow) + '–' + _fmtPrice(d.avmHigh) + ')' : '')] : null,
     d.taxAnnual ? ['Annual Tax', _fmtPrice(d.taxAnnual) + '/yr'] : null,
-    d.hoaFee    ? ['HOA Fee',    _fmtPrice(d.hoaFee) + '/mo']    : null,
+    d.hoaFee ? ['HOA Fee', _fmtPrice(d.hoaFee) + '/mo'] : null,
     ['Market Avg Days to Sell', avgDom + ' days avg'],
-  ].filter(Boolean);
-  _table(['Detail', 'Information'], propRows, [62, BW - 62]);
+  ].filter(Boolean)
+   .map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('');
 
-  // ── 02 Comparable Sales ──
-  _section('Comparable Sales');
-  const scRows = (d.saleComps || []).slice(0, 6).map(sc => [
-    (sc.formattedAddress || '').replace(/, [A-Z]{2}.*/, '').substring(0, 30),
-    (sc.bedrooms || '?') + ' BD / ' + (sc.bathrooms || '?') + ' BA',
-    sc.squareFootage ? sc.squareFootage.toLocaleString() : 'N/A',
-    _fmtPrice(sc.price),
-    sc.squareFootage ? '$' + Math.round(sc.price / sc.squareFootage) : 'N/A',
-    (sc.removedDate || sc.listedDate || '').slice(0, 7),
-  ]);
-  if (scRows.length) {
-    _table(['Address', 'Beds/Baths', 'Sq Ft', 'Sold Price', '$/sqft', 'Sold Date'],
-      scRows, [52, 24, 16, 26, 16, BW - 134], [1, 2, 3, 4, 5]);
-  } else {
-    doc.setFont('helvetica','italic'); doc.setFontSize(9);
-    doc.setTextColor(...GRAY);
-    doc.text('No recent comparable sales found.', LM, y); y += 8;
-  }
-  _pullQuote('Competitive sweet spot:  ' + _fmtPrice(c.sweetLow) + ' – ' + _fmtPrice(c.sweetHigh));
+  // ── 02 Comparable sales ──
+  const compRows = (d.saleComps || []).slice(0, 6).map(sc => {
+    const sp = sc.squareFootage ? Math.round(sc.price / sc.squareFootage) : 0;
+    return '<tr>' +
+      `<td>${esc((sc.formattedAddress || sc.address || '').replace(/, [A-Z]{2}.*/, ''))}</td>` +
+      `<td>${esc((sc.bedrooms ?? '?') + ' BD / ' + (sc.bathrooms ?? '?') + ' BA')}</td>` +
+      `<td>${sc.squareFootage ? sc.squareFootage.toLocaleString() : 'N/A'}</td>` +
+      `<td>${esc(_fmtPrice(sc.price))}</td>` +
+      `<td>${sp ? '$' + sp : 'N/A'}</td>` +
+      `<td>${esc((sc.removedDate || sc.listedDate || '').slice(0, 7))}</td></tr>`;
+  }).join('');
 
-  // ── 03 Rental Market ──
-  _section('Rental Market & Days to Rent');
-  const rcRows = (d.rentalComps || []).slice(0, 6).map(rc => [
-    (rc.formattedAddress || '').replace(/, [A-Z]{2}.*/, '').substring(0, 28),
-    (rc.bedrooms || '?') + ' BD / ' + (rc.bathrooms || '?') + ' BA',
-    rc.squareFootage ? rc.squareFootage.toLocaleString() : 'N/A',
-    _fmtPrice(rc.price) + '/mo',
-    rc.daysOnMarket ? rc.daysOnMarket + 'd ago' : (rc.status || 'Active'),
-  ]);
-  if (rcRows.length) {
-    _table(['Address', 'Beds/Baths', 'Sq Ft', 'Monthly Rent', 'Status'],
-      rcRows, [52, 26, 18, 30, BW - 126], [1, 2, 3, 4]);
-  }
-  _table(['Metric', 'Data'], [
-    ['Estimated Rent',     _fmtPrice(r.rentLow) + ' – ' + _fmtPrice(r.rentHigh) + '/mo'],
+  // ── 03 Rental comps ──
+  const rentRows = (d.rentalComps || []).slice(0, 6).map(rc =>
+    '<tr>' +
+    `<td>${esc((rc.formattedAddress || rc.address || '').replace(/, [A-Z]{2}.*/, ''))}</td>` +
+    `<td>${esc((rc.bedrooms ?? '?') + ' BD / ' + (rc.bathrooms ?? '?') + ' BA')}</td>` +
+    `<td>${rc.squareFootage ? rc.squareFootage.toLocaleString() : 'N/A'}</td>` +
+    `<td>${esc(_fmtPrice(rc.price))}/mo</td>` +
+    `<td>${esc(rc.daysOnMarket ? 'Listed ' + rc.daysOnMarket + 'd ago' : (rc.status || 'Active'))}</td></tr>`
+  ).join('');
+
+  const rentalSummary = [
+    ['Estimated Rent', _fmtPrice(r.rentLow) + ' – ' + _fmtPrice(r.rentHigh) + '/mo'],
     ['Market Temperature', r.marketTemp],
-    ['Est. Days to Rent',  '~' + r.daysToRent + ' days'],
+    ['Est. Days to Rent', '~' + r.daysToRent + ' days'],
     ['Market Median Rent', _fmtPrice(r.marketRent) + '/mo'],
-  ], [72, BW - 72]);
-  _insight(r.mortgageClause);
+  ].map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('');
 
   // ── 04 Recommendations ──
-  _section('Recommendations to Improve the Sale');
-  d.recs.forEach(rec => _rec(rec.num, rec.title, rec.detail));
+  const recHTML = (d.recs || []).map(rec =>
+    `<div class="report-rec"><div class="report-rec-title"><span>${esc(rec.num)}</span>${esc(rec.title)}</div>` +
+    `<div class="report-rec-detail">${esc(rec.detail)}</div></div>`).join('');
 
-  // ── What this means (plain-language summary, matches reference) ──
-  _section('What this means');
-  const _ppsf = d.sqft ? Math.round(d.price / d.sqft) : null;
-  const _mid  = Math.round((c.sweetLow + c.sweetHigh) / 2);
-  const _gap  = d.price - _mid;
-  const wtm = `This home is listed at ${_fmtPrice(d.price)}${_ppsf ? ' (' + _fmtPrice(_ppsf) + ' per square foot)' : ''}. ` +
+  // ── What this means ──
+  const mid = Math.round((c.sweetLow + c.sweetHigh) / 2);
+  const gap = d.price - mid;
+  const wtm = `This home is listed at ${_fmtPrice(d.price)}${ppsf ? ' ($' + ppsf + ' per square foot)' : ''}. ` +
     `Recent comparable sales nearby put the competitive range at ${_fmtPrice(c.sweetLow)} to ${_fmtPrice(c.sweetHigh)}` +
-    (Math.abs(_gap) > 5000
-      ? `, which places the current asking price about ${_fmtPrice(Math.abs(_gap))} ${_gap > 0 ? 'above' : 'below'} the midpoint of what similar homes actually sold for.`
+    (Math.abs(gap) > 5000
+      ? `, which places the current asking price about ${_fmtPrice(Math.abs(gap))} ${gap > 0 ? 'above' : 'below'} the midpoint of what similar homes actually sold for.`
       : `, putting the asking price right in line with what similar homes actually sold for.`) +
-    (_gap > 0
+    (gap > 0
       ? ` Homes in this market take about ${avgDom} days to sell on average, and pricing above the comp midpoint typically extends that.`
-      : Math.abs(_gap) > c.sweetLow * 0.1
+      : Math.abs(gap) > c.sweetLow * 0.1
         ? ` Priced this far below the comp range, the home would likely draw offers well inside the ${avgDom}-day market average — which is itself a reason to double-check the figure.`
         : ` Homes in this market take about ${avgDom} days to sell on average.`) +
-    ` ` +
-    `If held as a rental instead, the property should draw ${_fmtPrice(r.rentLow)}–${_fmtPrice(r.rentHigh)} per month and take about ${r.daysToRent} days to lease.`;
-  doc.setFont('helvetica','normal'); doc.setFontSize(9.2);
-  doc.setTextColor(...DARK);
-  const wl = doc.splitTextToSize(wtm, BW);
-  checkY(wl.length * 5 + 6);
-  wl.forEach(l => { doc.text(l, LM, y); y += 5; });
-  y += 4;
+    ` If held as a rental instead, the property should draw ${_fmtPrice(r.rentLow)}–${_fmtPrice(r.rentHigh)} per month and take about ${r.daysToRent} days to lease.`;
 
-  // ── Key takeaways (arrow style matching cash-flow PDF) ──
-  _arrow('Pricing.', c.verdict ? c.verdict.split('.')[0] + '.' : 'Review comp data before adjusting.');
-  _arrow('Rental option.', r.mortgageClause.split('.')[0] + '.');
-  _arrow('Next step.', 'Review these comps with your agent before making any listing changes.');
+  const bullets = [
+    ['Pricing.', c.verdict ? c.verdict.split('.')[0] + '.' : 'Review comp data before adjusting.'],
+    ['Rental option.', (r.mortgageClause || '').split('.')[0] + '.'],
+    ['Next step.', 'Review these comps with your agent before making any listing changes.'],
+  ].map(([b, t]) => `<li><strong>${esc(b)}</strong> ${esc(t)}</li>`).join('');
 
-  // ── Quick Reference (last, so it can break cleanly) ──
-  const qrRows = d.qr.map(q => [q.cat, q.finding, q.action]);
-  // Keep the whole table on one page when it fits — avoids orphaning one row
-  const qrEst = qrRows.length * 9 + 20;
-  if (y + qrEst > PH - 16 && qrEst < PH - 50) addPage();
-  _section('Quick-Reference Summary');
-  _table(['Category', 'Finding', 'Recommended Action'], qrRows, [42, 64, BW - 106]);
+  // ── 05 Quick reference ──
+  const qrRows = (d.qr || []).map(q =>
+    `<tr><td>${esc(q.cat)}</td><td>${esc(q.finding)}</td><td>${esc(q.action)}</td></tr>`).join('');
 
-  // ── Full disclaimer, once, at the very end ──
-  _disclaimer();
+  return `
+    <div class="report-page">
+      <div class="report-header">
+        <div class="report-brand"><span class="report-brand-mark">L</span>Lanvivo</div>
+        <div class="report-meta">
+          <div><strong>Property Analysis Report</strong></div>
+          <div>Generated ${esc(d.date)}</div>
+        </div>
+      </div>
 
-  const slug = d.address.replace(/[^a-z0-9]+/gi, '_').substring(0, 40);
-  doc.save(slug + '_Lanvivo_Report.pdf');
-  showToast('PDF downloaded successfully.', 'success');
+      <div class="report-hero">
+        <div class="report-property-name">${esc(d.address)}</div>
+        <div class="report-property-meta">${esc(heroMeta)}</div>
+        ${c.verdict ? `<div class="report-headline">${esc(c.verdict)}</div>` : ''}
+      </div>
+
+      <div class="report-big4">${kpis}</div>
+
+      <div class="report-section">
+        <h5>Subject Property</h5>
+        <table class="report-kv"><tbody>${propRows}</tbody></table>
+      </div>
+
+      <div class="report-section">
+        <h5>Comparable Sales</h5>
+        ${compRows
+          ? `<table class="report-table"><thead><tr><th>Address</th><th>Beds/Baths</th><th>Sq Ft</th><th>Sold Price</th><th>$/Sqft</th><th>Sold Date</th></tr></thead><tbody>${compRows}</tbody></table>`
+          : `<div class="report-note">No recent comparable sales found within the search radius.</div>`}
+        <div class="report-pull">Competitive sweet spot: ${_fmtPrice(c.sweetLow)} – ${_fmtPrice(c.sweetHigh)}</div>
+      </div>
+
+      <div class="report-section">
+        <h5>Rental Market &amp; Days to Rent</h5>
+        ${rentRows
+          ? `<table class="report-table"><thead><tr><th>Address</th><th>Beds/Baths</th><th>Sq Ft</th><th>Monthly Rent</th><th>Status</th></tr></thead><tbody>${rentRows}</tbody></table>`
+          : `<div class="report-note"><strong>No active rental listings found within 2 miles.</strong> Rent estimates below use RentCast market-level AVM data for the zip code rather than individual property comps — treat as a range, not a point estimate.</div>`}
+        <table class="report-kv" style="margin-top:10px"><tbody>${rentalSummary}</tbody></table>
+        ${r.mortgageClause ? `<div class="report-note">${esc(r.mortgageClause)}</div>` : ''}
+      </div>
+
+      <div class="report-section">
+        <h5>Recommendations to Improve the Sale</h5>
+        ${recHTML}
+      </div>
+
+      <div class="report-interpretation">
+        <h5>What This Means</h5>
+        <div class="report-interp-body">${esc(wtm)}</div>
+        <ul class="report-interp-bullets">${bullets}</ul>
+      </div>
+
+      <div class="report-section">
+        <h5>Quick-Reference Summary</h5>
+        <table class="report-table"><thead><tr><th>Category</th><th>Finding</th><th>Recommended Action</th></tr></thead><tbody>${qrRows}</tbody></table>
+      </div>
+
+      <div class="report-footer">
+        <p><strong>For informational purposes only.</strong> Comparable sales, rental estimates, and days-on-market figures are drawn from RentCast and US Census Bureau data and reflect market conditions at time of generation. Actual sale price depends on condition, presentation, and buyer demand. Consult a licensed real estate professional before relying on these numbers for pricing decisions.</p>
+        <p>Generated by Lanvivo · lanvivo.com · hello@lanvivo.com · ${esc(d.date)}</p>
+      </div>
+    </div>
+  `;
 }
 </script>
 
