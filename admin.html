@@ -172,7 +172,7 @@ body.dark .report-page{box-shadow:0 4px 20px rgba(0,0,0,0.4)}
   body, body.dark { background:#fff !important; color:#1A1C2A !important; }
   .no-print, .adm-top, #gate { display:none !important; }
   .shell { padding:0 !important; }
-  #adm-body { display:none !important; }
+  #adm-body, .adm-head { display:none !important; }
   #adm-report { display:block !important; }
   .report-page { box-shadow:none !important; max-width:100% !important; padding:0 !important; margin:0 !important; }
   .report-hero, .report-big4, .report-section, .report-interpretation { page-break-inside:avoid; }
@@ -180,6 +180,30 @@ body.dark .report-page{box-shadow:0 4px 20px rgba(0,0,0,0.4)}
   .report-table tr { page-break-inside:avoid; }
   * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
 }
+.report-section{margin-bottom:20px}
+.report-section > h5{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#1A2A5E;margin-bottom:9px;padding-bottom:6px;border-bottom:1px solid #E8E0CC}
+.report-kv{width:100%;border-collapse:collapse;font-size:11.5px;table-layout:fixed}
+.report-kv tr td{padding:6px 10px;border-bottom:1px solid #EFEBE0;vertical-align:top}
+.report-kv tr:nth-child(even) td{background:#FCFBF8}
+.report-kv td:first-child{color:#666;width:62%}
+.report-kv td:last-child{color:#1A1C2A;font-weight:600;text-align:right;width:38%;font-variant-numeric:tabular-nums}
+.report-table{width:100%;border-collapse:collapse;font-size:10.5px;table-layout:fixed}
+.report-table thead th{background:#FAF8F4;border-bottom:1.5px solid #1A2A5E;font-size:8.5px;font-weight:600;letter-spacing:1.1px;text-transform:uppercase;color:#1A2A5E;text-align:left;padding:7px 8px}
+.report-table tbody td{border-bottom:1px solid #EFEBE0;padding:6px 8px;color:#444;vertical-align:middle;word-break:break-word}
+.report-table tbody tr:nth-child(even) td{background:#FCFBF8}
+.report-table tbody td:first-child{color:#1A1C2A;font-weight:500}
+.report-table td.num,.report-table th.num{text-align:right;font-variant-numeric:tabular-nums}
+/* users table: fixed widths so dates stop wrapping onto two lines */
+.report-users col.c-name{width:21%}
+.report-users col.c-mail{width:33%}
+.report-users col.c-join{width:13%}
+.report-users col.c-seen{width:13%}
+.report-users col.c-prop{width:8%}
+.report-users col.c-stat{width:12%}
+.report-pull{background:#FAF8F4;border:1px solid #E8E0CC;border-left:3px solid #B8821E;padding:10px 15px;border-radius:3px;margin-top:10px;font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:600;color:#B8821E}
+.report-note{background:#FAF8F4;border-left:3px solid #B8821E;padding:10px 15px;border-radius:3px;margin-top:10px;font-size:11px;line-height:1.55;color:#444}
+.report-note strong{color:#1A1C2A}
+.report-sub-h{font-size:9px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:#6B6C7E;margin:12px 0 5px}
 #adm-report{display:none}
 #adm-report.on{display:block}
 
@@ -537,6 +561,15 @@ function exportAdminPdf() {
   }, 120);
 }
 
+// "29 Aug 26" — fits a narrow column without wrapping, unlike "Aug 29, 2026"
+function _admDateShort(d) {
+  if (!d) return '—';
+  var dt = new Date(d);
+  return dt.getDate() + ' ' +
+    ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][dt.getMonth()] +
+    " '" + String(dt.getFullYear()).slice(2);
+}
+
 function renderAdminReportHTML(o, users) {
   var t = o.totals || {}, a = o.active || {}, h = o.health || {};
   var today = new Date(o.generated_at || Date.now())
@@ -572,27 +605,31 @@ function renderAdminReportHTML(o, users) {
   var barTable = function(list, empty){
     if (!list || !list.length) return '<div class="report-note">' + _admEsc(empty) + '</div>';
     var total = list.reduce(function(s,r){ return s + (Number(r.n)||0); }, 0) || 1;
-    return '<table class="report-table"><thead><tr><th>Item</th><th>Count</th><th>Share</th></tr></thead><tbody>' +
+    return '<table class="report-table">' +
+      '<colgroup><col style="width:56%"><col style="width:22%"><col style="width:22%"></colgroup>' +
+      '<thead><tr><th>Item</th><th class="num">Count</th><th class="num">Share</th></tr></thead><tbody>' +
       list.map(function(r){
-        return '<tr><td>' + _admEsc(r.k) + '</td><td>' + _admNum(r.n) + '</td><td>' +
+        return '<tr><td>' + _admEsc(r.k) + '</td><td class="num">' + _admNum(r.n) + '</td><td class="num">' +
                ((Number(r.n)||0)/total*100).toFixed(1) + '%</td></tr>';
       }).join('') + '</tbody></table>';
   };
 
   var userRows = (users || []).slice(0, 20).map(function(u){
-    return '<tr><td>' + _admEsc(u.name || '—') + (u.is_admin ? ' (admin)' : '') + '</td>' +
+    return '<tr><td>' + _admEsc(u.name || '—') + (u.is_admin ? ' <strong>(admin)</strong>' : '') + '</td>' +
       '<td>' + _admEsc(u.email) + '</td>' +
-      '<td>' + _admDate(u.created_at) + '</td>' +
-      '<td>' + (u.last_sign_in_at ? _admDate(u.last_sign_in_at) : 'never') + '</td>' +
-      '<td>' + _admNum(u.property_count) + '</td>' +
+      '<td>' + _admDateShort(u.created_at) + '</td>' +
+      '<td>' + (u.last_sign_in_at ? _admDateShort(u.last_sign_in_at) : 'never') + '</td>' +
+      '<td class="num">' + _admNum(u.property_count) + '</td>' +
       '<td>' + (u.email_confirmed ? 'confirmed' : 'pending') + '</td></tr>';
   }).join('');
 
+  // n===1 needs singular noun AND singular verb, e.g. "1 account has never signed in"
+  var plur = function(n, one, many){ return _admNum(n) + ' ' + (Number(n) === 1 ? one : many); };
   var flagged = [];
-  if ((h.users_without_profile||0) > 0) flagged.push(_admNum(h.users_without_profile) + ' users have no profile row');
-  if ((h.orphan_properties||0)  > 0) flagged.push(_admNum(h.orphan_properties) + ' properties are orphaned');
-  if ((h.never_signed_in||0)    > 0) flagged.push(_admNum(h.never_signed_in) + ' accounts have never signed in');
-  if ((h.unconfirmed_email||0)  > 0) flagged.push(_admNum(h.unconfirmed_email) + ' emails are unconfirmed');
+  if ((h.users_without_profile||0) > 0) flagged.push(plur(h.users_without_profile, 'user has no profile row', 'users have no profile row'));
+  if ((h.orphan_properties||0)  > 0) flagged.push(plur(h.orphan_properties, 'property is orphaned', 'properties are orphaned'));
+  if ((h.never_signed_in||0)    > 0) flagged.push(plur(h.never_signed_in, 'account has never signed in', 'accounts have never signed in'));
+  if ((h.unconfirmed_email||0)  > 0) flagged.push(plur(h.unconfirmed_email, 'email is unconfirmed', 'emails are unconfirmed'));
 
   return '' +
   '<div class="report-page">' +
@@ -649,9 +686,9 @@ function renderAdminReportHTML(o, users) {
       barTable(o.events_by_placement, 'No placement data recorded yet.') + '</div>' +
 
     '<div class="report-section"><h5>Audience</h5>' +
-      '<div style="font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:#1A2A5E;margin-bottom:6px">Primary language</div>' +
+      '<div class="report-sub-h">Primary language</div>' +
       barTable(o.languages, 'No language data.') +
-      '<div style="font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:#1A2A5E;margin:12px 0 6px">Visa status</div>' +
+      '<div class="report-sub-h">Visa status</div>' +
       barTable(o.visa, 'No visa data.') + '</div>' +
 
     '<div class="report-section"><h5>Leads &amp; Waitlist</h5>' + kv([
@@ -691,7 +728,9 @@ function renderAdminReportHTML(o, users) {
 
     '<div class="report-section"><h5>Users' +
       ((users||[]).length > 20 ? ' &middot; 20 most recent of ' + _admNum(users.length) : '') + '</h5>' +
-      '<table class="report-table"><thead><tr><th>Name</th><th>Email</th><th>Joined</th><th>Last seen</th><th>Props</th><th>Status</th></tr></thead><tbody>' +
+      '<table class="report-table report-users">' +
+      '<colgroup><col class="c-name"><col class="c-mail"><col class="c-join"><col class="c-seen"><col class="c-prop"><col class="c-stat"></colgroup>' +
+      '<thead><tr><th>Name</th><th>Email</th><th>Joined</th><th>Last seen</th><th class="num">Props</th><th>Status</th></tr></thead><tbody>' +
       (userRows || '<tr><td colspan="6">No users yet.</td></tr>') + '</tbody></table></div>' +
 
     '<div class="report-footer">' +
