@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+<title>Analytics</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F5F0E4;--surface:#FFFFFF;--ink:#1A1C2A;--muted:#6A7090;
+  --rule:#DDD8CC;--gold:#B8821E;--gold-l:#C8942A;--deep:#1A2A5E;
+  /* Results palette — identical tokens to the portal so both surfaces match */
+  --r-ink:#1A1C2A; --r-body:#6B6C7E; --r-cap:#6B6C7E;
+  --r-rule:#E8E0CC; --r-rule-l:#F0EAE0; --r-panel:#F7F4EE;
+  --r-pos:#2E7D52; --r-warn:#8A5E0A; --r-neg:#C62828;
+}
+body.dark{
+  --bg:#0A0E1A;--surface:#101624;--ink:#F5F0E4;--muted:#6A7090;
+  --rule:rgba(26,42,94,0.7);--gold:#C8942A;
+  --r-ink:#F5F0E4; --r-body:#B4BCD0; --r-cap:#9AA2B8;
+  --r-rule:rgba(26,42,94,0.7); --r-rule-l:rgba(26,42,94,0.45);
+  --r-panel:rgba(255,255,255,0.04);
+  --r-pos:#4FA97B; --r-warn:#D0A03F; --r-neg:#E86A6A;
+}
+body{font-family:'DM Sans',sans-serif;font-weight:300;background:var(--bg);color:var(--ink);min-height:100vh}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── auth gate ── */
+#gate{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#0A0E1A;padding:24px;z-index:50}
+#gate.hide{display:none}
+.gate-box{width:100%;max-width:380px}
+.gate-mark{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:28px}
+.gate-coin{width:34px;height:34px;border:2px solid var(--gold-l);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:15px;color:var(--gold-l);font-weight:600}
+.gate-word{font-family:'Cormorant Garamond',serif;font-size:20px;color:#fff;letter-spacing:.5px}
+.gate-card{background:#fff;border-radius:4px;padding:28px}
+.gate-card h1{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:600;color:#1A1C2A;margin-bottom:4px}
+.gate-card p{font-size:12.5px;color:#6A7090;margin-bottom:20px}
+.gate-f{margin-bottom:13px}
+.gate-f label{display:block;font-size:10px;font-weight:500;letter-spacing:1.4px;text-transform:uppercase;color:#4A5070;margin-bottom:6px}
+.gate-f input{width:100%;background:#F5F0E4;border:1px solid #DDD8CC;border-radius:3px;padding:11px 13px;font-family:'DM Sans',sans-serif;font-size:14px;color:#1A1C2A;outline:none}
+.gate-f input:focus{border-color:var(--gold)}
+.gate-btn{width:100%;background:var(--gold-l);color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;padding:12px;border:none;border-radius:3px;cursor:pointer;margin-top:6px}
+.gate-btn:hover{opacity:.9}
+.gate-btn:disabled{opacity:.5;cursor:not-allowed}
+.gate-err{background:#FDECEA;color:#8B2020;padding:9px 13px;border-radius:3px;font-size:12.5px;margin-bottom:13px;display:none}
+
+/* ── shell ── */
+.shell{display:none;padding:26px 22px 60px}
+.shell.on{display:block}
+/* ── Admin analytics ──────────────────────────────────────────────────────── */
+.adm-wrap{max-width:1080px;margin:0 auto}
+.adm-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+.adm-head h2{font-family:'Cormorant Garamond',serif;font-size:1.7rem;font-weight:600;color:var(--ink);margin-bottom:4px}
+.adm-head p{font-size:12px;color:var(--r-cap)}
+.adm-sec{margin-bottom:26px}
+.adm-sec-h{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--r-cap);margin-bottom:10px}
+.adm-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.adm-tile{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:15px 16px}
+.adm-tile-k{font-size:9.5px;font-weight:500;letter-spacing:1.2px;text-transform:uppercase;color:var(--r-cap);margin-bottom:6px}
+.adm-tile-v{font-family:'Cormorant Garamond',serif;font-size:1.9rem;font-weight:600;line-height:1;color:var(--r-ink)}
+.adm-tile-s{font-size:10.5px;color:var(--r-cap);margin-top:4px}
+.adm-tile.pos .adm-tile-v{color:var(--r-pos)}
+.adm-tile.warn .adm-tile-v{color:var(--r-warn)}
+.adm-tile.neg .adm-tile-v{color:var(--r-neg)}
+.adm-card{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:16px 18px}
+.adm-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.adm-bar-row{display:grid;grid-template-columns:130px 1fr 46px;align-items:center;gap:10px;padding:5px 0;font-size:11.5px}
+.adm-bar-lbl{color:var(--r-body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.adm-bar-track{height:7px;background:var(--r-rule);border-radius:4px;overflow:hidden}
+.adm-bar-fill{height:100%;border-radius:4px;background:var(--r-pos)}
+.adm-bar-n{text-align:right;font-weight:600;color:var(--r-ink);font-size:11.5px}
+.adm-spark{display:flex;align-items:flex-end;gap:2px;height:56px;margin-top:6px}
+.adm-spark-b{flex:1;min-width:3px;background:var(--r-pos);border-radius:2px 2px 0 0;opacity:.85}
+.adm-spark-x{display:flex;justify-content:space-between;font-size:9.5px;color:var(--r-cap);margin-top:5px}
+.adm-table{width:100%;border-collapse:collapse;font-size:11.5px}
+.adm-table thead th{text-align:left;font-size:9px;font-weight:600;letter-spacing:1.1px;text-transform:uppercase;color:var(--r-cap);padding:7px 8px;border-bottom:1.5px solid var(--rule)}
+.adm-table tbody td{padding:7px 8px;border-bottom:1px solid var(--r-rule-l);color:var(--r-body)}
+.adm-table tbody td:first-child{color:var(--r-ink);font-weight:500}
+.adm-table tbody tr:hover td{background:var(--r-panel)}
+.adm-pill{display:inline-block;font-size:9px;font-weight:600;letter-spacing:.4px;padding:2px 7px;border-radius:10px;text-transform:uppercase}
+.adm-pill.ok{background:rgba(46,125,82,.12);color:var(--r-pos)}
+.adm-pill.no{background:rgba(198,40,40,.12);color:var(--r-neg)}
+.adm-pill.adm{background:rgba(184,130,30,.14);color:var(--r-warn)}
+.adm-health{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px}
+.adm-h-row{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--r-pos);border-radius:3px;padding:10px 13px}
+.adm-h-row.flag{border-left-color:var(--r-warn)}
+.adm-h-row.bad{border-left-color:var(--r-neg)}
+.adm-h-k{font-size:11.5px;color:var(--r-body);line-height:1.35}
+.adm-h-v{font-family:'Cormorant Garamond',serif;font-size:1.35rem;font-weight:600;color:var(--r-ink);flex-shrink:0}
+.adm-h-row.flag .adm-h-v{color:var(--r-warn)}
+.adm-h-row.bad  .adm-h-v{color:var(--r-neg)}
+.adm-empty{font-size:11.5px;color:var(--r-cap);font-style:italic;padding:12px 0}
+@media(max-width:820px){ .adm-cols{grid-template-columns:1fr} .adm-bar-row{grid-template-columns:104px 1fr 40px} }
+.adm-top{max-width:1080px;margin:0 auto 18px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.adm-brand{display:flex;align-items:center;gap:9px}
+.adm-coin{width:28px;height:28px;border:1.6px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:13px;color:var(--gold);font-weight:600}
+.adm-brandname{font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--ink)}
+.adm-btn{background:transparent;border:1px solid var(--rule);border-radius:3px;padding:8px 15px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink);cursor:pointer}
+.adm-btn:hover{border-color:var(--gold)}
+.results-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--r-cap);padding:60px 24px}
+.results-placeholder .icon{font-size:2.6rem;margin-bottom:12px;opacity:.4}
+.results-placeholder p{font-size:13.5px;line-height:1.6;max-width:340px}
+</style>
+</head>
+<body>
+
+<!-- auth gate -->
+<div id="gate">
+  <div class="gate-box">
+    <div class="gate-mark"><div class="gate-coin">L</div><div class="gate-word">Analytics</div></div>
+    <div class="gate-card">
+      <h1>Sign in</h1>
+      <p>Restricted access.</p>
+      <div class="gate-err" id="gate-err"></div>
+      <div class="gate-f"><label>Email</label>
+        <input type="email" id="g-email" autocomplete="username" onkeydown="if(event.key==='Enter')document.getElementById('g-pw').focus()"></div>
+      <div class="gate-f"><label>Password</label>
+        <input type="password" id="g-pw" autocomplete="current-password" onkeydown="if(event.key==='Enter')gateSignIn()"></div>
+      <button class="gate-btn" id="g-btn" onclick="gateSignIn()">Sign in</button>
+    </div>
+  </div>
+</div>
+
+<!-- dashboard -->
+<div class="shell" id="shell">
+  <div class="adm-top">
+    <div class="adm-brand"><div class="adm-coin">L</div><div class="adm-brandname">Analytics</div></div>
+    <div style="display:flex;gap:8px">
+      <button class="adm-btn" onclick="toggleTheme()" id="theme-btn">Dark</button>
+      <button class="adm-btn" onclick="loadAdmin(true)">Refresh</button>
+      <button class="adm-btn" onclick="signOut()">Sign out</button>
+    </div>
+  </div>
+  <div class="adm-wrap">
+    <div class="adm-head">
+      <div>
+        <h2>Portal Analytics</h2>
+        <p id="adm-generated">&nbsp;</p>
+      </div>
+    </div>
+    <div id="adm-body"></div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://fumqbfxvtusnslkvacdz.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ1bXFiZnh2dHVzbnNsa3ZhY2R6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4NTczNjQsImV4cCI6MjA5NjQzMzM2NH0.w-yfWcBiFZJnosq7PQPxBIqGS2JZKxpHE-MqmCGwegE';
+
+const _lib = window.supabase;
+const sb = _lib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true, storageKey: 'lv-admin-auth' }
+});
+
+const CACHE_TTL_MS = 5 * 60 * 1000;   // long-open tab refetches on revisit
+let _cache = null, _cacheAt = 0;
+
+/* ── theme ── */
+function toggleTheme(){
+  const d = document.body.classList.toggle('dark');
+  document.getElementById('theme-btn').textContent = d ? 'Light' : 'Dark';
+  try { localStorage.setItem('lv_admin_theme', d ? 'dark' : 'light'); } catch(e){}
+}
+(function(){
+  let t=null; try { t = localStorage.getItem('lv_admin_theme'); } catch(e){}
+  if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.body.classList.add('dark');
+  }
+})();
+
+/* ── auth ── */
+function gateErr(m){ const e=document.getElementById('gate-err'); e.textContent=m; e.style.display='block'; }
+
+async function gateSignIn(){
+  const btn=document.getElementById('g-btn');
+  const email=document.getElementById('g-email').value.trim();
+  const pw=document.getElementById('g-pw').value;
+  document.getElementById('gate-err').style.display='none';
+  if(!email||!pw){ gateErr('Enter your email and password.'); return; }
+  btn.disabled=true; btn.textContent='Signing in...';
+  try{
+    const { error } = await sb.auth.signInWithPassword({ email, password: pw });
+    if (error) throw error;
+    await enter();
+  }catch(err){
+    gateErr(err.message || 'Sign in failed.');
+  }finally{
+    btn.disabled=false; btn.textContent='Sign in';
+  }
+}
+
+async function signOut(){
+  await sb.auth.signOut();
+  _cache=null; _cacheAt=0;
+  document.getElementById('shell').classList.remove('on');
+  document.getElementById('gate').classList.remove('hide');
+  document.getElementById('g-pw').value='';
+}
+
+// Verified server-side: admin_overview() raises 42501 for non-admins, so this
+// check is for UX only. The real boundary is in Postgres.
+async function enter(){
+  document.getElementById('gate').classList.add('hide');
+  document.getElementById('shell').classList.add('on');
+  document.getElementById('theme-btn').textContent =
+    document.body.classList.contains('dark') ? 'Light' : 'Dark';
+  loadAdmin();
+}
+
+function _admEsc(v) {
+  return String(v == null ? '' : v).replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function _admNum(n)  { return (n == null ? 0 : Number(n)).toLocaleString(); }
+function _admDate(d) { return d ? new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—'; }
+
+function _admTile(k, v, sub, tone) {
+  return '<div class="adm-tile ' + (tone||'') + '"><div class="adm-tile-k">' + _admEsc(k) + '</div>' +
+         '<div class="adm-tile-v">' + _admEsc(v) + '</div>' +
+         (sub ? '<div class="adm-tile-s">' + _admEsc(sub) + '</div>' : '') + '</div>';
+}
+
+function _admBars(rows, emptyMsg) {
+  if (!rows || !rows.length) return '<div class="adm-empty">' + _admEsc(emptyMsg || 'No data yet.') + '</div>';
+  const max = Math.max.apply(null, rows.map(r => Number(r.n) || 0)) || 1;
+  return rows.map(r => {
+    const pct = ((Number(r.n)||0) / max * 100).toFixed(1);
+    return '<div class="adm-bar-row"><div class="adm-bar-lbl" title="' + _admEsc(r.k) + '">' + _admEsc(r.k) + '</div>' +
+           '<div class="adm-bar-track"><div class="adm-bar-fill" style="width:' + pct + '%"></div></div>' +
+           '<div class="adm-bar-n">' + _admNum(r.n) + '</div></div>';
+  }).join('');
+}
+
+// Fills gaps so the sparkline reflects real calendar time, not just days with rows.
+function _admSpark(series, days) {
+  days = days || 30;
+  if (!series || !series.length) return '<div class="adm-empty">No activity recorded yet.</div>';
+  const byDay = {};
+  series.forEach(r => { byDay[r.d] = Number(r.n) || 0; });
+  const out = [], today = new Date();
+  for (let i = days - 1; i >= 0; i--) {
+    const dt = new Date(today); dt.setDate(today.getDate() - i);
+    const key = dt.toISOString().slice(0,10);
+    out.push({ d: key, n: byDay[key] || 0 });
+  }
+  const max = Math.max.apply(null, out.map(o => o.n)) || 1;
+  const bars = out.map(o => {
+    const h = o.n === 0 ? 2 : Math.max(4, (o.n / max) * 100);
+    return '<div class="adm-spark-b" style="height:' + h + '%' + (o.n === 0 ? ';opacity:.18' : '') +
+           '" title="' + o.d + ': ' + o.n + '"></div>';
+  }).join('');
+  return '<div class="adm-spark">' + bars + '</div>' +
+         '<div class="adm-spark-x"><span>' + _admDate(out[0].d) + '</span><span>' + _admDate(out[out.length-1].d) + '</span></div>';
+}
+
+
+async function loadAdmin(force){
+  const body=document.getElementById('adm-body');
+  if(!body) return;
+
+  const fresh = _cache && (Date.now() - _cacheAt) < CACHE_TTL_MS;
+  if (fresh && !force) { renderAdminDashboard(_cache.o, _cache.u); return; }
+
+  body.innerHTML='<div class="results-placeholder">'+
+    '<div style="width:24px;height:24px;border:2px solid var(--rule);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px"></div>'+
+    '<p>Loading analytics...</p></div>';
+
+  try{
+    const [ov,us] = await Promise.all([ sb.rpc('admin_overview'), sb.rpc('admin_users') ]);
+    if (ov.error) throw ov.error;
+    if (us.error) throw us.error;
+    _cache={o:ov.data,u:us.data||[]}; _cacheAt=Date.now();
+    renderAdminDashboard(ov.data, us.data||[]);
+  }catch(err){
+    const denied = err && (err.code==='42501' || /not authorized/i.test(err.message||''));
+    body.innerHTML='<div class="results-placeholder"><div class="icon">'+(denied?'&#128274;':'&#9888;&#65039;')+'</div><p>'+
+      (denied ? 'This account does not have admin access.'
+              : 'Could not load analytics: '+_admEsc(err.message||String(err)))+'</p></div>';
+    if (denied) {
+      const g=document.getElementById('adm-generated');
+      if(g) g.textContent='Access denied';
+    }
+  }
+}
+
+function renderAdminDashboard(o, users) {
+  const body = document.getElementById('adm-body');
+  if (!body || !o) return;
+  const t = o.totals || {}, a = o.active || {}, h = o.health || {};
+
+  const gen = document.getElementById('adm-generated');
+  if (gen) gen.textContent = 'Live from Supabase · updated ' +
+    new Date(o.generated_at || Date.now()).toLocaleString('en-US',
+      { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
+
+  // CTA funnel: impressions -> clicks -> bookings
+  const byType = {};
+  (o.events_by_type || []).forEach(r => { byType[r.k] = Number(r.n) || 0; });
+  const imp = byType.impression || 0, clk = byType.click || 0, bkg = byType.booking_opened || 0;
+  const ctr = imp ? (clk / imp * 100) : 0;
+
+  const activationPct = t.users ? ((t.users - (h.users_no_properties || 0)) / t.users * 100) : 0;
+
+  const healthRow = (label, val, tone) =>
+    '<div class="adm-h-row ' + (tone||'') + '"><div class="adm-h-k">' + _admEsc(label) +
+    '</div><div class="adm-h-v">' + _admNum(val) + '</div></div>';
+
+  const userRows = (users || []).slice(0, 25).map(u =>
+    '<tr>' +
+    '<td>' + _admEsc(u.name || '—') + (u.is_admin ? ' <span class="adm-pill adm">admin</span>' : '') + '</td>' +
+    '<td>' + _admEsc(u.email) + '</td>' +
+    '<td>' + _admDate(u.created_at) + '</td>' +
+    '<td>' + (u.last_sign_in_at ? _admDate(u.last_sign_in_at) : '<span style="color:var(--r-cap)">never</span>') + '</td>' +
+    '<td>' + _admNum(u.property_count) + '</td>' +
+    '<td><span class="adm-pill ' + (u.email_confirmed ? 'ok' : 'no') + '">' +
+        (u.email_confirmed ? 'confirmed' : 'pending') + '</span></td>' +
+    '</tr>').join('');
+
+  body.innerHTML =
+    // ── headline tiles ──
+    '<div class="adm-sec"><div class="adm-sec-h">Overview</div><div class="adm-tiles">' +
+      _admTile('Total users', _admNum(t.users), _admNum(a.signups_30d) + ' in last 30d') +
+      _admTile('Active (30d)', _admNum(a.users_30d), _admNum(a.users_7d) + ' in last 7d',
+               (a.users_30d||0) > 0 ? 'pos' : 'warn') +
+      _admTile('Properties saved', _admNum(t.properties), _admNum(t.purchased) + ' marked purchased') +
+      _admTile('Activation', activationPct.toFixed(0) + '%', 'saved ≥ 1 property',
+               activationPct >= 50 ? 'pos' : activationPct >= 25 ? 'warn' : 'neg') +
+      _admTile('CTA events', _admNum(t.events), _admNum(a.events_7d) + ' in last 7d') +
+      _admTile('Click-through', ctr.toFixed(1) + '%', _admNum(clk) + ' of ' + _admNum(imp) + ' impressions',
+               ctr >= 10 ? 'pos' : ctr >= 3 ? 'warn' : 'neg') +
+    '</div></div>' +
+
+    // ── signups + events over time ──
+    '<div class="adm-sec"><div class="adm-cols">' +
+      '<div class="adm-card"><div class="adm-sec-h">Signups · last 30 days</div>' + _admSpark(o.signups_by_day, 30) + '</div>' +
+      '<div class="adm-card"><div class="adm-sec-h">CTA events · last 30 days</div>' + _admSpark(o.events_by_day, 30) + '</div>' +
+    '</div></div>' +
+
+    // ── funnel + placement ──
+    '<div class="adm-sec"><div class="adm-cols">' +
+      '<div class="adm-card"><div class="adm-sec-h">Specialist CTA funnel</div>' +
+        _admBars([
+          { k:'Impressions',    n: imp },
+          { k:'Clicks',         n: clk },
+          { k:'Booking opened', n: bkg }
+        ], 'No CTA events recorded yet.') +
+        (imp ? '<div class="adm-tile-s" style="margin-top:8px">' + ctr.toFixed(1) +
+               '% of impressions convert to a click' +
+               (clk ? ' · ' + (bkg/clk*100).toFixed(0) + '% of clicks open booking' : '') + '</div>' : '') +
+      '</div>' +
+      '<div class="adm-card"><div class="adm-sec-h">Events by placement</div>' +
+        _admBars(o.events_by_placement, 'No placements recorded yet.') + '</div>' +
+    '</div></div>' +
+
+    // ── audience ──
+    '<div class="adm-sec"><div class="adm-cols">' +
+      '<div class="adm-card"><div class="adm-sec-h">Primary language</div>' + _admBars(o.languages) + '</div>' +
+      '<div class="adm-card"><div class="adm-sec-h">Visa status</div>' + _admBars(o.visa) + '</div>' +
+    '</div></div>' +
+
+    // ── leads + waitlist ──
+    '<div class="adm-sec"><div class="adm-sec-h">Leads &amp; waitlist</div><div class="adm-tiles">' +
+      _admTile('Partner leads', _admNum(t.leads)) +
+      _admTile('GPT waitlist', _admNum(t.waitlist)) +
+      _admTile('Management leads', _admNum(t.mgmt_leads)) +
+      _admTile('Survey responses', _admNum(t.surveys)) +
+      _admTile('Partner applications', _admNum(t.partner_apps)) +
+      _admTile('Performance logs', _admNum(t.perf_logs)) +
+    '</div>' +
+    ((t.leads||0)+(t.waitlist||0)+(t.mgmt_leads||0)+(t.surveys||0)+(t.partner_apps||0) === 0
+      ? '<div class="adm-empty">No leads captured yet — these fill in as visitors use the partner CTAs and waitlist forms.</div>' : '') +
+    '</div>' +
+
+    // ── data health ──
+    '<div class="adm-sec"><div class="adm-sec-h">Data health</div><div class="adm-health">' +
+      healthRow('Users missing a profile row', h.users_without_profile, (h.users_without_profile||0) > 0 ? 'bad' : '') +
+      healthRow('Email not yet confirmed',     h.unconfirmed_email,     (h.unconfirmed_email||0) > 0 ? 'flag' : '') +
+      healthRow('Never signed in',             h.never_signed_in,       (h.never_signed_in||0) > 0 ? 'flag' : '') +
+      healthRow('Signed up, saved nothing',    h.users_no_properties,   (h.users_no_properties||0) > 0 ? 'flag' : '') +
+      healthRow('Orphaned properties',         h.orphan_properties,     (h.orphan_properties||0) > 0 ? 'bad' : '') +
+      healthRow('Events with no user',         h.events_no_user,        (h.events_no_user||0) > 0 ? 'flag' : '') +
+    '</div></div>' +
+
+    // ── users ──
+    '<div class="adm-sec"><div class="adm-sec-h">Users · ' + _admNum((users||[]).length) +
+      ((users||[]).length > 25 ? ' (showing 25 most recent)' : '') + '</div>' +
+      '<div class="adm-card" style="padding:6px 10px 2px">' +
+      '<table class="adm-table"><thead><tr><th>Name</th><th>Email</th><th>Joined</th><th>Last seen</th><th>Props</th><th>Status</th></tr></thead>' +
+      '<tbody>' + (userRows || '<tr><td colspan="6" class="adm-empty">No users yet.</td></tr>') + '</tbody></table></div></div>';
+}
+
+
+
+/* ── boot: restore an existing session, else show the gate ── */
+(async function(){
+  try{
+    const { data:{ session } } = await sb.auth.getSession();
+    if (session) { await enter(); }
+  }catch(e){ /* fall through to the gate */ }
+})();
+</script>
+</body>
+</html>
