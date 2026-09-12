@@ -5430,7 +5430,7 @@ async function submitManagementRequest() {
     });
     sucEl.style.display = 'block';
     if (btn) { btn.disabled = false; btn.textContent = 'Submit request'; }
-    showToast('Request received! We\'ll be in touch within 1 business day.', 'success', 5000);
+    showToast('Request received. We\'ll introduce you to a licensed manager within 1 business day.', 'success', 5000);
     setTimeout(closeManagementModal, 2500);
   } catch(e) {
     errEl.textContent = 'Submission failed. Please try again or email hello@lanvivo.com.';
@@ -5589,7 +5589,7 @@ function renderPropertiesList() {
           <div class="prop-actions">
             <button class="prop-action-btn" onclick="openPropertyReport('${p.id}')">Report</button>
             <button class="prop-action-btn perf" onclick="openPerformancePage('${p.id}')">Track performance</button>
-            <button class="prop-action-btn mgmt" onclick="openManagementModal('${p.id}')">Get managed →</button>
+            <button class="prop-action-btn mgmt" onclick="openManagementModal('${p.id}')">Find a manager →</button>
             <button class="prop-action-btn danger" onclick="deleteProperty('${p.id}')">Delete</button>
           </div>
         </td>
@@ -5620,7 +5620,7 @@ function renderPropertiesList() {
       <div class="prop-section-label" style="margin-top:${analyzing.length ? '32px' : '0'}">
         Owned properties <span class="prop-section-count">${owned.length}</span>
       </div>
-      <div class="owned-section-intro">These are properties you've purchased. Click <strong>Get managed →</strong> to have Lanvivo manage them for you.</div>
+      <div class="owned-section-intro">These are properties you've purchased. Click <strong>Find a manager →</strong> and we'll introduce you to a licensed property manager in that market.</div>
       <div style="overflow-x:auto">
       <table class="prop-table">
         <thead><tr>
@@ -7687,15 +7687,17 @@ function updateChatLimit() {
 <div class="lead-modal-backdrop" id="mgmt-modal" onclick="if(event.target===this)closeManagementModal()">
   <div class="lead-modal" style="max-width:480px">
     <button class="lead-modal-close" onclick="closeManagementModal()">×</button>
-    <div class="lead-modal-label" style="background:rgba(184,130,30,0.12);color:var(--gold)">Property Management</div>
-    <h3>Let Lanvivo manage your property</h3>
+    <div class="lead-modal-label" style="background:rgba(184,130,30,0.12);color:var(--gold)">Manager Referral</div>
+    <h3>Find a property manager for this home</h3>
 
     <div style="background:rgba(46,125,82,0.07);border:1px solid rgba(46,125,82,0.2);border-radius:8px;padding:12px 14px;margin-bottom:18px">
       <div id="mgmt-prop-name" style="font-weight:600;font-size:14px;margin-bottom:3px"></div>
       <div id="mgmt-prop-stats" style="font-size:12px;color:var(--slate)"></div>
     </div>
 
-    <p class="lead-modal-intro" style="margin-bottom:16px">Tell us a bit about yourself and the property. We'll reach out within 1 business day to walk through our management services.</p>
+    <p class="lead-modal-intro" style="margin-bottom:16px">Tell us about the property and we'll match you with a licensed property manager in that market — one who works with out-of-state and foreign-national owners. Expect an introduction within 1 business day.</p>
+
+    <p style="font-size:11px;line-height:1.55;color:var(--muted);background:var(--bg);border-left:2px solid var(--rule);padding:9px 12px;border-radius:3px;margin-bottom:16px">Lanvivo is not a licensed real estate broker or property manager and does not manage properties, collect rent, or lease on your behalf. We introduce you to licensed managers and may receive a flat referral fee. You contract directly with the manager.</p>
 
     <div class="lead-form-field">
       <label>Full address of the property</label>
@@ -7722,7 +7724,7 @@ function updateChatLimit() {
 
     <div id="mgmt-error" style="display:none;color:var(--r-neg);font-size:13px;margin-bottom:10px"></div>
     <div id="mgmt-success" style="display:none;background:rgba(46,125,82,0.1);color:var(--r-pos);border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:10px">
-      ✓ Request received! Our team will be in touch within 1 business day.
+      ✓ Request received. We'll introduce you to a licensed manager within 1 business day.
     </div>
 
     <div class="lead-form-actions">
