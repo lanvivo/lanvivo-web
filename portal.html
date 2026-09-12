@@ -3392,10 +3392,19 @@ function renderCtaCard(targetId, excludeCategories) {
         <p>${cta.body}</p>
       </div>
       <div class="cta-card-action">
-        <button class="btn-cta" onclick="openLeadModal('${cta.id}')">${cta.btn}</button>
+        <button class="btn-cta" onclick="_trackPartnerCta('click','${targetId}','${cta.id}');openLeadModal('${cta.id}')">${cta.btn}</button>
       </div>
     </div>`;
+  // Partner CTAs previously fired no events at all, so a zero in partner_leads could not be
+  // distinguished from "never rendered". Now it can.
+  _trackPartnerCta('impression', targetId, cta.id);
   return true;
+}
+
+// Partner CTA tracking. Reuses specialist_cta_events; the category lives in context so the
+// two CTA families can be told apart without a second table.
+function _trackPartnerCta(event, targetId, ctaId) {
+  _trackSpecialistCta(event, 'partner_' + targetId, { surface: 'card', cta: ctaId, family: 'partner' });
 }
 
 // Renders an inline CTA at the bottom of tool results (analyzer, report, mortgage).
@@ -3616,6 +3625,10 @@ function renderToolGrid() {
       </div>
       <div class="tool-group-grid">${g.tools.map(card).join('')}</div>
     </div>`).join('');
+  // The specialist tile sits in the tool grid; count it as seen whenever the grid renders.
+  if (document.querySelector('.tool-card[onclick*="dashboard_grid"]')) {
+    _trackSpecialistCta('impression', 'dashboard_grid', { surface: 'card' });
+  }
 }
 
 // ── Onboarding checklist ─────────────────────────────────────────────────────
@@ -3705,6 +3718,10 @@ function renderOnboardingChecklist() {
         <button onclick="openSpecialistBooking('onboarding',{})" style="background:transparent;border:1px solid var(--rule);border-radius:3px;padding:8px 14px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink);cursor:pointer;white-space:nowrap;min-height:38px">Book a session →</button>
       </div>
     </div>`;
+
+  // The onboarding card carries a "book a session" button, so it is an impressionable
+  // surface. Without this the onboarding clicks had no denominator.
+  _trackSpecialistCta('impression', 'onboarding', { surface: 'card', step: doneCount });
 
   // Store step actions for click handler
   window._onboardingActions = steps.map(s => s.action);
@@ -4932,14 +4949,23 @@ function renderSpecialistCta(targetId, ctx = {}) {
       </div>
     </div>`;
 
-  _trackSpecialistCta('impression', 'mortgage_engine', ctx);
+  _trackSpecialistCta('impression', 'mortgage_engine', { ...ctx, surface: 'card' });
 }
+
+// Placements that render as a card and can therefore be "seen" without being clicked.
+// Nav entries are always on screen, so an impression for them is not comparable to a
+// card impression — keeping the two apart is what makes a click-through rate mean anything.
+const LV_CARD_PLACEMENTS = ['dashboard', 'mortgage_engine', 'dashboard_grid', 'onboarding'];
+const LV_NAV_PLACEMENTS  = ['sidebar', 'mobile_nav'];
 
 // Opens the booking modal with a Cal.com embed, prefilled from the session.
 function openSpecialistBooking(placement, ctxJson) {
   let ctx = {};
   try { ctx = typeof ctxJson === 'string' ? JSON.parse(ctxJson) : (ctxJson || {}); } catch (e) {}
+  // surface type travels with the event so card and nav rates are never mixed
+  ctx.surface = LV_NAV_PLACEMENTS.includes(placement) ? 'nav' : 'card';
   _trackSpecialistCta('click', placement, ctx);
+  _lvPendingBooking = { placement, ctx };
 
   const name  = currentUser?.name  || '';
   const email = currentUser?.email || '';
@@ -4954,8 +4980,9 @@ function openSpecialistBooking(placement, ctxJson) {
       ...(ctx.loanCount !== undefined && { 'metadata[loanCount]': String(ctx.loanCount) }),
       'metadata[placement]': placement,
     });
-    inner = `<iframe src="https://cal.com/${LV_CAL_LINK}?${q}" style="width:100%;height:100%;border:none" title="Book a specialist session"></iframe>`;
-    _trackSpecialistCta('booking_opened', placement, ctx);
+    // Fires on load rather than immediately after the click, so click > booking_opened
+    // now genuinely means the embed failed rather than being a duplicate of the click.
+    inner = `<iframe src="https://cal.com/${LV_CAL_LINK}?${q}" style="width:100%;height:100%;border:none" title="Book a specialist session" onload="_lvBookingEmbedLoaded()"></iframe>`;
   } else {
     inner = `
       <div style="padding:36px 30px;text-align:center;max-width:420px;margin:0 auto">
@@ -5017,7 +5044,14 @@ function renderDashboardSpecialist() {
       </div>
     </div>`;
 
-  _trackSpecialistCta('impression', 'dashboard', {});
+  _trackSpecialistCta('impression', 'dashboard', { surface: 'card' });
+}
+
+let _lvPendingBooking = null;
+function _lvBookingEmbedLoaded() {
+  if (!_lvPendingBooking) return;
+  _trackSpecialistCta('booking_opened', _lvPendingBooking.placement, _lvPendingBooking.ctx);
+  _lvPendingBooking = null;
 }
 
 function _specialistEsc(e) { if (e.key === 'Escape') closeSpecialistBooking(); }
