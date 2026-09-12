@@ -449,7 +449,14 @@ function renderAdminDashboard(o, users) {
   const byType = {};
   (o.events_by_type || []).forEach(r => { byType[r.k] = Number(r.n) || 0; });
   const imp = byType.impression || 0, clk = byType.click || 0, bkg = byType.booking_opened || 0;
-  const ctr = imp ? (clk / imp * 100) : 0;
+
+  // Card-only rate. A global impressions-vs-clicks ratio divides two unrelated populations,
+  // because impressions are only recorded on card placements and clicks mostly on nav ones.
+  const fbp = o.funnel_by_placement || [];
+  const cardRows = fbp.filter(r => r.surface === 'card');
+  const cardImp = cardRows.reduce((acc, r) => acc + (Number(r.imp) || 0), 0);
+  const cardClk = cardRows.reduce((acc, r) => acc + (Number(r.clicks) || 0), 0);
+  const cardCtr = cardImp > 0 ? (cardClk / cardImp * 100) : null;
 
   const activationPct = t.users ? ((t.users - (h.users_no_properties || 0)) / t.users * 100) : 0;
 
@@ -483,9 +490,10 @@ function renderAdminDashboard(o, users) {
                'Share of users who saved at least one property. Saving a deal is the core action of the portal — a signup who never saves has not really activated.') +
       _admTile('CTA events', _admNum(t.events), _admNum(a.events_7d) + ' in last 7d', '',
                'Rows in specialist_cta_events: impressions, clicks and booking-opens fired by the partner CTA components.') +
-      _admTile('Click-through', ctr.toFixed(1) + '%', _admNum(clk) + ' of ' + _admNum(imp) + ' impressions',
-               ctr >= 10 ? 'pos' : ctr >= 3 ? 'warn' : 'neg',
-               'Clicks divided by impressions on the specialist CTA. Under about 3% usually means the CTA is being ignored or shown in the wrong place.') +
+      _admTile('Card CTA click-through', cardCtr === null ? 'n/a' : cardCtr.toFixed(1) + '%',
+               cardCtr === null ? 'no card impressions yet' : _admNum(cardClk) + ' of ' + _admNum(cardImp) + ' card impressions',
+               cardCtr === null ? '' : cardCtr >= 10 ? 'pos' : cardCtr >= 3 ? 'warn' : 'neg',
+               'Clicks divided by impressions, counting only card placements where both are recorded. Nav entries (sidebar, mobile menu) are excluded because they are always on screen and have no impression to divide by.') +
     '</div></div>' +
 
     // ── signups + events over time ──
@@ -496,15 +504,19 @@ function renderAdminDashboard(o, users) {
 
     // ── funnel + placement ──
     '<div class="adm-sec"><div class="adm-cols">' +
-      '<div class="adm-card">' + _admSecH('Specialist CTA funnel','Impression → click → booking opened. If clicks and booking-opens are identical, the two events are probably firing together rather than measuring separate steps.') +
-        _admBars([
-          { k:'Impressions',    n: imp },
-          { k:'Clicks',         n: clk },
-          { k:'Booking opened', n: bkg }
-        ], 'No CTA events recorded yet.') +
-        (imp ? '<div class="adm-tile-s" style="margin-top:8px">' + ctr.toFixed(1) +
-               '% of impressions convert to a click' +
-               (clk ? ' · ' + (bkg/clk*100).toFixed(0) + '% of clicks open booking' : '') + '</div>' : '') +
+      '<div class="adm-card">' + _admSecH('CTA funnel by placement','Each row is one surface. A rate is only shown where impressions and clicks come from the same place; nav entries show a dash because they are always visible and have no impression to divide by.') +
+        (fbp.length
+          ? '<table class="adm-table"><thead><tr><th>Placement</th><th class="num">Imp</th><th class="num">Clicks</th><th class="num">Opened</th><th class="num">CTR</th></tr></thead><tbody>' +
+            fbp.map(function(r){
+              var rate = (r.ctr === null || r.ctr === undefined) ? '<span style="color:var(--r-cap)">&mdash;</span>' : Number(r.ctr).toFixed(1) + '%';
+              return '<tr><td>' + _admEsc(r.placement) +
+                     ' <span style="font-size:9px;color:var(--r-cap)">' + _admEsc(r.surface) + '</span></td>' +
+                     '<td class="num">' + _admNum(r.imp) + '</td>' +
+                     '<td class="num">' + _admNum(r.clicks) + '</td>' +
+                     '<td class="num">' + _admNum(r.opened) + '</td>' +
+                     '<td class="num">' + rate + '</td></tr>';
+            }).join('') + '</tbody></table>'
+          : '<div class="adm-empty">No CTA events recorded yet.</div>') +
       '</div>' +
       '<div class="adm-card">' + _admSecH('Events by placement','Which surface the CTA rendered on. A heavy skew means the other placements are under-exposed, which is different from under-performing.') +
         _admBars(o.events_by_placement, 'No placements recorded yet.') + '</div>' +
