@@ -1426,7 +1426,7 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
             <svg viewBox="0 0 34 34" fill="none"><circle cx="17" cy="17" r="15.5" stroke="#C8942A" stroke-width="1.6"/><circle cx="17" cy="17" r="12.1" stroke="#C8942A" stroke-width="0.6" stroke-opacity="0.3"/></svg>
             <span class="coin-l" style="font-size:12px">L</span>
           </div>
-          <span style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--ink)">lan<span style="color:var(--gold-l)">vivo</span></span>
+          <span style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--ink)">lan<span style="color:var(--gold)">vivo</span></span>
         </a>
         <button class="mob-nav-close" onclick="closeMobNav()" aria-label="Close menu">✕</button>
       </div>
@@ -1809,7 +1809,7 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
               <div id="cf-market-strip" style="display:none;margin-top:10px;padding:10px 14px;background:var(--bg);border:1px solid var(--rule);border-left:3px solid var(--gold);border-radius:3px">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
                   <span style="font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold)">Market Score</span>
-                  <span id="cf-market-grade" style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:600;color:var(--deep)"></span>
+                  <span id="cf-market-grade" style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:600;color:var(--ink)"></span>
                 </div>
                 <div id="cf-market-dims" style="display:grid;grid-template-columns:1fr 1fr;gap:3px 12px"></div>
                 <button onclick="navigateTo('market',null);document.getElementById('mr-zip').value=document.getElementById('cf-zip').value;fetchMarketScore()" style="margin-top:8px;background:none;border:none;font-size:11px;color:var(--gold);cursor:pointer;padding:0;font-family:'DM Sans',sans-serif">View full scorecard →</button>
@@ -2141,7 +2141,7 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
             </div>
 
             <div class="pa-key-field" style="background:rgba(26,42,94,0.04);border:1px solid rgba(26,42,94,0.1);border-left:3px solid var(--deep);padding:10px 13px;border-radius:3px">
-              <div style="font-size:10.5px;font-weight:500;color:var(--deep);margin-bottom:2px">🔒 Secure data connection</div>
+              <div style="font-size:10.5px;font-weight:500;color:var(--ink);margin-bottom:2px">🔒 Secure data connection</div>
               <div style="font-size:10.5px;color:var(--muted);line-height:1.5">Market data is fetched server-side. Your API key is never exposed to the browser.</div>
             </div>
 
@@ -3702,7 +3702,7 @@ function renderOnboardingChecklist() {
       </div>
       <div style="margin-top:14px;padding-top:13px;border-top:1px solid var(--rule);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
         <div style="font-size:12.5px;color:var(--muted);line-height:1.5">Rather skip the tools and talk to someone?</div>
-        <button onclick="openSpecialistBooking('onboarding',{})" style="background:transparent;border:1px solid var(--rule);border-radius:3px;padding:8px 14px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--deep);cursor:pointer;white-space:nowrap;min-height:38px">Book a session →</button>
+        <button onclick="openSpecialistBooking('onboarding',{})" style="background:transparent;border:1px solid var(--rule);border-radius:3px;padding:8px 14px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink);cursor:pointer;white-space:nowrap;min-height:38px">Book a session →</button>
       </div>
     </div>`;
 
@@ -5004,9 +5004,9 @@ function renderDashboardSpecialist() {
           <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600;color:var(--ink);line-height:1.2;margin-bottom:7px">Talk it through with a specialist</div>
           <p style="font-size:13px;line-height:1.6;color:var(--muted);margin:0 0 14px">A ${LV_CAL_MINS}-minute call covering visa-aware financing routes, which markets fit your budget, and what to do in the next 30 days. No tools required.</p>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <span style="font-size:11px;color:var(--deep);background:rgba(200,148,42,0.12);padding:4px 10px;border-radius:20px">ITIN &amp; foreign national</span>
-            <span style="font-size:11px;color:var(--deep);background:rgba(200,148,42,0.12);padding:4px 10px;border-radius:20px">H-1B &amp; visa holders</span>
-            <span style="font-size:11px;color:var(--deep);background:rgba(200,148,42,0.12);padding:4px 10px;border-radius:20px">First US property</span>
+            <span style="font-size:11px;color:var(--ink);background:rgba(200,148,42,0.12);padding:4px 10px;border-radius:20px">ITIN &amp; foreign national</span>
+            <span style="font-size:11px;color:var(--ink);background:rgba(200,148,42,0.12);padding:4px 10px;border-radius:20px">H-1B &amp; visa holders</span>
+            <span style="font-size:11px;color:var(--ink);background:rgba(200,148,42,0.12);padding:4px 10px;border-radius:20px">First US property</span>
           </div>
         </div>
         <div style="flex-shrink:0;display:flex;flex-direction:column;gap:7px;align-items:flex-end">
@@ -7499,7 +7499,7 @@ async function fetchCfMarketScore() {
     dims.innerHTML = dimDefs.map(({ key, short }) => {
       const dim = d.dimensions?.[key];
       if (!dim) return '';
-      const tagColor = dim.tag === 'strong' ? 'color:var(--green)' : dim.tag === 'moderate' ? 'color:var(--gold)' : 'color:var(--red)';
+      const tagColor = dim.tag === 'strong' ? 'color:var(--r-pos)' : dim.tag === 'moderate' ? 'color:var(--r-warn)' : 'color:var(--r-neg)';
       return `<div style="display:flex;align-items:center;justify-content:space-between;font-size:10.5px;padding:2px 0;border-bottom:1px solid var(--rule)">
         <span style="color:var(--body)">${short}</span>
         <span style="font-weight:500;${tagColor}">${dim.tag}</span>
@@ -7732,7 +7732,7 @@ function updateChatLimit() {
 <div class="lead-modal-backdrop" id="add-owned-modal" onclick="if(event.target===this)closeAddOwnedModal()">
   <div class="lead-modal" style="max-width:480px;max-height:90vh;overflow-y:auto">
     <button class="lead-modal-close" onclick="closeAddOwnedModal()">×</button>
-    <div class="lead-modal-label" style="background:rgba(200,170,90,0.12);color:var(--gold-l)">My Properties</div>
+    <div class="lead-modal-label" style="background:rgba(200,170,90,0.12);color:var(--ink)">My Properties</div>
     <h3>Add a property you own</h3>
     <p class="lead-modal-intro" style="margin-bottom:20px">Fill in the required fields. Add expenses below for accurate projected figures.</p>
 
