@@ -2279,17 +2279,17 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
         <div class="tool-layout">
           <div class="tool-form">
             <h3>Rental Tax Withholding</h3>
-            <p>If you are not a US citizen or green card holder, the IRS taxes your rental income at a flat <strong style="color:var(--ink)">30% of gross rent</strong> by default &mdash; with no deduction for mortgage, taxes, insurance or repairs. A one-time election changes that to tax on actual profit. This works out what that difference is worth on your property.</p>
+            <p>If you are not a US citizen or green card holder, the IRS taxes your rental income at a flat <strong style="color:var(--ink)">30% of gross rent</strong> by default, with no deduction for mortgage, taxes, insurance or repairs. A one-time election changes that to tax on actual profit. This works out what that difference is worth on your property.</p>
 
             <div class="wh-callout">
               <strong>Who this is for</strong>
-              Non-resident owners &mdash; anyone living outside the US, or on a visa that does not make them a US tax resident. If you are a citizen or green card holder this does not apply to you, and the calculator will say so.
+              Non-resident owners: anyone living outside the US, or on a visa that does not make them a US tax resident. If you are a citizen or green card holder this does not apply to you, and the calculator will say so.
             </div>
 
             <div class="form-field">
-              <label>Your US tax status <i class="info-tip">?<span class="tip-text">Green card holders and anyone meeting the substantial presence test are taxed like US residents — on net income, with deductions. Everyone else is a non-resident alien and defaults to 30% withholding on gross rent.</span></i></label>
+              <label>Your US tax status <i class="info-tip">?<span class="tip-text">Green card holders and anyone meeting the substantial presence test are taxed like US residents on net income, with deductions. Everyone else is a non-resident alien and defaults to 30% withholding on gross rent.</span></i></label>
               <select id="wh-status" onchange="calcWithholding()">
-                <option value="nra">Non-resident &mdash; I live outside the US</option>
+                <option value="nra">Non-resident (living outside the US)</option>
                 <option value="nra-visa">On a visa, not yet a US tax resident</option>
                 <option value="resident">US citizen or green card holder</option>
                 <option value="unsure">I am not sure</option>
@@ -2302,7 +2302,7 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
             </div>
 
             <div class="form-field">
-              <label>Annual gross rent <i class="info-tip">?<span class="tip-text">Total rent collected across the year before any expenses. This is the figure the 30% default is charged against — which is why the default is so punishing.</span></i></label>
+              <label>Annual gross rent <i class="info-tip">?<span class="tip-text">Total rent collected across the year before any expenses. This is the figure the 30% default is charged against, which is why the default is so punishing.</span></i></label>
               <div class="input-number"><span class="input-prefix">$</span><input type="number" id="wh-rent" min="0" placeholder="24,000" oninput="calcWithholding()"></div>
             </div>
 
@@ -2312,7 +2312,7 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
             </div>
 
             <div style="border-top:1px solid var(--rule);margin:18px 0 14px"></div>
-            <div class="wh-sec-label">Annual deductible expenses <i class="info-tip">?<span class="tip-text">These only reduce your tax if you make the election. Under the 30% default none of them count — you are taxed on gross rent regardless of what the property actually costs you.</span></i></div>
+            <div class="wh-sec-label">Annual deductible expenses <i class="info-tip">?<span class="tip-text">These only reduce your tax if you make the election. Under the 30% default none of them count. You are taxed on gross rent regardless of what the property actually costs you.</span></i></div>
 
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
               <div class="form-field">
@@ -2328,7 +2328,7 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
                 <div class="input-number"><span class="input-prefix">$</span><input type="number" id="wh-ins" min="0" placeholder="1,200" oninput="calcWithholding()"></div>
               </div>
               <div class="form-field">
-                <label>Repairs &amp; maintenance <i class="info-tip">?<span class="tip-text">Repairs that keep the property in working order are deductible in the year you pay them. Improvements that add value — a new roof, an extension — must be depreciated instead.</span></i></label>
+                <label>Repairs &amp; maintenance <i class="info-tip">?<span class="tip-text">Repairs that keep the property in working order are deductible in the year you pay them. Improvements that add value, such as a new roof or an extension, must be depreciated instead.</span></i></label>
                 <div class="input-number"><span class="input-prefix">$</span><input type="number" id="wh-repairs" min="0" placeholder="1,800" oninput="calcWithholding()"></div>
               </div>
               <div class="form-field">
@@ -2350,7 +2350,7 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
               <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
                 <input type="checkbox" id="wh-depr" checked onchange="calcWithholding()" style="width:auto;margin:0">
                 Include depreciation
-                <i class="info-tip">?<span class="tip-text">Depreciation is a paper expense — you deduct part of the building's value each year without spending anything. It is the largest deduction most owners have, and the one most often missed.</span></i>
+                <i class="info-tip">?<span class="tip-text">Depreciation is a paper expense. You deduct part of the building's value each year without spending anything. It is the largest deduction most owners have, and the one most often missed.</span></i>
               </label>
             </div>
 
@@ -3588,6 +3588,7 @@ function renderToolGrid() {
     ]},
     { label: 'Your portfolio', hint: 'Everything you\'ve saved', tools: [
       { id:'properties', icon:'🏠', name:'My Properties', desc:'Save analyses, compare up to 4 properties side-by-side, and generate shareable PDF reports.' },
+      { id:'withholding', icon:'📋', name:'Tax Withholding', desc:'Not a US citizen or green card holder? The IRS takes 30% of your gross rent by default. See what the \u00a7871(d) election is worth on your property.' },
     ]},
     { label: 'Get help', hint: 'When you\'d rather ask a person', tools: [
       { id:'__specialist', icon:'🎧', name:'Talk to a Specialist', desc:'Book a 45-minute session with someone who works with ITIN, visa-holder, and foreign-national buyers every week.' },
@@ -8260,8 +8261,8 @@ function resetPaForm() {
 // ── Rental tax withholding ────────────────────────────────────────────────────
 // Educational estimator only. Compares the two ways US rental income can be taxed
 // for a non-resident owner:
-//   FDAP (default) — flat 30% of GROSS rent, no deductions at all
-//   ECI  (§871(d)) — graduated rates on NET income after expenses + depreciation
+//   FDAP (default): flat 30% of GROSS rent, no deductions at all
+//   ECI  (§871(d)): graduated rates on NET income after expenses + depreciation
 // This computes a number; it does not give tax advice and does not file anything.
 
 // 2026 single-filer brackets. A non-resident filing 1040-NR generally cannot take
@@ -8341,8 +8342,8 @@ function calcWithholding() {
     el.innerHTML = `<div style="padding:26px 24px;font-family:'DM Sans',system-ui,sans-serif;font-size:13px;color:var(--r-ink)">
       <div style="display:inline-block;font-size:10px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:#fff;background:var(--r-warn);border-radius:3px;padding:4px 10px;margin-bottom:12px">Worth checking first</div>
       <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:1.4rem;font-weight:600;line-height:1.25;margin-bottom:8px">Your status changes the answer entirely.</div>
-      <p style="font-size:12.5px;color:var(--r-body);line-height:1.6">You are generally a US tax resident if you hold a green card, or if you meet the substantial presence test — roughly 183 days in the US counting this year in full, a third of last year and a sixth of the year before.</p>
-      <p style="font-size:12.5px;color:var(--r-body);line-height:1.6;margin-top:10px">Residents are taxed on net profit. Non-residents default to 30% of gross rent. Pick whichever fits above, or speak to a CPA — the gap between the two is usually thousands of dollars a year.</p>
+      <p style="font-size:12.5px;color:var(--r-body);line-height:1.6">You are generally a US tax resident if you hold a green card, or if you meet the substantial presence test, roughly 183 days in the US counting this year in full, a third of last year and a sixth of the year before.</p>
+      <p style="font-size:12.5px;color:var(--r-body);line-height:1.6;margin-top:10px">Residents are taxed on net profit. Non-residents default to 30% of gross rent. Pick whichever fits above, or speak to a CPA. The gap between the two is usually thousands of dollars a year.</p>
     </div>`;
     return;
   }
@@ -8389,7 +8390,7 @@ function calcWithholding() {
 
     <div class="wh-cmp">
       <div class="wh-cmp-col">
-        <div class="wh-cmp-tag" style="color:var(--r-neg)">Default &mdash; no election</div>
+        <div class="wh-cmp-tag" style="color:var(--r-neg)">Default (no election)</div>
         <div class="wh-cmp-amt" style="color:var(--r-neg)">${fmt(fdapTax)}</div>
         <div class="wh-cmp-sub">30% of ${fmt(rent)} gross rent<br>Effective rate ${fdapEff.toFixed(1)}% of rent<br><span style="opacity:.75">No deductions permitted</span></div>
       </div>
@@ -8421,11 +8422,11 @@ function calcWithholding() {
     </div>
 
     ${depr ? `<div style="padding:13px 24px;border-bottom:1px solid var(--r-rule);background:rgba(184,130,30,0.06)">
-      <div style="font-size:11.5px;line-height:1.6;color:var(--r-body)"><strong style="color:var(--r-ink)">Depreciation is ${fmt(depr)} of that.</strong> You do not spend it &mdash; it is the building written down over 27.5 years, based on 85% of the purchase price. It is the largest deduction most owners have and the one most often left unclaimed.</div>
+      <div style="font-size:11.5px;line-height:1.6;color:var(--r-body)"><strong style="color:var(--r-ink)">Depreciation is ${fmt(depr)} of that.</strong> You do not spend it. It is the building written down over 27.5 years, based on 85% of the purchase price. It is the largest deduction most owners have and the one most often left unclaimed.</div>
     </div>` : ''}
 
     ${lossMaking ? `<div style="padding:13px 24px;border-bottom:1px solid var(--r-rule);background:rgba(184,130,30,0.06)">
-      <div style="font-size:11.5px;line-height:1.6;color:var(--r-body)"><strong style="color:var(--r-ink)">This property shows a paper loss.</strong> Tax on net income is nil this year. Losses on rental property are generally passive and may be carried forward against future rental profit rather than used immediately &mdash; worth confirming with a CPA.</div>
+      <div style="font-size:11.5px;line-height:1.6;color:var(--r-body)"><strong style="color:var(--r-ink)">This property shows a paper loss.</strong> Tax on net income is nil this year. Losses on rental property are generally passive and may be carried forward against future rental profit rather than used immediately. Worth confirming with a CPA.</div>
     </div>` : ''}
 
     <div style="padding:16px 24px;border-bottom:1px solid var(--r-rule)">
@@ -8440,12 +8441,12 @@ function calcWithholding() {
           <span style="flex-shrink:0;width:17px;height:17px;border-radius:50%;background:var(--r-rule);color:var(--r-body);font-size:9.5px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px">${i+1}</span>
           <span><span style="font-size:12px;font-weight:500;color:var(--r-ink)">${t}</span><br><span style="font-size:11px;color:var(--r-body);line-height:1.5">${d}</span></span></li>`).join('')}
       </ul>
-      <div style="font-size:11px;color:var(--r-body);line-height:1.55;margin-top:11px;padding:9px 12px;background:var(--r-panel);border-left:2px solid var(--r-warn);border-radius:3px">The election generally applies to later years too and cannot be revoked without IRS consent &mdash; so it is worth getting right once rather than revisiting.</div>
+      <div style="font-size:11px;color:var(--r-body);line-height:1.55;margin-top:11px;padding:9px 12px;background:var(--r-panel);border-left:2px solid var(--r-warn);border-radius:3px">The election generally applies to later years too and cannot be revoked without IRS consent, so it is worth getting right once rather than revisiting.</div>
     </div>
 
     <div style="padding:14px 24px 0">
       <div onclick="openLeadModal('cpa')" style="width:100%;background:var(--r-cta);border:none;border-radius:3px;padding:12px 16px;font-family:'DM Sans',system-ui,sans-serif;font-size:12px;color:#F7F4EE;cursor:pointer;text-align:left;box-sizing:border-box">Have a CPA confirm this and file it &rarr;</div>
-      <p style="font-size:10px;color:var(--r-cap);margin-top:10px;line-height:1.5;margin-bottom:0">Estimate only, using 2026 federal single-filer rates and a 27.5-year residential schedule. It ignores state tax, treaty relief, passive-loss limits and your other US income, any of which can change the result. Lanvivo is not a tax adviser and this is not tax advice &mdash; confirm with a CPA before filing.</p>
+      <p style="font-size:10px;color:var(--r-cap);margin-top:10px;line-height:1.5;margin-bottom:0">Estimate only, using 2026 federal single-filer rates and a 27.5-year residential schedule. It ignores state tax, treaty relief, passive-loss limits and your other US income, any of which can change the result. Lanvivo is not a tax adviser and this is not tax advice. Confirm with a CPA before filing.</p>
     </div>
 
   </div>`;
