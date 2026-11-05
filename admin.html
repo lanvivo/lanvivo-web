@@ -117,6 +117,12 @@ body{font-family:'DM Sans',sans-serif;font-weight:300;background:var(--bg);color
 .adm-brandname{font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--ink)}
 .adm-btn{background:transparent;border:1px solid var(--rule);border-radius:3px;padding:8px 15px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink);cursor:pointer}
 .adm-btn:hover{border-color:var(--gold)}
+.adm-in{font-family:'DM Sans',sans-serif;font-size:11.5px;padding:5px 7px;border:1px solid var(--rule);border-radius:3px;background:var(--surface);color:var(--r-ink);max-width:100%;box-sizing:border-box}
+.adm-in:focus{outline:1px solid var(--gold)}
+.adm-btn-sm{padding:5px 11px;font-size:11px;white-space:nowrap}
+.adm-pill.lvl-serious{background:rgba(46,125,82,.14);color:var(--r-pos)}
+.adm-pill.lvl-curious{background:rgba(184,130,30,.14);color:var(--r-warn)}
+.adm-filter{display:flex;gap:8px;align-items:center;margin-bottom:10px;font-size:11.5px;color:var(--r-cap)}
 .results-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--r-cap);padding:60px 24px}
 .results-placeholder .icon{font-size:2.6rem;margin-bottom:12px;opacity:.4}
 .results-placeholder p{font-size:13.5px;line-height:1.6;max-width:340px}
@@ -563,10 +569,127 @@ function renderAdminDashboard(o, users) {
       'Joined from auth.users and profiles, newest first. Props counts saved properties. Status shows whether the email was ever confirmed.') +
       '<div class="adm-card" style="padding:6px 10px 2px">' +
       '<table class="adm-table"><thead><tr><th>Name</th><th>Email</th><th>Joined</th><th>Last seen</th><th>Props</th><th>Status</th></tr></thead>' +
-      '<tbody>' + (userRows || '<tr><td colspan="6" class="adm-empty">No users yet.</td></tr>') + '</tbody></table></div></div>';
+      '<tbody>' + (userRows || '<tr><td colspan="6" class="adm-empty">No users yet.</td></tr>') + '</tbody></table></div></div>' +
+
+    // ── investor interest (filled in asynchronously) ──
+    '<div class="adm-sec" id="adm-interest"></div>';
+
+  loadInterestPanel(users);
 }
 
 
+
+/* ── Investor interest: an internal tag, admin only ──
+   Lets you mark which users look like future co-investors, with engagement signals beside them.
+   Reads/writes public.investor_interest, whose row-level security allows admins only, so an
+   ordinary user can neither see nor change a tag. Tenant data is never loaded here. ── */
+var _ii = { tags: {}, owned: {}, users: [], filter: 'all' };
+var _II_RANK = { serious: 0, curious: 1, none: 2 };
+var _II_HEAD = ['Investor interest',
+  'Internal only. Users never see this. Tag people who look like future co-investors so you can find them again later. Sorted by tag, then by owned properties, saved properties and recent activity.'];
+
+async function loadInterestPanel(users) {
+  var box = document.getElementById('adm-interest');
+  if (!box) return;
+  box.innerHTML = _admSecH(_II_HEAD[0], _II_HEAD[1]) + '<div class="adm-card"><div class="adm-empty">Loading…</div></div>';
+  try {
+    var res = await Promise.all([
+      sb.from('investor_interest').select('user_id, level, notes, updated_at'),
+      sb.from('saved_properties').select('user_id, status')
+    ]);
+    if (res[0].error) throw res[0].error;
+    if (res[1].error) throw res[1].error;
+    _ii.tags = {};
+    (res[0].data || []).forEach(function (r) { _ii.tags[r.user_id] = r; });
+    _ii.owned = {};
+    (res[1].data || []).forEach(function (r) {
+      if (r.status === 'purchased') _ii.owned[r.user_id] = (_ii.owned[r.user_id] || 0) + 1;
+    });
+    _ii.users = (users || []).filter(function (u) { return !u.is_admin; });
+    renderInterestPanel();
+  } catch (err) {
+    box.innerHTML = _admSecH(_II_HEAD[0], _II_HEAD[1]) +
+      '<div class="adm-card"><div class="adm-empty">Could not load: ' + _admEsc(err.message || String(err)) + '</div></div>';
+  }
+}
+
+function _iiLevel(r) { return r.tag ? r.tag.level : 'none'; }
+
+function renderInterestPanel() {
+  var box = document.getElementById('adm-interest');
+  if (!box) return;
+  var f = _ii.filter;
+  var all = _ii.users.map(function (u) {
+    return { u: u, tag: _ii.tags[u.id] || null, owned: _ii.owned[u.id] || 0 };
+  });
+  var nSerious = all.filter(function (r) { return _iiLevel(r) === 'serious'; }).length;
+  var nCurious = all.filter(function (r) { return _iiLevel(r) === 'curious'; }).length;
+
+  var rows = all.filter(function (r) {
+    if (f === 'all') return true;
+    if (f === 'untagged') return !r.tag;
+    return _iiLevel(r) === f;
+  });
+  rows.sort(function (a, b) {
+    return (_II_RANK[_iiLevel(a)] - _II_RANK[_iiLevel(b)]) ||
+           (b.owned - a.owned) ||
+           (Number(b.u.property_count || 0) - Number(a.u.property_count || 0)) ||
+           (new Date(b.u.last_sign_in_at || 0) - new Date(a.u.last_sign_in_at || 0));
+  });
+
+  var opts = function (sel) {
+    return [['none', 'None'], ['curious', 'Curious'], ['serious', 'Serious']].map(function (o) {
+      return '<option value="' + o[0] + '"' + (o[0] === sel ? ' selected' : '') + '>' + o[1] + '</option>';
+    }).join('');
+  };
+  var body = rows.map(function (r) {
+    var u = r.u, id = _admEsc(u.id), lvl = _iiLevel(r);
+    return '<tr>' +
+      '<td>' + _admEsc(u.name || '—') + '<div style="font-size:10.5px;color:var(--r-cap);font-weight:400">' + _admEsc(u.email) + '</div></td>' +
+      '<td>' + (u.last_sign_in_at ? _admDate(u.last_sign_in_at) : '<span style="color:var(--r-cap)">never</span>') + '</td>' +
+      '<td>' + _admNum(u.property_count) + '</td>' +
+      '<td>' + _admNum(r.owned) + '</td>' +
+      '<td><select class="adm-in" id="ii-lvl-' + id + '">' + opts(lvl) + '</select></td>' +
+      '<td><input class="adm-in" id="ii-note-' + id + '" maxlength="500" style="width:100%;min-width:160px" placeholder="Why / what they said" value="' + _admEsc(r.tag && r.tag.notes || '') + '"></td>' +
+      '<td><button class="adm-btn adm-btn-sm" id="ii-btn-' + id + '" onclick="saveInterest(\'' + id + '\')">Save</button></td>' +
+      '</tr>';
+  }).join('');
+
+  var filterOpt = function (v, l) { return '<option value="' + v + '"' + (f === v ? ' selected' : '') + '>' + l + '</option>'; };
+  box.innerHTML = _admSecH(_II_HEAD[0] + ' · ' + nSerious + ' serious · ' + nCurious + ' curious', _II_HEAD[1]) +
+    '<div class="adm-card" style="padding:12px 10px 4px">' +
+    '<div class="adm-filter"><label for="ii-filter">Show</label>' +
+    '<select class="adm-in" id="ii-filter" onchange="_ii.filter=this.value;renderInterestPanel()">' +
+      filterOpt('all', 'Everyone') + filterOpt('serious', 'Serious') + filterOpt('curious', 'Curious') + filterOpt('untagged', 'Untagged') +
+    '</select></div>' +
+    '<div style="overflow-x:auto"><table class="adm-table"><thead><tr><th>User</th><th>Last seen</th><th>Saved</th><th>Owned</th><th>Interest</th><th>Notes</th><th></th></tr></thead>' +
+    '<tbody>' + (body || '<tr><td colspan="7" class="adm-empty">No users match.</td></tr>') + '</tbody></table></div></div>';
+}
+
+async function saveInterest(uid) {
+  var lvlEl = document.getElementById('ii-lvl-' + uid);
+  var noteEl = document.getElementById('ii-note-' + uid);
+  var btn = document.getElementById('ii-btn-' + uid);
+  if (!lvlEl || !noteEl || !btn) return;
+  var lvl = lvlEl.value, notes = noteEl.value.trim();
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    var clear = (lvl === 'none' && !notes);     // nothing to keep: remove the row
+    var res = clear
+      ? await sb.from('investor_interest').delete().eq('user_id', uid)
+      : await sb.from('investor_interest').upsert({ user_id: uid, level: lvl, notes: notes || null }, { onConflict: 'user_id' });
+    if (res.error) throw res.error;
+    if (clear) delete _ii.tags[uid]; else _ii.tags[uid] = { user_id: uid, level: lvl, notes: notes || null };
+    btn.textContent = 'Saved ✓';
+    setTimeout(function () {
+      var b = document.getElementById('ii-btn-' + uid);
+      if (b) { b.disabled = false; b.textContent = 'Save'; }
+    }, 1200);
+  } catch (err) {
+    btn.disabled = false; btn.textContent = 'Save';
+    alert('Could not save: ' + (err.message || err));
+  }
+}
 
 /* ── PDF export: renders the metrics into the same .report-page template the
    Cash Flow and Property Analysis PDFs use, then hands off to the print dialog. ── */
