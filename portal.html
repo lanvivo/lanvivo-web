@@ -567,6 +567,34 @@ body.dark .edit-banner .edit-msg{color:#F5F0E4}
 .perf-form-field label{font-size:12px;font-weight:500;color:var(--slate)}
 .perf-form-field input,.perf-form-field select{padding:8px 10px;border:1px solid var(--border);border-radius:7px;background:var(--input-bg,var(--bg));color:inherit;font-size:13px;width:100%;box-sizing:border-box}
 .perf-form-field input:focus,.perf-form-field select:focus{outline:2px solid var(--gold);outline-offset:1px}
+
+/* ── My Rentals ───────────────────────────────────────────────────────── */
+.rent-note{background:rgba(184,130,30,0.07);border:1px solid rgba(184,130,30,0.25);border-left:3px solid var(--gold);border-radius:3px;padding:10px 14px;font-size:12px;line-height:1.6;color:var(--body);margin-bottom:18px}
+.rent-note strong{color:var(--ink)}
+.rent-picker{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.rent-picker label{font-size:12px;font-weight:500;color:var(--slate)}
+.rent-picker select,.rent-picker input[type=month]{padding:9px 12px;border:1px solid var(--border);border-radius:7px;background:var(--input-bg,var(--bg));color:inherit;font-size:13px;max-width:100%;box-sizing:border-box}
+.rent-picker select{min-width:240px}
+.rent-tabs{display:flex;gap:4px;border-bottom:1px solid var(--rule);margin-bottom:18px;flex-wrap:wrap}
+.rent-tab{background:none;border:none;border-bottom:2px solid transparent;padding:10px 14px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--muted);cursor:pointer;margin-bottom:-1px}
+.rent-tab:hover{color:var(--ink)}
+.rent-tab.active{color:var(--ink);border-bottom-color:var(--gold);font-weight:600}
+.rent-card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:16px}
+.rent-card h3{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--slate);margin-bottom:12px}
+.rent-sub{font-size:11px;color:var(--muted);margin-top:3px}
+.rent-table-wrap{overflow-x:auto}
+.rent-pill{display:inline-block;border-radius:4px;font-size:10px;font-weight:600;letter-spacing:.04em;padding:2px 7px;text-transform:uppercase;border:1px solid transparent}
+.rent-pill.paid,.rent-pill.done,.rent-pill.active{background:rgba(46,125,82,0.12);color:#2E7D52;border-color:rgba(46,125,82,0.25)}
+.rent-pill.partial,.rent-pill.in_progress,.rent-pill.upcoming{background:rgba(184,130,30,0.12);color:var(--gold);border-color:rgba(184,130,30,0.3)}
+.rent-pill.late,.rent-pill.open{background:rgba(198,40,40,0.1);color:#C62828;border-color:rgba(198,40,40,0.25)}
+.rent-pill.pending,.rent-pill.ended{background:rgba(106,112,144,0.12);color:var(--muted);border-color:rgba(106,112,144,0.25)}
+.rent-form-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.rent-form-actions .btn-analyze{width:auto;padding:9px 18px;margin-top:0}
+.rent-textarea{padding:8px 10px;border:1px solid var(--border);border-radius:7px;background:var(--input-bg,var(--bg));color:inherit;font-size:13px;width:100%;box-sizing:border-box;font-family:inherit;min-height:60px;resize:vertical}
+.rent-headsup{list-style:none;padding:0;margin:0}
+.rent-headsup li{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--rule);font-size:13px;color:var(--ink);line-height:1.5}
+.rent-headsup li:first-child{border-top:none}
+.rent-done{text-decoration:line-through;color:var(--muted)}
 .prop-checkbox{width:16px;height:16px;cursor:pointer;accent-color:var(--gold)}
 
 /* Compare view, adaptive: grid on desktop, stacked cards on mobile */
@@ -1463,6 +1491,10 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 7l6-5 6 5v7H2V7z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 14V9h4v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
           My Properties
         </button>
+        <button class="mob-nav-item" data-mob-page="rentals">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="2" y="2.5" width="12" height="11.5" rx="1.2" stroke="currentColor" stroke-width="1.3"/><path d="M2 6h12M5.5 1v3M10.5 1v3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M5 9.2l1.4 1.4L9 8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          My Rentals
+        </button>
         <button class="mob-nav-item" data-mob-page="withholding">
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M4 2h8a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.3"/><path d="M5.5 5.5h5M5.5 8h5M5.5 10.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
           Tax Withholding
@@ -1541,6 +1573,10 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
           <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M2 7l6-5 6 5v7H2V7z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 14V9h4v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <span class="nav-label">My Properties</span>
           <span class="nav-lock" id="properties-lock">Investor</span>
+        </div>
+        <div class="nav-item" id="nav-rentals" onclick="navigateTo('rentals',this)">
+          <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><rect x="2" y="2.5" width="12" height="11.5" rx="1.2" stroke="currentColor" stroke-width="1.3"/><path d="M2 6h12M5.5 1v3M10.5 1v3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M5 9.2l1.4 1.4L9 8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="nav-label">My Rentals</span>
         </div>
         <div class="nav-item" id="nav-withholding" onclick="navigateTo('withholding',this)">
           <svg class="nav-icon" viewBox="0 0 16 16" fill="none"><path d="M4 2h8a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.3"/><path d="M5.5 5.5h5M5.5 8h5M5.5 10.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
@@ -2374,6 +2410,20 @@ body.dark .header-badge{background:rgba(200,148,42,0.15);border-color:rgba(200,1
           <button class="btn-analyze" style="background:transparent;color:var(--ink);border:1px solid var(--rule);width:auto;padding:10px 18px;margin-top:0" onclick="navigateTo('properties',null)">← Back to properties</button>
         </div>
         <div id="perf-content"></div>
+      </div>
+
+      <!-- MY RENTALS -->
+      <div class="page" id="page-rentals">
+        <div class="properties-page">
+          <div class="properties-header">
+            <div>
+              <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.7rem;font-weight:600;color:var(--ink);margin-bottom:4px">My Rentals</h2>
+              <p style="font-size:13px;color:var(--muted);line-height:1.5">Keep the leases, rent payments, repairs and reminders for properties you own in one place.</p>
+            </div>
+          </div>
+          <div class="rent-note"><strong>A record-keeping tool for owners.</strong> You enter and control every record here. Lanvivo does not collect or hold rent, contact your tenants, or act as your agent or property manager. Tenant details are saved to your private account only, never in your browser, and only you can see them.</div>
+          <div id="rentals-content"></div>
+        </div>
       </div>
 
     </div>
@@ -3740,7 +3790,7 @@ function dismissOnboarding() {
 }
 
 // ── Navigation ────────────────────────────────────────────────────────────────
-const PAGE_TITLES = {dashboard:'Dashboard',gpt:'Lanvivo GPT',mortgage:'Mortgage Eligibility Engine',cashflow:'Cash Flow Analyzer',market:'Zipcode Rater',roi:'Zipcode ROI',properties:'My Properties',compare:'Compare Properties',report:'Property Report',account:'My Account',performance:'Performance Tracker',propanalysis:'Property Analysis Report',withholding:'Rental Tax Withholding'};
+const PAGE_TITLES = {dashboard:'Dashboard',gpt:'Lanvivo GPT',mortgage:'Mortgage Eligibility Engine',cashflow:'Cash Flow Analyzer',market:'Zipcode Rater',roi:'Zipcode ROI',properties:'My Properties',compare:'Compare Properties',report:'Property Report',account:'My Account',performance:'Performance Tracker',rentals:'My Rentals',propanalysis:'Property Analysis Report',withholding:'Rental Tax Withholding'};
 
 // ── Mobile navigation ────────────────────────────────────────────────────────
 /* ── Tooltip positioning ──────────────────────────────────────────────────────
@@ -3875,6 +3925,7 @@ function navigateTo(page, navEl) {
   if (page==='dashboard') renderDashboard();
   if (page==='account') populateAccountForm();
   if (page==='performance') renderPerformancePage();
+  if (page==='rentals') renderRentalsPage();
   // Update limit indicator for GPT (dead path now, GPT page is "Coming Soon")
   if (page==='gpt') updateChatLimit();
   // Re-translate page content on navigation if non-English language active
@@ -7724,6 +7775,489 @@ function updateChatLimit() {
     document.getElementById('chat-send').disabled = false;
     document.getElementById('chat-input').disabled = false;
   }
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// MY RENTALS — owner record-keeping (leases, rent ledger, repairs, reminders)
+// ════════════════════════════════════════════════════════════════════════════
+// A software tool for owners: the owner enters and controls every record. Lanvivo does not
+// collect or hold rent, contact tenants, or act as anyone's agent or manager. Tenant details
+// live only in the owner's own Supabase rows (row-level security) and are deliberately NOT
+// mirrored into localStorage, unlike the rest of the portal's data.
+const _RENT_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const _rent = {
+  propertyId: null, leaseId: null, tab: 'leases',
+  leases: [], payments: [], maintenance: [], reminders: [],
+  editing: null,   // { kind: 'lease'|'payment'|'repair'|'reminder', id: uuid|null }
+  busy: false, error: null,
+};
+
+// ── Small helpers ────────────────────────────────────────────────────────────
+function _rentToday() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function _rentPeriod() { return _rentToday().slice(0, 7) + '-01'; }
+function _rentParts(s) { return String(s).slice(0, 10).split('-').map(Number); }
+function _rentFmtDate(s) {
+  if (!s) return '—';
+  const [y, m, d] = _rentParts(s);
+  return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+function _rentFmtPeriod(s) {
+  const [y, m] = _rentParts(s);
+  return new Date(y, m - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+}
+function _rentMoney(n) {
+  const v = Number(n) || 0;
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: v % 1 ? 2 : 0, maximumFractionDigits: 2 }).format(v);
+}
+function _rentOwned() {
+  return loadSavedProperties().filter(p => p.status === 'purchased' && _RENT_UUID.test(String(p.id)));
+}
+function _rentPropName(id) {
+  const p = loadSavedProperties().find(x => x.id === id);
+  return p ? p.name : 'Property';
+}
+function _rentLease(id) { return _rent.leases.find(l => l.id === id) || null; }
+function _rentVal(id) { const el = document.getElementById(id); return el ? el.value : ''; }
+
+// Late is computed on screen, never stored: unpaid and past the lease's due day for that month.
+function _rentShownStatus(p, lease) {
+  if (p.status === 'paid') return 'paid';
+  if (p.status === 'partial') return 'partial';
+  const [y, m] = _rentParts(p.period);
+  const due = new Date(y, m - 1, (lease && lease.rent_due_day) || 1, 23, 59, 59);
+  return new Date() > due ? 'late' : 'pending';
+}
+function _rentPill(status) {
+  const label = String(status).replace('_', ' ');
+  return `<span class="rent-pill ${escapeHTML(status)}">${escapeHTML(label)}</span>`;
+}
+function _rentField(label, inner) {
+  return `<div class="perf-form-field"><label>${label}</label>${inner}</div>`;
+}
+function _rentOpts(options, selected) {
+  return options.map(([v, l]) => `<option value="${escapeHTML(v)}"${v === selected ? ' selected' : ''}>${escapeHTML(l)}</option>`).join('');
+}
+
+// ── Data ─────────────────────────────────────────────────────────────────────
+async function _rentLoadAll() {
+  const [l, p, m, r] = await Promise.all([
+    supabase.from('rental_leases').select('*').order('created_at', { ascending: false }),
+    supabase.from('rent_payments').select('*').order('period', { ascending: false }),
+    supabase.from('maintenance_log').select('*').order('reported_on', { ascending: false }),
+    supabase.from('reminders').select('*').order('due_date', { ascending: true }),
+  ]);
+  const err = l.error || p.error || m.error || r.error;
+  if (err) {
+    console.error('My Rentals load error:', err);
+    _rent.error = err.message || 'Could not load your rentals.';
+    return false;
+  }
+  _rent.leases = l.data || [];
+  _rent.payments = p.data || [];
+  _rent.maintenance = m.data || [];
+  _rent.reminders = r.data || [];
+  _rent.error = null;
+  return true;
+}
+
+// Runs a write, then reloads and re-renders. On failure the form stays open so nothing is lost.
+async function _rentRun(op, okMsg) {
+  if (_rent.busy) return;
+  _rent.busy = true;
+  try {
+    const { error } = await op();
+    if (error) throw error;
+    const ok = await _rentLoadAll();
+    _rent.editing = null;
+    if (okMsg) showToast(okMsg, 'success');
+    if (!ok) showToast('Saved, but the list could not refresh.', 'error');
+    _rentRender();
+  } catch (e) {
+    console.error('My Rentals save error:', e);
+    showToast('Could not save: ' + (e && e.message ? e.message : 'unknown error'), 'error', 5000);
+  } finally {
+    _rent.busy = false;
+  }
+}
+
+// ── Page ─────────────────────────────────────────────────────────────────────
+async function renderRentalsPage() {
+  const box = document.getElementById('rentals-content');
+  if (!box) return;
+  if (!BACKEND_ENABLED || !currentUser || !currentUser.id) {
+    box.innerHTML = `<div class="properties-empty"><div class="icon">🔒</div><h3>Sign in to use My Rentals</h3><p>Your lease and rent records are saved to your private account, so this section needs an online sign-in.</p></div>`;
+    return;
+  }
+  box.innerHTML = `<div class="properties-empty"><div class="icon">⏳</div><p>Loading…</p></div>`;
+  if (!_propertyCacheReady) await refreshProperties();
+  const owned = _rentOwned();
+  if (!owned.length) {
+    box.innerHTML = `<div class="properties-empty"><div class="icon">🏡</div><h3>No owned properties yet</h3><p>My Rentals works with properties you own. Mark a saved property as bought, or add one you already own, and it will show up here.</p><button class="btn-analyze" style="width:auto;padding:10px 22px" onclick="navigateTo('properties',null)">Go to My Properties →</button></div>`;
+    return;
+  }
+  const ok = await _rentLoadAll();
+  if (!ok) {
+    box.innerHTML = `<div class="properties-empty"><div class="icon">⚠️</div><h3>Could not load your rentals</h3><p>${escapeHTML(_rent.error || '')}</p><button class="btn-analyze" style="width:auto;padding:10px 22px" onclick="renderRentalsPage()">Try again</button></div>`;
+    return;
+  }
+  if (!owned.some(p => p.id === _rent.propertyId)) {
+    _rent.propertyId = owned[0].id;
+    _rent.leaseId = null;
+    _rent.editing = null;
+  }
+  _rentRender();
+}
+
+function _rentSummaryHTML() {
+  const period = _rentPeriod();
+  const active = _rent.leases.filter(l => l.status === 'active');
+  const roll = active.reduce((s, l) => s + (Number(l.monthly_rent) || 0), 0);
+  const month = _rent.payments.filter(p => String(p.period).slice(0, 10) === period);
+  const due = month.reduce((s, p) => s + (Number(p.amount_due) || 0), 0);
+  const got = month.reduce((s, p) => s + (Number(p.amount_received) || 0), 0);
+  const open = _rent.maintenance.filter(m => m.status !== 'done').length;
+  const yr = String(new Date().getFullYear());
+  const spend = _rent.maintenance.filter(m => String(m.reported_on || '').slice(0, 4) === yr)
+    .reduce((s, m) => s + (Number(m.cost) || 0), 0);
+  const card = (label, val, sub) => `<div class="perf-summary-card"><div class="perf-summary-label">${label}</div><div class="perf-summary-val">${val}</div>${sub ? `<div class="rent-sub">${sub}</div>` : ''}</div>`;
+  return `<div class="perf-summary-row">
+    ${card('Active leases', active.length, 'across all your properties')}
+    ${card('Monthly rent on leases', _rentMoney(roll), 'active leases only')}
+    ${card('Recorded this month', _rentMoney(got), `of ${_rentMoney(due)} due`)}
+    ${card('Open repairs', open, `${_rentMoney(spend)} logged this year`)}
+  </div>`;
+}
+
+function _rentRender() {
+  const box = document.getElementById('rentals-content');
+  if (!box) return;
+  const owned = _rentOwned();
+  const tabs = [['leases', 'Leases'], ['ledger', 'Rent ledger'], ['repairs', 'Repairs'], ['reminders', 'Reminders']];
+  const banner = _rent.error ? `<div class="rent-note" style="border-left-color:var(--red)">${escapeHTML(_rent.error)}</div>` : '';
+  const picker = `<div class="rent-picker">
+      <label for="rent-prop-select">Property</label>
+      <select id="rent-prop-select" onchange="rentSelectProperty(this.value)">
+        ${owned.map(p => `<option value="${escapeHTML(p.id)}"${p.id === _rent.propertyId ? ' selected' : ''}>${escapeHTML(p.name)}</option>`).join('')}
+      </select>
+    </div>`;
+  const tabBar = `<div class="rent-tabs">${tabs.map(([k, l]) =>
+    `<button class="rent-tab${_rent.tab === k ? ' active' : ''}" onclick="rentSetTab('${k}')">${l}</button>`).join('')}</div>`;
+  let body = '';
+  if (_rent.tab === 'leases') body = _rentTabLeases();
+  else if (_rent.tab === 'ledger') body = _rentTabLedger();
+  else if (_rent.tab === 'repairs') body = _rentTabRepairs();
+  else body = _rentTabReminders();
+  box.innerHTML = banner + _rentSummaryHTML() + picker + tabBar + body;
+}
+
+function rentSelectProperty(id) { _rent.propertyId = id; _rent.leaseId = null; _rent.editing = null; _rentRender(); }
+function rentSetTab(t) { _rent.tab = t; _rent.editing = null; _rentRender(); }
+function rentCancelEdit() { _rent.editing = null; _rentRender(); }
+
+// ── Leases ───────────────────────────────────────────────────────────────────
+function _rentTabLeases() {
+  const leases = _rent.leases.filter(l => l.property_id === _rent.propertyId);
+  const ed = _rent.editing && _rent.editing.kind === 'lease' ? _rent.editing : null;
+  let form = '';
+  if (ed) {
+    const l = ed.id ? (_rentLease(ed.id) || {}) : {};
+    const prop = loadSavedProperties().find(p => p.id === _rent.propertyId);
+    const defRent = l.monthly_rent != null ? l.monthly_rent : ((prop && prop.inputs && prop.inputs.rent) || '');
+    form = `<div class="rent-card"><h3>${ed.id ? 'Edit lease' : 'Add a lease'}</h3>
+      <div class="perf-form-grid">
+        ${_rentField('Tenant name *', `<input id="rf-tenant" maxlength="120" value="${escapeHTML(l.tenant_name || '')}">`)}
+        ${_rentField('Tenant email', `<input id="rf-email" type="email" maxlength="160" value="${escapeHTML(l.tenant_email || '')}">`)}
+        ${_rentField('Tenant phone', `<input id="rf-phone" maxlength="40" value="${escapeHTML(l.tenant_phone || '')}">`)}
+        ${_rentField('Monthly rent ($) *', `<input id="rf-rent" type="number" min="0" step="0.01" value="${escapeHTML(defRent)}">`)}
+        ${_rentField('Security deposit ($)', `<input id="rf-deposit" type="number" min="0" step="0.01" value="${escapeHTML(l.security_deposit != null ? l.security_deposit : '')}">`)}
+        ${_rentField('Rent due day (1–28)', `<input id="rf-dueday" type="number" min="1" max="28" step="1" value="${escapeHTML(l.rent_due_day || 1)}">`)}
+        ${_rentField('Lease start', `<input id="rf-start" type="date" value="${escapeHTML(l.lease_start || '')}">`)}
+        ${_rentField('Lease end', `<input id="rf-end" type="date" value="${escapeHTML(l.lease_end || '')}">`)}
+        ${_rentField('Status', `<select id="rf-status">${_rentOpts([['upcoming', 'Upcoming'], ['active', 'Active'], ['ended', 'Ended']], l.status || 'active')}</select>`)}
+      </div>
+      <div class="perf-form-field" style="margin-top:12px"><label>Notes</label><textarea id="rf-notes" class="rent-textarea" maxlength="1000">${escapeHTML(l.notes || '')}</textarea></div>
+      <div class="rent-form-actions">
+        <button class="btn-analyze" onclick="rentSaveLease()">Save lease</button>
+        <button class="btn-analyze" style="background:transparent;color:var(--ink);border:1px solid var(--rule)" onclick="rentCancelEdit()">Cancel</button>
+      </div></div>`;
+  }
+  const rows = leases.map(l => `<tr>
+      <td><div class="prop-name">${escapeHTML(l.tenant_name)}</div><div class="prop-meta">${escapeHTML([l.tenant_email, l.tenant_phone].filter(Boolean).join(' · ') || 'No contact details')}</div></td>
+      <td>${_rentMoney(l.monthly_rent)}<div class="prop-meta">due day ${escapeHTML(l.rent_due_day)}</div></td>
+      <td>${_rentFmtDate(l.lease_start)} → ${_rentFmtDate(l.lease_end)}</td>
+      <td>${_rentPill(l.status)}</td>
+      <td><div class="prop-actions">
+        <button class="prop-action-btn" onclick="rentEditLease('${escapeHTML(l.id)}')">Edit</button>
+        <button class="prop-action-btn danger" onclick="rentDeleteLease('${escapeHTML(l.id)}')">Delete</button>
+      </div></td></tr>`).join('');
+  const table = leases.length
+    ? `<div class="rent-table-wrap"><table class="prop-table"><thead><tr><th>Tenant</th><th>Rent</th><th>Lease term</th><th>Status</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`
+    : (ed ? '' : `<div class="properties-empty"><div class="icon">📄</div><h3>No leases yet</h3><p>Add the lease for this property to start tracking rent and lease dates.</p></div>`);
+  const add = ed ? '' : `<div style="margin-bottom:14px"><button class="btn-analyze" style="width:auto;padding:10px 18px;margin-top:0" onclick="rentNewLease()">+ Add a lease</button></div>`;
+  return add + form + table;
+}
+function rentNewLease() { _rent.editing = { kind: 'lease', id: null }; _rentRender(); }
+function rentEditLease(id) { _rent.editing = { kind: 'lease', id }; _rentRender(); }
+function rentSaveLease() {
+  const ed = _rent.editing;
+  const row = {
+    tenant_name: _rentVal('rf-tenant').trim(),
+    tenant_email: _rentVal('rf-email').trim() || null,
+    tenant_phone: _rentVal('rf-phone').trim() || null,
+    monthly_rent: parseFloat(_rentVal('rf-rent')),
+    security_deposit: parseFloat(_rentVal('rf-deposit')) || 0,
+    rent_due_day: parseInt(_rentVal('rf-dueday'), 10) || 1,
+    lease_start: _rentVal('rf-start') || null,
+    lease_end: _rentVal('rf-end') || null,
+    status: _rentVal('rf-status') || 'active',
+    notes: _rentVal('rf-notes').trim() || null,
+  };
+  if (!row.tenant_name) return showToast('Tenant name is required.', 'error');
+  if (!(row.monthly_rent >= 0)) return showToast('Enter the monthly rent.', 'error');
+  if (row.rent_due_day < 1 || row.rent_due_day > 28) return showToast('Rent due day must be between 1 and 28.', 'error');
+  if (row.tenant_email && !/^\S+@\S+\.\S+$/.test(row.tenant_email)) return showToast('That email address does not look right.', 'error');
+  if (row.lease_start && row.lease_end && row.lease_end < row.lease_start) return showToast('Lease end must be after the start.', 'error');
+  _rentRun(() => ed && ed.id
+    ? supabase.from('rental_leases').update(row).eq('id', ed.id)
+    : supabase.from('rental_leases').insert({ ...row, user_id: currentUser.id, property_id: _rent.propertyId }),
+    'Lease saved');
+}
+function rentDeleteLease(id) {
+  if (!confirm('Delete this lease and its rent records? This cannot be undone.')) return;
+  _rentRun(() => supabase.from('rental_leases').delete().eq('id', id), 'Lease deleted');
+}
+
+// ── Rent ledger ──────────────────────────────────────────────────────────────
+function _rentTabLedger() {
+  const leases = _rent.leases.filter(l => l.property_id === _rent.propertyId);
+  if (!leases.length) {
+    return `<div class="properties-empty"><div class="icon">💵</div><h3>Add a lease first</h3><p>The rent ledger tracks payments against a lease.</p><button class="btn-analyze" style="width:auto;padding:10px 22px" onclick="rentSetTab('leases')">Go to Leases →</button></div>`;
+  }
+  if (!leases.some(l => l.id === _rent.leaseId)) {
+    _rent.leaseId = (leases.find(l => l.status === 'active') || leases[0]).id;
+  }
+  const lease = _rentLease(_rent.leaseId);
+  const pays = _rent.payments.filter(p => p.lease_id === _rent.leaseId);
+  const ed = _rent.editing && _rent.editing.kind === 'payment' ? _rent.editing : null;
+  let form = '';
+  if (ed) {
+    const p = pays.find(x => x.id === ed.id) || {};
+    form = `<div class="rent-card"><h3>Record payment — ${escapeHTML(_rentFmtPeriod(p.period))}</h3>
+      <div class="perf-form-grid">
+        ${_rentField('Amount due ($)', `<input id="rp-due" type="number" min="0" step="0.01" value="${escapeHTML(p.amount_due != null ? p.amount_due : '')}">`)}
+        ${_rentField('Amount received ($)', `<input id="rp-got" type="number" min="0" step="0.01" value="${escapeHTML(p.amount_received != null ? p.amount_received : 0)}">`)}
+        ${_rentField('Date received', `<input id="rp-date" type="date" value="${escapeHTML(p.received_on || '')}">`)}
+      </div>
+      <div class="perf-form-field" style="margin-top:12px"><label>Notes</label><textarea id="rp-notes" class="rent-textarea" maxlength="500">${escapeHTML(p.notes || '')}</textarea></div>
+      <div class="rent-form-actions">
+        <button class="btn-analyze" onclick="rentSavePayment()">Save</button>
+        <button class="btn-analyze" style="background:transparent;color:var(--ink);border:1px solid var(--rule)" onclick="rentCancelEdit()">Cancel</button>
+      </div></div>`;
+  }
+  const picker = `<div class="rent-picker">
+      <label for="rent-lease-select">Lease</label>
+      <select id="rent-lease-select" onchange="rentSelectLease(this.value)">
+        ${leases.map(l => `<option value="${escapeHTML(l.id)}"${l.id === _rent.leaseId ? ' selected' : ''}>${escapeHTML(l.tenant_name)} · ${escapeHTML(l.status)}</option>`).join('')}
+      </select>
+      <label for="rent-month-input" style="margin-left:8px">Month</label>
+      <input id="rent-month-input" type="month" value="${escapeHTML(_rentPeriod().slice(0, 7))}">
+      <button class="btn-analyze" style="width:auto;padding:9px 16px;margin-top:0" onclick="rentAddMonth()">+ Add month</button>
+    </div>`;
+  const rows = pays.map(p => {
+    const shown = _rentShownStatus(p, lease);
+    return `<tr>
+      <td>${escapeHTML(_rentFmtPeriod(p.period))}</td>
+      <td>${_rentMoney(p.amount_due)}</td>
+      <td>${_rentMoney(p.amount_received)}<div class="prop-meta">${p.received_on ? 'on ' + escapeHTML(_rentFmtDate(p.received_on)) : ''}</div></td>
+      <td>${_rentPill(shown)}</td>
+      <td><div class="prop-actions">
+        <button class="prop-action-btn" onclick="rentEditPayment('${escapeHTML(p.id)}')">Record</button>
+        <button class="prop-action-btn danger" onclick="rentDeletePayment('${escapeHTML(p.id)}')">Delete</button>
+      </div></td></tr>`;
+  }).join('');
+  const table = pays.length
+    ? `<div class="rent-table-wrap"><table class="prop-table"><thead><tr><th>Month</th><th>Due</th><th>Received</th><th>Status</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`
+    : `<div class="properties-empty"><div class="icon">🗓️</div><h3>No months recorded</h3><p>Pick a month and press “Add month” to start the ledger for this lease. You mark what you actually received; Lanvivo does not collect or move any money.</p></div>`;
+  return picker + form + table;
+}
+function rentSelectLease(id) { _rent.leaseId = id; _rent.editing = null; _rentRender(); }
+function rentAddMonth() {
+  const lease = _rentLease(_rent.leaseId);
+  const ym = _rentVal('rent-month-input');
+  if (!lease) return;
+  if (!/^\d{4}-\d{2}$/.test(ym)) return showToast('Pick a month.', 'error');
+  _rentRun(() => supabase.from('rent_payments').upsert(
+    { user_id: currentUser.id, lease_id: lease.id, period: ym + '-01', amount_due: Number(lease.monthly_rent) || 0 },
+    { onConflict: 'lease_id,period', ignoreDuplicates: true }), 'Month added');
+}
+function rentEditPayment(id) { _rent.editing = { kind: 'payment', id }; _rentRender(); }
+function rentSavePayment() {
+  const ed = _rent.editing;
+  const due = parseFloat(_rentVal('rp-due'));
+  const got = parseFloat(_rentVal('rp-got')) || 0;
+  if (!(due >= 0)) return showToast('Enter the amount due.', 'error');
+  if (got < 0) return showToast('Amount received cannot be negative.', 'error');
+  const status = got <= 0 ? 'pending' : (got >= due ? 'paid' : 'partial');
+  const row = {
+    amount_due: due,
+    amount_received: got,
+    received_on: got > 0 ? (_rentVal('rp-date') || _rentToday()) : null,
+    status,
+    notes: _rentVal('rp-notes').trim() || null,
+  };
+  _rentRun(() => supabase.from('rent_payments').update(row).eq('id', ed.id), 'Payment recorded');
+}
+function rentDeletePayment(id) {
+  if (!confirm('Delete this month from the ledger?')) return;
+  _rentRun(() => supabase.from('rent_payments').delete().eq('id', id), 'Month deleted');
+}
+
+// ── Repairs (maintenance log) ────────────────────────────────────────────────
+function _rentTabRepairs() {
+  const items = _rent.maintenance.filter(m => m.property_id === _rent.propertyId);
+  const ed = _rent.editing && _rent.editing.kind === 'repair' ? _rent.editing : null;
+  let form = '';
+  if (ed) {
+    const m = ed.id ? (items.find(x => x.id === ed.id) || {}) : {};
+    form = `<div class="rent-card"><h3>${ed.id ? 'Edit repair' : 'Log a repair'}</h3>
+      <div class="perf-form-grid">
+        ${_rentField('What needs fixing *', `<input id="rm-title" maxlength="160" value="${escapeHTML(m.title || '')}">`)}
+        ${_rentField('Who is doing it (optional)', `<input id="rm-vendor" maxlength="120" value="${escapeHTML(m.vendor || '')}">`)}
+        ${_rentField('Cost ($)', `<input id="rm-cost" type="number" min="0" step="0.01" value="${escapeHTML(m.cost != null ? m.cost : '')}">`)}
+        ${_rentField('Reported on', `<input id="rm-reported" type="date" value="${escapeHTML(m.reported_on || _rentToday())}">`)}
+        ${_rentField('Status', `<select id="rm-status">${_rentOpts([['open', 'Open'], ['in_progress', 'In progress'], ['done', 'Done']], m.status || 'open')}</select>`)}
+        ${_rentField('Completed on', `<input id="rm-completed" type="date" value="${escapeHTML(m.completed_on || '')}">`)}
+      </div>
+      <div class="perf-form-field" style="margin-top:12px"><label>Details</label><textarea id="rm-desc" class="rent-textarea" maxlength="1000">${escapeHTML(m.description || '')}</textarea></div>
+      <div class="rent-form-actions">
+        <button class="btn-analyze" onclick="rentSaveRepair()">Save</button>
+        <button class="btn-analyze" style="background:transparent;color:var(--ink);border:1px solid var(--rule)" onclick="rentCancelEdit()">Cancel</button>
+      </div></div>`;
+  }
+  const rows = items.map(m => `<tr>
+      <td><div class="prop-name">${escapeHTML(m.title)}</div><div class="prop-meta">${escapeHTML([m.vendor, m.description].filter(Boolean).join(' · '))}</div></td>
+      <td>${_rentFmtDate(m.reported_on)}</td>
+      <td>${m.cost != null ? _rentMoney(m.cost) : '—'}</td>
+      <td>${_rentPill(m.status)}</td>
+      <td><div class="prop-actions">
+        <button class="prop-action-btn bought" onclick="rentToggleRepair('${escapeHTML(m.id)}')">${m.status === 'done' ? 'Reopen' : 'Mark done'}</button>
+        <button class="prop-action-btn" onclick="rentEditRepair('${escapeHTML(m.id)}')">Edit</button>
+        <button class="prop-action-btn danger" onclick="rentDeleteRepair('${escapeHTML(m.id)}')">Delete</button>
+      </div></td></tr>`).join('');
+  const table = items.length
+    ? `<div class="rent-table-wrap"><table class="prop-table"><thead><tr><th>Repair</th><th>Reported</th><th>Cost</th><th>Status</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`
+    : (ed ? '' : `<div class="properties-empty"><div class="icon">🔧</div><h3>No repairs logged</h3><p>Keep a simple record of what broke, who fixed it, and what it cost.</p></div>`);
+  const add = ed ? '' : `<div style="margin-bottom:14px"><button class="btn-analyze" style="width:auto;padding:10px 18px;margin-top:0" onclick="rentNewRepair()">+ Log a repair</button></div>`;
+  return add + form + table;
+}
+function rentNewRepair() { _rent.editing = { kind: 'repair', id: null }; _rentRender(); }
+function rentEditRepair(id) { _rent.editing = { kind: 'repair', id }; _rentRender(); }
+function rentSaveRepair() {
+  const ed = _rent.editing;
+  const status = _rentVal('rm-status') || 'open';
+  const costRaw = _rentVal('rm-cost');
+  const row = {
+    title: _rentVal('rm-title').trim(),
+    vendor: _rentVal('rm-vendor').trim() || null,
+    description: _rentVal('rm-desc').trim() || null,
+    cost: costRaw === '' ? null : parseFloat(costRaw),
+    reported_on: _rentVal('rm-reported') || _rentToday(),
+    status,
+    completed_on: _rentVal('rm-completed') || (status === 'done' ? _rentToday() : null),
+  };
+  if (!row.title) return showToast('Describe what needs fixing.', 'error');
+  if (row.cost !== null && !(row.cost >= 0)) return showToast('Cost must be zero or more.', 'error');
+  _rentRun(() => ed && ed.id
+    ? supabase.from('maintenance_log').update(row).eq('id', ed.id)
+    : supabase.from('maintenance_log').insert({ ...row, user_id: currentUser.id, property_id: _rent.propertyId }),
+    'Repair saved');
+}
+function rentToggleRepair(id) {
+  const m = _rent.maintenance.find(x => x.id === id);
+  if (!m) return;
+  const done = m.status !== 'done';
+  _rentRun(() => supabase.from('maintenance_log').update({
+    status: done ? 'done' : 'open',
+    completed_on: done ? _rentToday() : null,
+  }).eq('id', id), done ? 'Marked done' : 'Reopened');
+}
+function rentDeleteRepair(id) {
+  if (!confirm('Delete this repair record?')) return;
+  _rentRun(() => supabase.from('maintenance_log').delete().eq('id', id), 'Repair deleted');
+}
+
+// ── Reminders ────────────────────────────────────────────────────────────────
+// "Heads up" items are worked out on screen from your own records. Reminders are shown here in
+// the portal only; nothing is emailed or sent to tenants.
+function _rentHeadsUp() {
+  const items = [];
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  _rent.leases.filter(l => l.status === 'active' && l.lease_end).forEach(l => {
+    const [y, m, d] = _rentParts(l.lease_end);
+    const days = Math.round((new Date(y, m - 1, d) - today) / 86400000);
+    if (days <= 90) {
+      const when = days < 0 ? `ended ${-days} day${days === -1 ? '' : 's'} ago` : days === 0 ? 'ends today' : `ends in ${days} day${days === 1 ? '' : 's'}`;
+      items.push({ sort: days, tone: days <= 30 ? 'late' : 'partial', text: `${l.tenant_name}'s lease at ${_rentPropName(l.property_id)} ${when}.` });
+    }
+  });
+  _rent.payments.forEach(p => {
+    const l = _rentLease(p.lease_id);
+    if (l && l.status === 'active' && _rentShownStatus(p, l) === 'late') {
+      items.push({ sort: -1000, tone: 'late', text: `${_rentFmtPeriod(p.period)} rent from ${l.tenant_name} at ${_rentPropName(l.property_id)} has not been recorded as received.` });
+    }
+  });
+  return items.sort((a, b) => a.sort - b.sort);
+}
+function _rentTabReminders() {
+  const heads = _rentHeadsUp();
+  const mine = _rent.reminders.filter(r => r.property_id === _rent.propertyId);
+  const headsHTML = heads.length
+    ? `<ul class="rent-headsup">${heads.map(h => `<li><span class="rent-pill ${h.tone === 'late' ? 'late' : 'partial'}">${h.tone === 'late' ? 'soon' : 'watch'}</span><span>${escapeHTML(h.text)}</span></li>`).join('')}</ul>`
+    : `<p style="font-size:13px;color:var(--muted)">Nothing needs attention right now.</p>`;
+  const rows = mine.map(r => `<tr>
+      <td><div class="${r.done ? 'prop-name rent-done' : 'prop-name'}">${escapeHTML(r.title)}</div><div class="prop-meta">${escapeHTML(r.kind.replace('_', ' '))}</div></td>
+      <td>${_rentFmtDate(r.due_date)}</td>
+      <td>${r.done ? _rentPill('done') : _rentPill(r.due_date < _rentToday() ? 'late' : 'pending')}</td>
+      <td><div class="prop-actions">
+        <button class="prop-action-btn bought" onclick="rentToggleReminder('${escapeHTML(r.id)}')">${r.done ? 'Undo' : 'Done'}</button>
+        <button class="prop-action-btn danger" onclick="rentDeleteReminder('${escapeHTML(r.id)}')">Delete</button>
+      </div></td></tr>`).join('');
+  const form = `<div class="rent-card"><h3>Add a reminder for this property</h3>
+      <div class="perf-form-grid">
+        ${_rentField('Type', `<select id="rr-kind">${_rentOpts([['custom', 'General'], ['insurance', 'Insurance renewal'], ['tax', 'Property tax']], 'custom')}</select>`)}
+        ${_rentField('What to remember *', `<input id="rr-title" maxlength="160">`)}
+        ${_rentField('Due date *', `<input id="rr-date" type="date">`)}
+      </div>
+      <div class="rent-form-actions"><button class="btn-analyze" onclick="rentSaveReminder()">Add reminder</button></div>
+    </div>`;
+  const table = mine.length
+    ? `<div class="rent-table-wrap"><table class="prop-table"><thead><tr><th>Reminder</th><th>Due</th><th>Status</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`
+    : '';
+  return `<div class="rent-card"><h3>Heads up</h3>${headsHTML}</div>${form}${table}
+    <p class="rent-sub" style="margin-top:10px">Reminders appear here in My Rentals. Lanvivo does not email you or send anything to tenants.</p>`;
+}
+function rentSaveReminder() {
+  const title = _rentVal('rr-title').trim();
+  const due = _rentVal('rr-date');
+  if (!title) return showToast('Add a short description.', 'error');
+  if (!due) return showToast('Pick a due date.', 'error');
+  _rentRun(() => supabase.from('reminders').insert({
+    user_id: currentUser.id, property_id: _rent.propertyId,
+    kind: _rentVal('rr-kind') || 'custom', title, due_date: due,
+  }), 'Reminder added');
+}
+function rentToggleReminder(id) {
+  const r = _rent.reminders.find(x => x.id === id);
+  if (!r) return;
+  const done = !r.done;
+  _rentRun(() => supabase.from('reminders').update({ done, done_at: done ? new Date().toISOString() : null }).eq('id', id), null);
+}
+function rentDeleteReminder(id) {
+  if (!confirm('Delete this reminder?')) return;
+  _rentRun(() => supabase.from('reminders').delete().eq('id', id), 'Reminder deleted');
 }
 
 (function initLang() {
