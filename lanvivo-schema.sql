@@ -4,6 +4,15 @@
 -- Run this entire file in: Supabase Dashboard → SQL Editor → New Query
 -- It creates all tables, indexes, and Row Level Security (RLS) policies.
 -- Safe to re-run: uses IF NOT EXISTS where possible.
+--
+-- ⚠ THIS FILE IS OUT OF DATE (as of 2026-11-05). The live database has more than this file:
+--   * profiles.is_admin and profiles.phone, plus column-level grants on profiles
+--   * tables management_leads, property_performance_logs, specialist_cta_events
+--   * functions is_admin(), admin_overview(), admin_users(), rls_auto_enable() and the
+--     "admin reads ..." policies
+-- Later changes are recorded, exactly as applied, in /migrations. Do not run this file on a
+-- project that already has data; use it only as a starting point for a brand-new project, then
+-- replay /migrations in date order. A full, current export is still to be generated.
 
 -- ────────────────────────────────────────────────────────────────────
 -- PROFILES — public-facing user metadata (auth.users handles auth itself)
